@@ -4,6 +4,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { db, initDB } = require('./db');
+const { initEmailService, generateOTP, sendOTPEmail, sendWelcomeEmail } = require('./email');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -51,10 +52,29 @@ app.post('/api/auth/signup', async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
     const user = await db.createUser({ name, email, passwordHash });
-    const token = signToken(user);
+    
+    // Generate and send OTP
+    const otp = generateOTP();
+    await db.saveOTP(email, otp, 10); // 10 minutes expiry
+    
+    // Send OTP email asynchronously (don't wait)
+    sendOTPEmail(email, otp, name).catch(err => {
+      console.error('Failed to send OTP email:', err.message);
+    });
 
-    console.log(`✅ New user signed up: ${name} <${email}>`);
-    res.status(201).json({ token, user: sanitize(user) });
+    console.log(`✅ New user registered: ${name} <${email}> (OTP: ${otp})`);
+
+    res.status(201).json({
+      success: true,
+      message: 'Account created! Check your email for OTP verification code.',
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        email_verified: false
+      },
+      otp_sent: true
+    });
 
   } catch (err) {
     console.error('Signup error:', err.message);
@@ -94,6 +114,82 @@ app.post('/api/auth/signin', async (req, res) => {
   }
 });
 
+// POST /api/auth/verify-otp
+app.post('/api/auth/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ error: 'Email and OTP are required.' });
+    }
+
+    const result = await db.verifyOTP(email, otp);
+    
+    if (!result.valid) {
+      return res.status(401).json({ error: result.message });
+    }
+
+    // Get user and send welcome email
+    const user = await db.findUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    await sendWelcomeEmail(email, user.name);
+
+    // Generate token
+    const token = signToken(user);
+
+    console.log(`✅ Email verified for user: ${user.name} <${user.email}>`);
+    res.json({
+      success: true,
+      message: 'Email verified successfully!',
+      token,
+      user: sanitize(user)
+    });
+
+  } catch (err) {
+    console.error('OTP verification error:', err.message);
+    res.status(500).json({ error: 'Server error during OTP verification.' });
+  }
+});
+
+// POST /api/auth/resend-otp
+app.post('/api/auth/resend-otp', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    const user = await db.findUserByEmail(email);
+    if (!user) {
+      return res.status(404).json({ error: 'No account found with this email.' });
+    }
+
+    if (user.email_verified) {
+      return res.status(400).json({ error: 'This email is already verified.' });
+    }
+
+    // Generate new OTP
+    const otp = generateOTP();
+    await db.saveOTP(email, otp, 10);
+    const emailResult = await sendOTPEmail(email, otp, user.name);
+
+    console.log(`📧 OTP resent to: ${user.name} <${email}> (OTP: ${otp})`);
+    res.json({
+      success: true,
+      message: 'OTP sent! Check your email.',
+      otp_sent: emailResult.success
+    });
+
+  } catch (err) {
+    console.error('Resend OTP error:', err.message);
+    res.status(500).json({ error: 'Server error during OTP resend.' });
+  }
+});
+
 // POST /api/auth/google
 app.post('/api/auth/google', async (req, res) => {
   try {
@@ -110,11 +206,56 @@ app.post('/api/auth/google', async (req, res) => {
     const token = signToken(user);
 
     console.log(`✅ Google user authenticated: ${name} <${email}>`);
-    res.json({ token, user: sanitize(user) });
+    res.json({ 
+      token, 
+      user: sanitize(user),
+      profile_completed: user.profile_completed || false
+    });
 
   } catch (err) {
     console.error('Google auth error:', err.message);
     res.status(500).json({ error: 'Server error during Google sign-in. Please try again.' });
+  }
+});
+
+// POST /api/auth/complete-profile — Complete Google user profile
+app.post('/api/auth/complete-profile', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: 'No token provided.' });
+
+    const token = authHeader.replace('Bearer ', '');
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch {
+      return res.status(401).json({ error: 'Invalid or expired token.' });
+    }
+
+    const { name, phone, company, country, bio } = req.body;
+
+    const user = await db.completeProfile(decoded.id, { 
+      name: name || decoded.name,
+      phone,
+      company,
+      country,
+      bio
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    console.log(`✅ Profile completed for user: ${user.name} <${user.email}>`);
+    res.json({ 
+      success: true, 
+      user: sanitize(user),
+      message: 'Profile completed successfully!'
+    });
+
+  } catch (err) {
+    console.error('Complete profile error:', err.message);
+    res.status(500).json({ error: 'Server error during profile completion.' });
   }
 });
 
@@ -307,6 +448,7 @@ app.get('/api/health', (req, res) => {
 // ─── Start Server ─────────────────────────────────────────────────────────────
 async function start() {
   await initDB();
+  await initEmailService();
   app.listen(PORT, () => {
     console.log('');
     console.log('✨ ─────────────────────────────────────────');

@@ -1,10 +1,10 @@
 export const TRACK_COLORS = {
-  video:   { bg: "rgba(139,90,43,0.18)",  border: "rgba(139,90,43,0.55)", label: "#d4a574", accent: "#e3b88c" },
-  image:   { bg: "rgba(196,154,108,0.14)", border: "rgba(196,154,108,0.45)", label: "#c49a6c", accent: "#dab28a" },
-  text:    { bg: "rgba(34,211,168,0.10)",  border: "rgba(34,211,168,0.40)", label: "#22d3a8", accent: "#4ce8bf" },
-  audio:   { bg: "rgba(168,139,179,0.10)", border: "rgba(168,139,179,0.40)", label: "#c3b0cc", accent: "#d6c1de" },
-  shape:   { bg: "rgba(96,165,250,0.12)",  border: "rgba(96,165,250,0.45)", label: "#60a5fa", accent: "#93c5fd" },
-  sticker: { bg: "rgba(244,114,182,0.12)", border: "rgba(244,114,182,0.45)", label: "#f472b6", accent: "#f9a8d4" },
+  video:   { bg: "rgba(148,41,69,0.15)",   border: "rgba(148,41,69,0.55)", label: "#942945", accent: "#b13453" },
+  image:   { bg: "rgba(168,85,247,0.14)",  border: "rgba(147,51,234,0.45)", label: "#7e22ce", accent: "#c084fc" },
+  text:    { bg: "rgba(225,73,109,0.10)",  border: "rgba(209,58,95,0.40)",  label: "#b13453", accent: "#eba5b6" },
+  audio:   { bg: "rgba(236,72,153,0.10)",  border: "rgba(219,39,119,0.40)", label: "#db2777", accent: "#f472b6" },
+  shape:   { bg: "rgba(147,51,234,0.12)",  border: "rgba(126,34,206,0.45)", label: "#7e22ce", accent: "#a855f7" },
+  sticker: { bg: "rgba(225,73,109,0.12)",  border: "rgba(177,52,83,0.45)",  label: "#942945", accent: "#e1496d" },
 };
 
 export const ASPECT_RATIOS = [
@@ -50,9 +50,9 @@ export const TEXT_PRESETS = [
   { id: "h3",     name: "Small Heading",   fontSize: 48,  fontWeight: 700, color: "#ffffff", stroke: "",       strokeWidth: 0, letterSpacing: 1,  align: "left",   shadow: true, tag: "H3" },
   { id: "body",   name: "Body Text",       fontSize: 32,  fontWeight: 500, color: "#e5e5e5", stroke: "",       strokeWidth: 0, letterSpacing: 0,  align: "left",   shadow: false, tag: "¶"  },
   { id: "caption",name: "Caption",         fontSize: 24,  fontWeight: 500, color: "#ffffff", stroke: "#000000", strokeWidth: 4, letterSpacing: 0.5,align: "center", shadow: false, tag: "CC" },
-  { id: "bold",   name: "Bold Title",      fontSize: 96,  fontWeight: 900, color: "#fff4e8", stroke: "#8b5a2b", strokeWidth: 5, letterSpacing: 1,  align: "center", shadow: true, tag: "Bold" },
-  { id: "neon",   name: "Neon Glow",       fontSize: 80,  fontWeight: 700, color: "#00ffe1", stroke: "#00ffe1", strokeWidth: 0, letterSpacing: 3,  align: "center", shadow: true, neon: true, tag: "Neon" },
-  { id: "vintage",name: "Vintage Stamp",   fontSize: 64,  fontWeight: 700, color: "#d4a574", stroke: "#8b5a2b", strokeWidth: 3, letterSpacing: 4,  align: "center", shadow: false, tag: "Old" },
+  { id: "bold",   name: "Bold Title",      fontSize: 96,  fontWeight: 900, color: "#fff1f4", stroke: "#942945", strokeWidth: 5, letterSpacing: 1,  align: "center", shadow: true, tag: "Bold" },
+  { id: "neon",   name: "Neon Glow",       fontSize: 80,  fontWeight: 700, color: "#ff6b8a", stroke: "#ff6b8a", strokeWidth: 0, letterSpacing: 3,  align: "center", shadow: true, neon: true, tag: "Neon" },
+  { id: "vintage",name: "Vintage Stamp",   fontSize: 64,  fontWeight: 700, color: "#b13453", stroke: "#66172e", strokeWidth: 3, letterSpacing: 4,  align: "center", shadow: false, tag: "Old" },
   { id: "minimal",name: "Minimal Line",    fontSize: 40,  fontWeight: 300, color: "#ffffff", stroke: "",       strokeWidth: 0, letterSpacing: 8,  align: "center", shadow: false, tag: "—"  },
   { id: "outlined",name: "Hollow Outline", fontSize: 110, fontWeight: 900, color: "transparent", stroke: "#ffffff", strokeWidth: 3, letterSpacing: -2, align: "center", shadow: false, tag: "◯" },
 ];
@@ -73,20 +73,20 @@ export const FONT_FAMILIES = [
 ];
 
 export const SHAPE_TYPES = [
-  { id: "rect",   name: "Rounded Rectangle", icon: "▢", default: { w: 400, h: 240, radius: 16, fill: "#d4a574", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
-  { id: "square", name: "Square",            icon: "■", default: { w: 300, h: 300, radius: 0,  fill: "#8b5a2b", stroke: "#d4a574", strokeWidth: 2, opacity: 100 } },
-  { id: "circle", name: "Circle",            icon: "●", default: { w: 280, h: 280, radius: 999, fill: "#22d3a8", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
-  { id: "ellipse",name: "Ellipse",           icon: "◉", default: { w: 360, h: 220, radius: 999, fill: "#60a5fa", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
-  { id: "triangle",name:"Triangle",          icon: "▲", default: { w: 280, h: 240, radius: 0, fill: "#f472b6", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
-  { id: "line",   name: "Line",              icon: "━", default: { w: 500, h: 6,   radius: 3, fill: "#ffffff", stroke: "",       strokeWidth: 0, opacity: 100 } },
-  { id: "arrowL", name: "Left Arrow",        icon: "◀", default: { w: 200, h: 80, radius: 0, fill: "#ffffff", stroke: "",       strokeWidth: 0, opacity: 100, arrow: "left" } },
-  { id: "arrowR", name: "Right Arrow",       icon: "▶", default: { w: 200, h: 80, radius: 0, fill: "#ffffff", stroke: "",       strokeWidth: 0, opacity: 100, arrow: "right" } },
-  { id: "star",   name: "Star",              icon: "★", default: { w: 260, h: 260, points: 5, fill: "#facc15", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
-  { id: "heart",  name: "Heart",             icon: "♥", default: { w: 260, h: 240, fill: "#ef4444", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
-  { id: "burst",  name: "Sunburst",          icon: "☀", default: { w: 280, h: 280, rays: 12, fill: "#fbbf24", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
-  { id: "frame",  name: "Frame Border",      icon: "▭", default: { w: 800, h: 600, radius: 0, fill: "transparent", stroke: "#ffffff", strokeWidth: 16, opacity: 100 } },
-  { id: "pill",   name: "Pill / Badge",      icon: "▮", default: { w: 340, h: 100, radius: 50, fill: "rgba(12,10,9,0.85)", stroke: "#d4a574", strokeWidth: 3, opacity: 100 } },
-  { id: "cloud",  name: "Speech Bubble",     icon: "💬", default: { w: 400, h: 200, radius: 32, fill: "#ffffff", stroke: "#000000", strokeWidth: 3, opacity: 100, bubble: true } },
+  { id: "rect",   name: "Rounded Rectangle", icon: "▢", default: { w: 400, h: 240, radius: 16, fill: "#942945", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
+  { id: "square", name: "Square",            icon: "■", default: { w: 300, h: 300, radius: 0,  fill: "#b13453", stroke: "#fbe5e9", strokeWidth: 2, opacity: 100 } },
+  { id: "circle", name: "Circle",            icon: "●", default: { w: 280, h: 280, radius: 999, fill: "#e1496d", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
+  { id: "ellipse",name: "Ellipse",           icon: "◉", default: { w: 360, h: 220, radius: 999, fill: "#d13a5f", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
+  { id: "triangle",name:"Triangle",          icon: "▲", default: { w: 280, h: 240, radius: 0, fill: "#7c233c", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
+  { id: "line",   name: "Line",              icon: "━", default: { w: 500, h: 6,   radius: 3, fill: "#942945", stroke: "",       strokeWidth: 0, opacity: 100 } },
+  { id: "arrowL", name: "Left Arrow",        icon: "◀", default: { w: 200, h: 80, radius: 0, fill: "#b13453", stroke: "",       strokeWidth: 0, opacity: 100, arrow: "left" } },
+  { id: "arrowR", name: "Right Arrow",       icon: "▶", default: { w: 200, h: 80, radius: 0, fill: "#b13453", stroke: "",       strokeWidth: 0, opacity: 100, arrow: "right" } },
+  { id: "star",   name: "Star",              icon: "★", default: { w: 260, h: 260, points: 5, fill: "#ec4899", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
+  { id: "heart",  name: "Heart",             icon: "♥", default: { w: 260, h: 240, fill: "#d13a5f", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
+  { id: "burst",  name: "Sunburst",          icon: "☀", default: { w: 280, h: 280, rays: 12, fill: "#942945", stroke: "#ffffff", strokeWidth: 0, opacity: 100 } },
+  { id: "frame",  name: "Frame Border",      icon: "▭", default: { w: 800, h: 600, radius: 0, fill: "transparent", stroke: "#942945", strokeWidth: 16, opacity: 100 } },
+  { id: "pill",   name: "Pill / Badge",      icon: "▮", default: { w: 340, h: 100, radius: 50, fill: "rgba(102,23,46,0.85)", stroke: "#e1496d", strokeWidth: 3, opacity: 100 } },
+  { id: "cloud",  name: "Speech Bubble",     icon: "💬", default: { w: 400, h: 200, radius: 32, fill: "#ffffff", stroke: "#942945", strokeWidth: 3, opacity: 100, bubble: true } },
 ];
 
 export const EFFECT_PRESETS = {
@@ -127,18 +127,18 @@ export const ANIMATIONS = [
 ];
 
 export const GRADIENTS = [
-  { id: "gold",  name: "Gold Luxury",  css: "linear-gradient(135deg,#f5e6b3 0%,#d4a574 50%,#8b5a2b 100%)" },
-  { id: "sunset",name: "Sunset Fire",  css: "linear-gradient(135deg,#ff6b6b 0%,#ffa502 50%,#ff6348 100%)" },
-  { id: "ocean", name: "Deep Ocean",   css: "linear-gradient(135deg,#2d5a7f 0%,#0f2744 50%,#05101f 100%)" },
-  { id: "forest",name: "Emerald Forest",css:"linear-gradient(135deg,#052e27 0%,#0f5132 50%,#00b894 100%)" },
-  { id: "mint",  name: "Soft Mint",    css: "linear-gradient(135deg,#a8e6cf 0%,#88d8b0 100%)" },
-  { id: "lavender",name:"Purple Dream",css: "linear-gradient(135deg,#667eea 0%,#764ba2 100%)" },
-  { id: "rose",  name: "Rose Gold",    css: "linear-gradient(135deg,#f5c6c6 0%,#e8a0a0 50%,#d08770 100%)" },
-  { id: "noir",  name: "Midnight Noir",css: "linear-gradient(135deg,#232526 0%,#414345 100%)" },
-  { id: "candy", name: "Candy Pop",    css: "linear-gradient(135deg,#f093fb 0%,#f5576c 100%)" },
-  { id: "aegean",name: "Aegean Breeze",css: "linear-gradient(135deg,#48c6ef 0%,#6f86d6 100%)" },
-  { id: "coal",  name: "Carbon Fiber", css: "linear-gradient(135deg,#0f0c0a 0%,#1e1a17 50%,#0c0a09 100%)" },
-  { id: "peach", name: "Peach Cream",  css: "linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%)" },
+  { id: "wine",    name: "Burgundy Noir", css: "linear-gradient(135deg,#3a0c19 0%,#7c233c 50%,#b13453 100%)" },
+  { id: "rosé",    name: "Rosé Sunset",   css: "linear-gradient(135deg,#e1496d 0%,#b13453 50%,#7c233c 100%)" },
+  { id: "crimson", name: "Crimson Tide",  css: "linear-gradient(135deg,#fdf2f4 0%,#d13a5f 40%,#66172e 100%)" },
+  { id: "gold",    name: "Rose Gold",     css: "linear-gradient(135deg,#fce7f3 0%,#f472b6 50%,#db2777 100%)" },
+  { id: "wineGold",name: "Wine & Rose",   css: "linear-gradient(135deg,#7c233c 0%,#b13453 45%,#ec4899 100%)" },
+  { id: "roseG",   name: "Rosé Blush",    css: "linear-gradient(135deg,#fce7f3 0%,#f9a8d4 50%,#f472b6 100%)" },
+  { id: "velvet",  name: "Velvet Night",  css: "linear-gradient(135deg,#2d0a15 0%,#4a1025 40%,#6b1530 100%)" },
+  { id: "cream",   name: "Blush Cream",   css: "linear-gradient(135deg,#fffdfc 0%,#fdf2f4 50%,#fbe5e9 100%)" },
+  { id: "plum",    name: "Plum Dusk",     css: "linear-gradient(135deg,#3a0c19 0%,#7e22ce 100%)" },
+  { id: "pearl",   name: "Pearl & Wine",  css: "linear-gradient(135deg,#fdf2f4 0%,#f3e8ff 50%,#fdf2f4 100%)" },
+  { id: "coral",   name: "Soft Rose",     css: "linear-gradient(135deg,#fdf2f4 0%,#f472b6 100%)" },
+  { id: "noir",    name: "Midnight Noir", css: "linear-gradient(135deg,#23141b 0%,#3a0c19 100%)" },
 ];
 
 export const BG_MUSIC = [
@@ -216,9 +216,9 @@ export const INITIAL_STATE = {
   aspectRatio: "16:9",
   customW: 1920,
   customH: 1080,
-  backgroundColor: "#080604",
+  backgroundColor: "#fdf2f4",
   backgroundType: "color",
-  backgroundGradient: "coal",
+  backgroundGradient: "wine",
   grid: false,
   rulers: false,
   safeArea: false,

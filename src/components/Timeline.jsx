@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { fmtTime, TRACK_COLORS } from "../constants";
 import Track from "./Track";
+import THEME from "../theme";
 
 export default function Timeline({
   state, dispatch, timelineRef, onTimelineClick,
@@ -35,7 +36,6 @@ export default function Timeline({
     setDropTrackIndex(-1);
   };
 
-  // Selection box for marquee select
   const onAreaMouseDown = (e) => {
     if (e.button !== 0) return;
     if (e.target.closest(".clip-block") || e.target.closest(".track-label")) return;
@@ -57,7 +57,7 @@ export default function Timeline({
         h: Math.abs(myLocal - (e.clientY - rect.top)),
       });
     };
-    const onUp = (me) => {
+    const onUp = () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
       setSelBox((sb) => {
@@ -65,7 +65,7 @@ export default function Timeline({
           const t1 = Math.max(0, sb.x / PX_PER_SEC);
           const t2 = t1 + sb.w / PX_PER_SEC;
           const ids = [];
-          state.tracks.forEach((t, trackIdx) => {
+          state.tracks.forEach((t) => {
             t.clips.forEach((c) => {
               const cEnd = c.start + c.duration;
               if (c.start < t2 && cEnd > t1) ids.push(c.id);
@@ -90,49 +90,60 @@ export default function Timeline({
     dispatch({ type: "SET_ZOOM", value: newZoom });
   };
 
+  const btnGhost = (active = false) => ({
+    background: active ? THEME.wineTint : THEME.bg,
+    border: `1px solid ${active ? THEME.wine : "rgba(148,41,69,0.15)"}`,
+    color: active ? THEME.wine : THEME.textMuted,
+  });
+
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: "'Instrument Sans', sans-serif" }}>
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: "'Instrument Sans', sans-serif", background: THEME.editor.panelBg, borderTop: `1px solid ${THEME.editor.border}` }}>
       {/* ═══ Top bar ═══ */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 16px", borderBottom: "1px solid rgba(139,90,43,0.15)",
-        background: "#131110", flexShrink: 0,
+        padding: "10px 18px",
+        borderBottom: `1px solid ${THEME.editor.border}`,
+        background: THEME.panel, flexShrink: 0,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <span style={{
-            fontSize: 11, letterSpacing: "0.14em", color: "#d4a574",
+            fontSize: 11, letterSpacing: "0.14em", color: THEME.wine,
             fontWeight: 700, fontFamily: "'Poppins', sans-serif",
           }}>⏱ TIMELINE</span>
 
-          {/* Playhead indicators */}
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <span style={{
-              fontSize: 13, color: "#d4a574", fontVariantNumeric: "tabular-nums",
+              fontSize: 13, color: THEME.wine, fontVariantNumeric: "tabular-nums",
               fontWeight: 700, fontFamily: "'Poppins', sans-serif",
-              background: "rgba(212,165,116,0.08)", padding: "2px 8px", borderRadius: 4,
-              border: "1px solid rgba(212,165,116,0.15)",
+              background: THEME.wineTint, padding: "2px 10px", borderRadius: 6,
+              border: `1px solid ${THEME.hexA(THEME.wine, 0.2)}`,
             }}>{fmtTime(state.playhead)}</span>
-            <span style={{ fontSize: 13, color: "rgba(139,90,43,0.3)" }}>／</span>
+            <span style={{ fontSize: 12, color: THEME.textSoft }}>／</span>
             <span style={{
-              fontSize: 13, color: "#8c8780", fontVariantNumeric: "tabular-nums",
+              fontSize: 13, color: THEME.textMuted, fontVariantNumeric: "tabular-nums",
               fontWeight: 500, fontFamily: "'Poppins', sans-serif",
             }}>{fmtTime(state.duration)}</span>
             {(state.inPoint !== null || state.outPoint !== null) && (
               <>
-                <span style={{ fontSize: 11, color: "#3c3834" }}>｜</span>
+                <span style={{ fontSize: 11, color: THEME.textSoft }}>｜</span>
                 <span style={{
-                  fontSize: 11, padding: "2px 6px", borderRadius: 3,
-                  background: "rgba(59,130,246,0.1)", color: "#60a5fa",
+                  fontSize: 11, padding: "2px 8px", borderRadius: 4,
+                  background: "rgba(59,130,246,0.08)", color: "#3b82f6",
                   fontWeight: 600, border: "1px solid rgba(59,130,246,0.2)",
                 }}>I{state.inPoint !== null ? " " + fmtTime(state.inPoint) : ""}</span>
                 <span style={{
-                  fontSize: 11, padding: "2px 6px", borderRadius: 3,
-                  background: "rgba(239,68,68,0.1)", color: "#f87171",
-                  fontWeight: 600, border: "1px solid rgba(239,68,68,0.2)",
+                  fontSize: 11, padding: "2px 8px", borderRadius: 4,
+                  background: THEME.wineTint, color: THEME.wine,
+                  fontWeight: 600, border: `1px solid ${THEME.hexA(THEME.wine, 0.25)}`,
                 }}>O{state.outPoint !== null ? " " + fmtTime(state.outPoint) : ""}</span>
-                <button className="tool-btn" style={{ padding: "2px 8px", fontSize: 10, color: "#8c8780" }}
+                <button
+                  title="Clear in/out"
+                  style={{
+                    padding: "2px 8px", fontSize: 11, color: THEME.textSoft,
+                    background: "transparent", border: "none", cursor: "pointer", borderRadius: 4,
+                  }}
                   onClick={() => { dispatch({ type: "SET_IN_POINT", value: null }); dispatch({ type: "SET_OUT_POINT", value: null }); }}
-                  title="Clear in/out">✕</button>
+                >✕</button>
               </>
             )}
           </div>
@@ -140,105 +151,115 @@ export default function Timeline({
 
         {/* ═══ Right controls ═══ */}
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-          {/* Snap toggle */}
           <button
             title={state.snap ? "Snap: ON (magnetic edges)" : "Snap: OFF"}
             onClick={() => dispatch({ type: "SET_SNAP", value: !state.snap })}
             style={{
-              padding: "5px 10px", borderRadius: 6, cursor: "pointer", fontSize: 11,
+              padding: "5px 12px", borderRadius: 8, cursor: "pointer", fontSize: 11,
               fontWeight: 600, fontFamily: "'Poppins',sans-serif",
-              background: state.snap ? "rgba(212,165,116,0.15)" : "rgba(139,90,43,0.05)",
-              border: `1px solid ${state.snap ? "#d4a574" : "rgba(139,90,43,0.2)"}`,
-              color: state.snap ? "#d4a574" : "#8c8780",
+              ...btnGhost(state.snap),
               transition: "all 0.18s",
             }}
           >🧲 Snap {state.snap ? "ON" : "OFF"}</button>
 
-          {/* Markers quick add */}
-          <button className="tool-btn"
-            style={{ padding: "5px 10px", fontSize: 11, color: "#8c8780", gap: 5 }}
+          <button
             title="Add marker at playhead"
+            style={{
+              padding: "5px 12px", fontSize: 11, color: THEME.textMuted,
+              background: THEME.bg, border: `1px solid ${THEME.borderSoft}`,
+              borderRadius: 8, cursor: "pointer", fontFamily: "'Poppins',sans-serif",
+              fontWeight: 500,
+            }}
             onClick={() => {
               const l = prompt("Marker label (optional):", "");
-              dispatch({
-                type: "ADD_MARKER", time: state.playhead,
-                label: l ?? "", color: "#d4a574",
-              });
+              dispatch({ type: "ADD_MARKER", time: state.playhead, label: l ?? "", color: THEME.wine });
             }}
           >🔖 Marker</button>
 
-          {/* In/Out */}
           <div style={{ display: "flex", gap: 4 }}>
-            <button className="tool-btn"
-              style={{ padding: "5px 8px", fontSize: 11, color: "#60a5fa", borderColor: "rgba(59,130,246,0.2)" }}
+            <button
               title="Set In point (I)"
               onClick={() => dispatch({ type: "SET_IN_POINT", value: state.playhead })}
+              style={{
+                padding: "5px 9px", fontSize: 11, color: "#3b82f6",
+                background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.2)",
+                borderRadius: 6, cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontWeight: 600,
+              }}
             >[ I ]</button>
-            <button className="tool-btn"
-              style={{ padding: "5px 8px", fontSize: 11, color: "#f87171", borderColor: "rgba(239,68,68,0.2)" }}
+            <button
               title="Set Out point (O)"
               onClick={() => dispatch({ type: "SET_OUT_POINT", value: state.playhead })}
+              style={{
+                padding: "5px 9px", fontSize: 11, color: THEME.wine,
+                background: THEME.wineTint, border: `1px solid ${THEME.hexA(THEME.wine, 0.25)}`,
+                borderRadius: 6, cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontWeight: 600,
+              }}
             >[ O ]</button>
           </div>
 
-          {/* Undo/Redo */}
           <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
             <button
-              className="tool-btn"
               title="Undo (Ctrl+Z)"
               onClick={() => dispatch({ type: "UNDO" })}
               disabled={!state.history?.length}
               style={{
-                opacity: state.history?.length ? 1 : 0.35, padding: "5px 8px", borderRadius: 6,
-                background: "rgba(139,90,43,0.08)", border: "1px solid rgba(139,90,43,0.25)",
-                color: "#d4a574", cursor: state.history?.length ? "pointer" : "not-allowed",
+                opacity: state.history?.length ? 1 : 0.35, padding: "5px 9px", borderRadius: 6,
+                background: THEME.wineTint, border: `1px solid ${THEME.hexA(THEME.wine, 0.2)}`,
+                color: THEME.wine, cursor: state.history?.length ? "pointer" : "not-allowed",
+                fontSize: 14,
               }}
             >↶</button>
             <button
-              className="tool-btn"
               title="Redo (Ctrl+Shift+Z)"
               onClick={() => dispatch({ type: "REDO" })}
               disabled={!state.future?.length}
               style={{
-                opacity: state.future?.length ? 1 : 0.35, padding: "5px 8px", borderRadius: 6,
-                background: "rgba(139,90,43,0.08)", border: "1px solid rgba(139,90,43,0.25)",
-                color: "#d4a574", cursor: state.future?.length ? "pointer" : "not-allowed",
+                opacity: state.future?.length ? 1 : 0.35, padding: "5px 9px", borderRadius: 6,
+                background: THEME.wineTint, border: `1px solid ${THEME.hexA(THEME.wine, 0.2)}`,
+                color: THEME.wine, cursor: state.future?.length ? "pointer" : "not-allowed",
+                fontSize: 14,
               }}
             >↷</button>
           </div>
 
-          {/* Zoom */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button className="tool-btn" onClick={zoomToFit}
+            <button
+              onClick={zoomToFit}
               title="Zoom to fit all clips (Shift+F)"
-              style={{ padding: "4px 8px", fontSize: 11, color: "#8c8780" }}
+              style={{
+                padding: "5px 10px", fontSize: 11, color: THEME.textMuted,
+                background: THEME.bg, border: `1px solid ${THEME.borderSoft}`,
+                borderRadius: 6, cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontWeight: 500,
+              }}
             >⊡ Fit</button>
             <input
               type="range" min="0.2" max="6" step="0.05" value={state.zoom}
               onChange={(e) => dispatch({ type: "SET_ZOOM", value: parseFloat(e.target.value) })}
               style={{
-                width: 90, height: 4, borderRadius: 2, accentColor: "#d4a574",
-                background: "rgba(139,90,43,0.25)", outline: "none", cursor: "pointer",
+                width: 90, height: 4, borderRadius: 2, accentColor: THEME.wine,
+                background: THEME.wineBg, outline: "none", cursor: "pointer",
               }}
             />
             <span style={{
-              fontSize: 11, color: "#d4a574", fontWeight: 700, minWidth: 42,
+              fontSize: 11, color: THEME.wine, fontWeight: 700, minWidth: 42,
               textAlign: "center", fontVariantNumeric: "tabular-nums",
+              fontFamily: "'Poppins',sans-serif",
             }}>{Math.round(state.zoom * 100)}%</span>
           </div>
 
-          <div style={{ width: 1, height: 18, background: "rgba(212,165,116,0.12)" }} />
+          <div style={{ width: 1, height: 18, background: THEME.border }} />
 
-          <button className="tool-btn"
-            style={{
-              padding: "6px 14px", fontSize: 11, fontFamily: "'Poppins', sans-serif",
-              fontWeight: 500, borderRadius: 6,
-              background: "rgba(212,165,116,0.1)", border: "1px solid rgba(212,165,116,0.35)",
-              color: "#d4a574", cursor: "pointer", transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(212,165,116,0.2)"; e.currentTarget.style.borderColor = "#d4a574"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(212,165,116,0.1)"; e.currentTarget.style.borderColor = "rgba(212,165,116,0.35)"; }}
+          <button
             onClick={onAddTrack}
+            style={{
+              padding: "7px 16px", fontSize: 12, fontFamily: "'Poppins', sans-serif",
+              fontWeight: 600, borderRadius: 8, cursor: "pointer", transition: "all 0.2s",
+              background: THEME.btn.primaryBg,
+              border: "none", color: "#fff",
+              boxShadow: THEME.shadow.chip,
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.08)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.filter = "none"; e.currentTarget.style.transform = "none"; }}
           >＋ New Track</button>
         </div>
       </div>
@@ -249,7 +270,7 @@ export default function Timeline({
         className="timeline-scroll-container"
         style={{
           flex: 1, overflowX: "auto", overflowY: "auto",
-          background: "#0c0a09", position: "relative",
+          background: THEME.editor.panelDark, position: "relative",
         }}
         onMouseDown={onAreaMouseDown}
         onWheel={(e) => {
@@ -270,10 +291,10 @@ export default function Timeline({
           {state.markers.length > 0 && (
             <div style={{
               position: "sticky", top: 0, zIndex: 13, height: 18,
-              display: "flex", borderBottom: "1px solid rgba(139,90,43,0.08)",
-              background: "#0f0d0b",
+              display: "flex", borderBottom: `1px solid ${THEME.borderSoft}`,
+              background: THEME.panel,
             }}>
-              <div style={{ width: 156, minWidth: 156, borderRight: "1px solid rgba(139,90,43,0.1)", position: "sticky", left: 0, background: "#0f0d0b" }} />
+              <div style={{ width: 156, minWidth: 156, borderRight: `1px solid ${THEME.borderSoft}`, position: "sticky", left: 0, background: THEME.panel }} />
               <div style={{ flex: 1, position: "relative" }}>
                 {state.markers.map((m) => (
                   <div
@@ -290,15 +311,14 @@ export default function Timeline({
                       width: 0, height: 0,
                       borderLeft: "6px solid transparent",
                       borderRight: "6px solid transparent",
-                      borderTop: `8px solid ${m.color || "#d4a574"}`,
-                      filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))",
+                      borderTop: `8px solid ${m.color || THEME.wine}`,
+                      filter: "drop-shadow(0 1px 2px rgba(102,23,46,0.4))",
                     }} />
                     {m.label && (
                       <span style={{
                         position: "absolute", top: 9, left: 6,
-                        fontSize: 9, fontWeight: 600, color: m.color || "#d4a574",
+                        fontSize: 9, fontWeight: 600, color: m.color || THEME.wine,
                         fontFamily: "'Poppins',sans-serif", whiteSpace: "nowrap",
-                        textShadow: "0 1px 2px rgba(0,0,0,0.9)",
                       }}>{m.label}</span>
                     )}
                   </div>
@@ -307,39 +327,37 @@ export default function Timeline({
             </div>
           )}
 
-          {/* ═══ In / Out bars over ruler ═══ */}
-
           {/* Ruler + playhead row */}
           <div style={{
             display: "flex", flexShrink: 0,
             position: "sticky", top: state.markers.length > 0 ? 18 : 0,
-            zIndex: 15, background: "#131110",
-            borderBottom: "1px solid rgba(139,90,43,0.12)",
+            zIndex: 15, background: THEME.panel,
+            borderBottom: `1px solid ${THEME.border}`,
           }}>
             <div style={{
-              width: 156, minWidth: 156, background: "#131110",
-              borderRight: "1px solid rgba(139,90,43,0.12)",
+              width: 156, minWidth: 156, background: THEME.panel,
+              borderRight: `1px solid ${THEME.border}`,
               position: "sticky", left: 0, zIndex: 16,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 9, color: "#3c3834", letterSpacing: "0.08em",
+              fontSize: 10, color: THEME.textSoft, letterSpacing: "0.08em",
+              fontFamily: "'Poppins',sans-serif", fontWeight: 600,
             }}>
               {state.tracks.length} TRACK{state.tracks.length === 1 ? "" : "S"}
             </div>
             <div
               ref={timelineRef}
-              style={{ flex: 1, position: "relative", height: 34, cursor: "crosshair" }}
+              style={{ flex: 1, position: "relative", height: 34, cursor: "crosshair", background: THEME.bg }}
               onClick={onTimelineClick}
             >
-              {/* In/Out selection overlay */}
               {state.inPoint !== null && state.outPoint !== null && state.inPoint < state.outPoint && (
                 <div style={{
                   position: "absolute",
                   left: state.inPoint * PX_PER_SEC,
                   width: Math.max(0, (state.outPoint - state.inPoint) * PX_PER_SEC),
                   top: 0, bottom: 0,
-                  background: "linear-gradient(180deg, rgba(59,130,246,0.08), rgba(59,130,246,0.02))",
-                  borderLeft: "1px dashed #3b82f6",
-                  borderRight: "1px dashed #ef4444",
+                  background: "linear-gradient(180deg, rgba(59,130,246,0.1), rgba(59,130,246,0.02))",
+                  borderLeft: `1px dashed #3b82f6`,
+                  borderRight: `1px dashed ${THEME.wine}`,
                   pointerEvents: "none",
                 }} />
               )}
@@ -355,11 +373,11 @@ export default function Timeline({
                       <div style={{
                         width: 1,
                         height: major ? 14 : 7,
-                        background: major ? "rgba(139,90,43,0.35)" : "rgba(139,90,43,0.18)",
+                        background: major ? THEME.hexA(THEME.wine, 0.35) : THEME.hexA(THEME.wine, 0.18),
                       }} />
                       {major && (
                         <span style={{
-                          fontSize: 9, color: "#6b6560", paddingLeft: 3, marginTop: 1,
+                          fontSize: 9, color: THEME.textMuted, paddingLeft: 3, marginTop: 1,
                           fontFamily: "'Poppins', sans-serif", fontVariantNumeric: "tabular-nums",
                         }}>{fmtTime(t)}</span>
                       )}
@@ -380,15 +398,15 @@ export default function Timeline({
                 top: (state.markers.length > 0 ? 18 : 0) + 34 + selBox.y,
                 width: selBox.w,
                 height: selBox.h,
-                border: "1px dashed #d4a574",
-                background: "rgba(212,165,116,0.08)",
+                border: `1px dashed ${THEME.wine}`,
+                background: THEME.hexA(THEME.wine, 0.08),
                 pointerEvents: "none",
                 zIndex: 20,
+                borderRadius: 3,
               }}
             />
           )}
 
-          {/* Empty state */}
           {state.tracks.length === 0 && (
             <EmptyTimelineState onAddTrack={onAddTrack} />
           )}
@@ -411,11 +429,9 @@ export default function Timeline({
             />
           ))}
 
-          {/* Spacer */}
           <div style={{ height: 24 }} />
         </div>
 
-        {/* Playhead overlay (fixed to scroll container) */}
         <PlayheadOverlay state={state} PX_PER_SEC={PX_PER_SEC} markersTop={state.markers.length > 0 ? 18 : 0} />
       </div>
     </div>
@@ -429,24 +445,24 @@ function PlayheadOverlay({ state, PX_PER_SEC, markersTop }) {
         position: "absolute",
         left: 156 + state.playhead * PX_PER_SEC,
         top: 0, bottom: 0, width: 2,
-        background: "linear-gradient(180deg, #ef4444, #b91c1c)",
+        background: `linear-gradient(180deg, ${THEME.wineLight}, ${THEME.wineDeep})`,
         zIndex: 14, pointerEvents: "none",
-        boxShadow: "0 0 6px rgba(239,68,68,0.4)",
+        boxShadow: `0 0 8px ${THEME.hexA(THEME.wine, 0.5)}`,
       }}
     >
       <div style={{
         position: "absolute", top: markersTop + 0, left: -7,
-        width: 16, height: 14, background: "#ef4444",
+        width: 16, height: 14, background: THEME.wine,
         clipPath: "polygon(50% 100%, 0 0, 100% 0)",
-        filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.6))",
+        filter: "drop-shadow(0 1px 3px rgba(102,23,46,0.55))",
       }} />
       <div style={{
-        position: "absolute", top: markersTop + 15, left: -26,
-        fontSize: 10, padding: "1px 5px", borderRadius: 3,
-        background: "#ef4444", color: "#fff", fontWeight: 700,
+        position: "absolute", top: markersTop + 15, left: -28,
+        fontSize: 10, padding: "2px 6px", borderRadius: 4,
+        background: THEME.wine, color: "#fff", fontWeight: 700,
         fontFamily: "'Poppins',sans-serif", whiteSpace: "nowrap",
         fontVariantNumeric: "tabular-nums",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.5)",
+        boxShadow: "0 2px 8px rgba(102,23,46,0.3)",
       }}>{fmtTime(state.playhead)}</div>
     </div>
   );
@@ -456,36 +472,38 @@ function EmptyTimelineState({ onAddTrack }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: "center", padding: "60px 20px", color: "#3c3834",
-      gap: 16,
+      justifyContent: "center", padding: "60px 20px", gap: 16,
+      background: THEME.panel,
     }}>
       <div style={{
         width: 72, height: 72, borderRadius: 20,
-        background: "linear-gradient(135deg, rgba(212,165,116,0.12), rgba(139,90,43,0.05))",
-        border: "1px dashed rgba(212,165,116,0.3)",
+        background: THEME.wineTint,
+        border: `1px dashed ${THEME.hexA(THEME.wine, 0.4)}`,
         display: "flex", alignItems: "center", justifyContent: "center",
         fontSize: 32,
       }}>🎬</div>
       <div style={{ textAlign: "center", maxWidth: 500 }}>
         <div style={{
-          fontSize: 15, color: "#a09890", fontWeight: 600,
+          fontSize: 15, color: THEME.text, fontWeight: 600,
           marginBottom: 6, fontFamily: "'Poppins', sans-serif",
         }}>Your timeline is empty — let’s start creating!</div>
-        <div style={{ fontSize: 12, color: "#5c5650", lineHeight: 1.6 }}>
+        <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>
           Drag & drop videos, images, audio, or text from the left sidebar onto any track,
-          or click <span style={{ color: "#d4a574", fontWeight: 600 }}>＋ New Track</span> to add a layer.
+          or click <span style={{ color: THEME.wine, fontWeight: 600 }}>＋ New Track</span> to add a layer.
         </div>
       </div>
       <button
         onClick={onAddTrack}
         style={{
           padding: "10px 22px", borderRadius: 10, cursor: "pointer",
-          background: "linear-gradient(135deg, #8b5a2b, #d4a574)",
+          background: THEME.btn.primaryBg,
           border: "none", color: "#fff", fontSize: 13, fontWeight: 600,
           fontFamily: "'Poppins',sans-serif", letterSpacing: "0.02em",
-          boxShadow: "0 4px 18px rgba(139,90,43,0.35)",
+          boxShadow: THEME.shadow.md,
           marginTop: 4,
         }}
+        onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.08)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.filter = "none"; e.currentTarget.style.transform = "none"; }}
       >＋ Create First Track</button>
     </div>
   );

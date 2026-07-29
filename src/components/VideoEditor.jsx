@@ -45,8 +45,8 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       category: "Video Edit",
       tool: "Video Editor",
       year: new Date().getFullYear().toString(),
-      accent: "#d4a574",
-      gradient: "linear-gradient(135deg, #1e110a 0%, #3a2215 50%, #0c0a09 100%)",
+      accent: "#e1496d",
+      gradient: "linear-gradient(135deg, #23141b 0%, #3a0c19 50%, #1a0f14 100%)",
       icon: "🎬",
       tags: ["4K UHD", "LUTs", `${state.tracks.reduce((acc, t) => acc + t.clips.length, 0)} Clips`],
       desc: `Edited project with ${state.tracks.length} tracks.`,
@@ -591,7 +591,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       const currentTimeCode = i * timeStep;
       dispatch({ type: "SET_EXPORT_PROGRESS", value: (i / totalFrames) * 95 });
 
-      ctx.fillStyle = "#0c0a09";
+      ctx.fillStyle = "#1a0f14";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const currentActiveClips = clips.filter(c => c.start <= currentTimeCode && c.start + c.duration > currentTimeCode);
@@ -634,7 +634,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         ctx.save();
         ctx.font = `600 32px 'Poppins', sans-serif`;
         ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#d4a574';
+        ctx.strokeStyle = '#e1496d';
         ctx.lineWidth = 2;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -680,34 +680,34 @@ export default function VideoEditor({ onBack, user, initialProject }) {
   ];
 
   return (
-    <div style={{ background:"#0c0a09", color:"#e5e5e5", fontFamily:"'Instrument Sans',sans-serif", height:"100vh", width:"100vw", display:"flex", flexDirection:"column", overflow:"hidden", userSelect:"none" }}>
+    <div style={{ background:"#1a0f14", color:"#e5e5e5", fontFamily:"'Instrument Sans',sans-serif", height:"100vh", width:"100vw", display:"flex", flexDirection:"column", overflow:"hidden", userSelect:"none" }}>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Instrument+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
       <style>{`
         *{margin:0;padding:0;box-sizing:border-box}
-        body,html{height:100%;width:100%;overflow:hidden;background:#0c0a09}
+        body,html{height:100%;width:100%;overflow:hidden;background:#1a0f14}
         ::-webkit-scrollbar{width:5px;height:5px}
-        ::-webkit-scrollbar-track{background:#0c0a09}
-        ::-webkit-scrollbar-thumb{background:rgba(212,165,116,0.18);border-radius:3px}
-        ::-webkit-scrollbar-thumb:hover{background:#d4a574}
+        ::-webkit-scrollbar-track{background:#1a0f14}
+        ::-webkit-scrollbar-thumb{background:rgba(225,73,109,0.18);border-radius:3px}
+        ::-webkit-scrollbar-thumb:hover{background:#e1496d}
         .clip-block{cursor:grab;transition:opacity 0.1s,box-shadow 0.1s}
         .clip-block:hover{opacity:0.88}
-        .clip-block.selected{box-shadow:0 0 0 2px #d4a574,inset 0 0 0 1px rgba(212,165,116,0.3);filter:brightness(1.12)}
-        .tool-btn{background:rgba(212,165,116,0.05);border:1px solid rgba(212,165,116,0.15);color:#e5e5e5;padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Poppins',sans-serif;font-weight:400;display:inline-flex;align-items:center;gap:7px;transition:all 0.18s;white-space:nowrap;flex-shrink:0}
-        .tool-btn:hover{background:rgba(212,165,116,0.12);color:#d4a574;border-color:rgba(212,165,116,0.4);transform:translateY(-1px)}
+        .clip-block.selected{box-shadow:0 0 0 2px #e1496d,inset 0 0 0 1px rgba(225,73,109,0.3);filter:brightness(1.12)}
+        .tool-btn{background:rgba(225,73,109,0.05);border:1px solid rgba(225,73,109,0.15);color:#e5e5e5;padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Poppins',sans-serif;font-weight:400;display:inline-flex;align-items:center;gap:7px;transition:all 0.18s;white-space:nowrap;flex-shrink:0}
+        .tool-btn:hover{background:rgba(225,73,109,0.12);color:#e1496d;border-color:rgba(225,73,109,0.4);transform:translateY(-1px)}
         .tool-btn:disabled{opacity:0.35;cursor:not-allowed;pointer-events:none;transform:none}
-        .tool-btn.primary{background:linear-gradient(135deg,#8b5a2b,#d4a574);border:none;color:#fff;box-shadow:0 2px 10px rgba(139,90,43,0.3);font-weight:500}
-        .tool-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(139,90,43,0.45)}
+        .tool-btn.primary{background:linear-gradient(135deg,#942945,#e1496d);border:none;color:#fff;box-shadow:0 2px 10px rgba(148,41,69,0.3);font-weight:500}
+        .tool-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(148,41,69,0.45)}
         .tool-btn.danger{color:#ef4444;border-color:rgba(239,68,68,0.2);background:rgba(239,68,68,0.04)}
         .tool-btn.danger:hover{background:rgba(239,68,68,0.14);border-color:#ef4444}
-        .tool-btn.active{background:rgba(212,165,116,0.18);color:#d4a574;border-color:#d4a574}
-        .filter-slider{width:100%;-webkit-appearance:none;appearance:none;height:3px;background:rgba(212,165,116,0.15);border-radius:2px;outline:none;cursor:pointer}
-        .filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:#d4a574;border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(139,90,43,0.35);transition:all 0.1s}
+        .tool-btn.active{background:rgba(225,73,109,0.18);color:#e1496d;border-color:#e1496d}
+        .filter-slider{width:100%;-webkit-appearance:none;appearance:none;height:3px;background:rgba(225,73,109,0.15);border-radius:2px;outline:none;cursor:pointer}
+        .filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:#e1496d;border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(148,41,69,0.35);transition:all 0.1s}
         .filter-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
-        .filter-slider::-moz-range-thumb{width:13px;height:13px;background:#d4a574;border:none;border-radius:50%}
-        .track-row{display:flex;align-items:stretch;border-bottom:1px solid rgba(212,165,116,0.07)}
-        .track-label{width:140px;min-width:140px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;background:rgba(14,12,11,0.8);border-right:1px solid rgba(212,165,116,0.08);font-size:11px;gap:4px}
+        .filter-slider::-moz-range-thumb{width:13px;height:13px;background:#e1496d;border:none;border-radius:50%}
+        .track-row{display:flex;align-items:stretch;border-bottom:1px solid rgba(225,73,109,0.07)}
+        .track-label{width:140px;min-width:140px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;background:rgba(14,12,11,0.8);border-right:1px solid rgba(225,73,109,0.08);font-size:11px;gap:4px}
         .timeline-area{overflow-x:auto;overflow-y:visible;flex:1}
-        .glass-panel{background:rgba(14,12,11,0.85);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(212,165,116,0.14);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+        .glass-panel{background:rgba(14,12,11,0.85);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(225,73,109,0.14);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
         .sidebar-panel{background:rgba(14,12,11,0.85);backdrop-filter:blur(20px) saturate(160%)}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
@@ -719,13 +719,13 @@ export default function VideoEditor({ onBack, user, initialProject }) {
 
 
       {/* ── Main Body ─────────────────────────────────────────────────── */}
-      <div style={{ display:"flex", flex:1, overflow:"hidden", background:"#0c0a09" }}>
+      <div style={{ display:"flex", flex:1, overflow:"hidden", background:"#1a0f14" }}>
 
         {/* ── Left Sidebar ─────────────────────────────────────────────── */}
         {!leftSidebarCollapsed ? (
-          <div className="sidebar-panel" style={{ width:"280px", minWidth:"280px", borderRight:"1px solid rgba(212,165,116,0.1)", display:"flex", flexDirection:"column", height:"100%", zIndex:5, flexShrink:0 }}>
+          <div className="sidebar-panel" style={{ width:"280px", minWidth:"280px", borderRight:"1px solid rgba(225,73,109,0.1)", display:"flex", flexDirection:"column", height:"100%", zIndex:5, flexShrink:0 }}>
             {/* Tab bar */}
-            <div style={{ display:"flex", borderBottom:"1px solid rgba(212,165,116,0.08)", background:"rgba(10,8,7,0.5)" }}>
+            <div style={{ display:"flex", borderBottom:"1px solid rgba(225,73,109,0.08)", background:"rgba(10,8,7,0.5)" }}>
               {[
                 { id:"media",   label:"Media",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 2H8l-2 4h12z"/></svg> },
                 { id:"text",    label:"Text",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg> },
@@ -734,15 +734,15 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               ].map(tab => {
                 const active = leftTab === tab.id;
                 return (
-                  <button key={tab.id} onClick={() => setLeftTab(tab.id)} style={{ flex:1, padding:"10px 0 8px", background:"none", border:"none", borderBottom: active ? "2px solid #d4a574" : "2px solid transparent", color: active ? "#d4a574" : "#5c5650", fontWeight: active ? 600 : 400, fontSize:"10px", fontFamily:"'Poppins',sans-serif", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"5px", transition:"color 0.2s" }}
-                    onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#d4a574"; }}
+                  <button key={tab.id} onClick={() => setLeftTab(tab.id)} style={{ flex:1, padding:"10px 0 8px", background:"none", border:"none", borderBottom: active ? "2px solid #e1496d" : "2px solid transparent", color: active ? "#e1496d" : "#5c5650", fontWeight: active ? 600 : 400, fontSize:"10px", fontFamily:"'Poppins',sans-serif", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"5px", transition:"color 0.2s" }}
+                    onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#e1496d"; }}
                     onMouseLeave={e => { if (!active) e.currentTarget.style.color = "#5c5650"; }}
                   >
                     {tab.icon} {tab.label}
                   </button>
                 );
               })}
-              <button onClick={() => setLeftSidebarCollapsed(true)} style={{ padding:"0 10px", background:"none", border:"none", color:"#5c5650", cursor:"pointer", fontSize:"12px", transition:"color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color="#d4a574"} onMouseLeave={e => e.currentTarget.style.color="#5c5650"}>◀</button>
+              <button onClick={() => setLeftSidebarCollapsed(true)} style={{ padding:"0 10px", background:"none", border:"none", color:"#5c5650", cursor:"pointer", fontSize:"12px", transition:"color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color="#e1496d"} onMouseLeave={e => e.currentTarget.style.color="#5c5650"}>◀</button>
             </div>
 
             {/* Tab content */}
@@ -752,7 +752,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               {leftTab === "media" && (
                 <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#d4a574", fontWeight:700 }}>ASSETS LIBRARY</span>
+                    <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>ASSETS LIBRARY</span>
                     <div style={{ display:"flex", gap:"6px" }}>
                       <button className="tool-btn" onClick={onAddVideo} style={{ padding:"4px 9px", fontSize:"10px" }}>📹</button>
                       <button className="tool-btn" onClick={onAddImage} style={{ padding:"4px 9px", fontSize:"10px" }}>🖼</button>
@@ -762,9 +762,9 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
                     {STOCK_MEDIA.map(item => (
                       <div key={item.id} onClick={() => addStockMedia(item)}
-                        style={{ background:"rgba(139,90,43,0.06)", border:"1px solid rgba(139,90,43,0.14)", borderRadius:"9px", padding:"10px", cursor:"pointer", transition:"all 0.18s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor="#d4a574"; e.currentTarget.style.background="rgba(139,90,43,0.12)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(139,90,43,0.14)"; e.currentTarget.style.background="rgba(139,90,43,0.06)"; }}
+                        style={{ background:"rgba(148,41,69,0.06)", border:"1px solid rgba(148,41,69,0.14)", borderRadius:"9px", padding:"10px", cursor:"pointer", transition:"all 0.18s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(148,41,69,0.12)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(148,41,69,0.14)"; e.currentTarget.style.background="rgba(148,41,69,0.06)"; }}
                       >
                         <div style={{ fontSize:"22px", marginBottom:"6px" }}>{item.thumb}</div>
                         <div style={{ fontSize:"10px", fontWeight:600, color:"#e5e5e5", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
@@ -781,17 +781,17 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               {/* ─ Text ─ */}
               {leftTab === "text" && (
                 <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-                  <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#d4a574", fontWeight:700 }}>TEXT OVERLAYS</span>
+                  <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>TEXT OVERLAYS</span>
                   <button className="tool-btn" onClick={addTextClip} style={{ justifyContent:"center", padding:"10px", fontSize:"12px", fontWeight:500 }}>+ Add Title Overlay</button>
                   {selectedTextClip ? (
                     <div style={{ display:"flex", flexDirection:"column", gap:"10px", padding:"12px", border:"1px solid rgba(34,211,168,0.2)", background:"rgba(34,211,168,0.03)", borderRadius:"10px" }}>
                       <div style={{ fontSize:"10px", color:"#22d3a8", fontWeight:700 }}>EDIT TEXT</div>
                       <textarea value={selectedTextClip.text} onChange={e => dispatch({ type:"UPDATE_CLIP_TEXT", clipId:selectedTextClip.id, text:e.target.value })}
-                        style={{ width:"100%", height:"72px", background:"#0c0a09", border:"1px solid rgba(139,90,43,0.2)", borderRadius:"8px", color:"#fff", fontSize:"12px", padding:"8px", outline:"none", fontFamily:"inherit", resize:"none" }}
+                        style={{ width:"100%", height:"72px", background:"#1a0f14", border:"1px solid rgba(148,41,69,0.2)", borderRadius:"8px", color:"#fff", fontSize:"12px", padding:"8px", outline:"none", fontFamily:"inherit", resize:"none" }}
                         placeholder="Type overlay text..." />
                     </div>
                   ) : (
-                    <div style={{ padding:"12px", border:"1px dashed rgba(139,90,43,0.15)", borderRadius:"10px", color:"#5c5650", fontSize:"11px" }}>
+                    <div style={{ padding:"12px", border:"1px dashed rgba(148,41,69,0.15)", borderRadius:"10px", color:"#5c5650", fontSize:"11px" }}>
                       Select a text clip on the timeline to edit it.
                     </div>
                   )}
@@ -801,7 +801,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               {/* ─ Presets / LUTs ─ */}
               {leftTab === "presets" && (
                 <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-                  <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#d4a574", fontWeight:700 }}>CINEMATIC LUTS</span>
+                  <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>CINEMATIC LUTS</span>
                   {[
                     { id:"vintage", name:"Vintage Gold",    desc:"Warm amber, high sat" },
                     { id:"cyber",   name:"Cyberpunk Mint",  desc:"Neon green hue shift" },
@@ -810,9 +810,9 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                     { id:"reset",   name:"Reset Grading",   desc:"Restore original colors", danger:true },
                   ].map(lut => (
                     <button key={lut.id} onClick={() => applyPreset(lut.id)}
-                      style={{ background: lut.danger ? "rgba(239,68,68,0.05)" : "rgba(139,90,43,0.06)", border: lut.danger ? "1px solid rgba(239,68,68,0.18)" : "1px solid rgba(139,90,43,0.18)", borderRadius:"8px", padding:"10px 12px", cursor:"pointer", transition:"all 0.18s", textAlign:"left", display:"flex", flexDirection:"column", gap:"3px" }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = lut.danger ? "#ef4444" : "#d4a574"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.1)" : "rgba(139,90,43,0.12)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = lut.danger ? "rgba(239,68,68,0.18)" : "rgba(139,90,43,0.18)"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.05)" : "rgba(139,90,43,0.06)"; }}
+                      style={{ background: lut.danger ? "rgba(239,68,68,0.05)" : "rgba(148,41,69,0.06)", border: lut.danger ? "1px solid rgba(239,68,68,0.18)" : "1px solid rgba(148,41,69,0.18)", borderRadius:"8px", padding:"10px 12px", cursor:"pointer", transition:"all 0.18s", textAlign:"left", display:"flex", flexDirection:"column", gap:"3px" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = lut.danger ? "#ef4444" : "#e1496d"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.1)" : "rgba(148,41,69,0.12)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = lut.danger ? "rgba(239,68,68,0.18)" : "rgba(148,41,69,0.18)"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.05)" : "rgba(148,41,69,0.06)"; }}
                     >
                       <span style={{ fontSize:"11px", fontWeight:600, color: lut.danger ? "#ef4444" : "#e5e5e5" }}>{lut.name}</span>
                       <span style={{ fontSize:"9px", color:"#5c5650" }}>{lut.desc}</span>
@@ -824,25 +824,25 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               {/* ─ Properties ─ */}
               {leftTab === "properties" && (
                 <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
-                  <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#d4a574", fontWeight:700 }}>PROPERTIES</span>
+                  <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>PROPERTIES</span>
 
                   {/* Playback speed */}
                   <div>
                     <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"8px", fontSize:"11px", color:"#8c8780" }}>
                       <span>Playback speed</span>
-                      <span style={{ color:"#d4a574", fontWeight:600 }}>{state.playbackSpeed}x</span>
+                      <span style={{ color:"#e1496d", fontWeight:600 }}>{state.playbackSpeed}x</span>
                     </div>
                     <div style={{ display:"flex", gap:"5px", flexWrap:"wrap" }}>
                       {[0.5,0.75,1,1.25,1.5,2].map(s => (
-                        <button key={s} onClick={() => onSetPlaybackSpeed(s)} className="tool-btn" style={{ flex:"1 1 28%", justifyContent:"center", padding:"5px 2px", fontSize:"10px", background: state.playbackSpeed===s ? "linear-gradient(135deg,#8b5a2b,#a0522d)" : "none", borderColor: state.playbackSpeed===s ? "transparent" : "rgba(139,90,43,0.2)", color: state.playbackSpeed===s ? "#fff" : "#e5e5e5" }}>{s}x</button>
+                        <button key={s} onClick={() => onSetPlaybackSpeed(s)} className="tool-btn" style={{ flex:"1 1 28%", justifyContent:"center", padding:"5px 2px", fontSize:"10px", background: state.playbackSpeed===s ? "linear-gradient(135deg,#942945,#7c233c)" : "none", borderColor: state.playbackSpeed===s ? "transparent" : "rgba(148,41,69,0.2)", color: state.playbackSpeed===s ? "#fff" : "#e5e5e5" }}>{s}x</button>
                       ))}
                     </div>
                   </div>
 
-                  <div style={{ height:"1px", background:"rgba(212,165,116,0.08)" }} />
+                  <div style={{ height:"1px", background:"rgba(225,73,109,0.08)" }} />
 
                   {/* Color grade */}
-                  <div style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#d4a574", fontWeight:700 }}>COLOR GRADE</div>
+                  <div style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>COLOR GRADE</div>
                   {[
                     { key:"brightness", label:"Brightness", min:0, max:200, def:100 },
                     { key:"contrast",   label:"Contrast",   min:0, max:300, def:100 },
@@ -853,16 +853,16 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                     <div key={key}>
                       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px", fontSize:"11px", color:"#8c8780" }}>
                         <span>{label}</span>
-                        <span style={{ color: state[key]!==def ? "#d4a574" : "#555", fontVariantNumeric:"tabular-nums", fontWeight:600 }}>{Math.round(state[key])}</span>
+                        <span style={{ color: state[key]!==def ? "#e1496d" : "#555", fontVariantNumeric:"tabular-nums", fontWeight:600 }}>{Math.round(state[key])}</span>
                       </div>
                       <input type="range" min={min} max={max} step="1" value={state[key]} className="filter-slider" onChange={e => dispatch({ type:"SET_FILTER", key, value:parseFloat(e.target.value) })} />
                     </div>
                   ))}
 
-                  <div style={{ height:"1px", background:"rgba(212,165,116,0.08)" }} />
+                  <div style={{ height:"1px", background:"rgba(225,73,109,0.08)" }} />
 
                   {/* Effects */}
-                  <div style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#d4a574", fontWeight:700 }}>EFFECTS</div>
+                  <div style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>EFFECTS</div>
                   {[
                     { key:"blur",     label:"Blur",     min:0, max:20  },
                     { key:"sharpen",  label:"Sharpen",  min:0, max:100 },
@@ -871,21 +871,21 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                     <div key={key}>
                       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px", fontSize:"11px", color:"#8c8780" }}>
                         <span>{label}</span>
-                        <span style={{ color: state[key]!==0 ? "#d4a574" : "#555", fontVariantNumeric:"tabular-nums", fontWeight:600 }}>{Math.round(state[key])}</span>
+                        <span style={{ color: state[key]!==0 ? "#e1496d" : "#555", fontVariantNumeric:"tabular-nums", fontWeight:600 }}>{Math.round(state[key])}</span>
                       </div>
                       <input type="range" min={min} max={max} step="1" value={state[key]} className="filter-slider" onChange={e => dispatch({ type:"SET_FILTER", key, value:parseFloat(e.target.value) })} />
                     </div>
                   ))}
-                  <button className="tool-btn" style={{ justifyContent:"center", fontSize:"11px", borderColor:"rgba(139,90,43,0.2)", color:"#d4a574" }} onClick={onResetFilters}>↺ Reset all filters</button>
+                  <button className="tool-btn" style={{ justifyContent:"center", fontSize:"11px", borderColor:"rgba(148,41,69,0.2)", color:"#e1496d" }} onClick={onResetFilters}>↺ Reset all filters</button>
 
                   {/* Selected clip props */}
                   {selectedClipData && (
-                    <div style={{ marginTop:"8px", paddingTop:"14px", borderTop:"1px solid rgba(212,165,116,0.1)" }}>
-                      <div style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#d4a574", fontWeight:700, marginBottom:"10px" }}>SELECTED CLIP</div>
+                    <div style={{ marginTop:"8px", paddingTop:"14px", borderTop:"1px solid rgba(225,73,109,0.1)" }}>
+                      <div style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700, marginBottom:"10px" }}>SELECTED CLIP</div>
                       <div style={{ fontSize:"12px", color:"#e5e5e5", fontWeight:600, marginBottom:"10px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{selectedClipData.name}</div>
                       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px", marginBottom:"12px" }}>
                         {[{ label:"Start", val:fmtTime(selectedClipData.start) }, { label:"Duration", val:fmtTime(selectedClipData.duration) }].map(x => (
-                          <div key={x.label} style={{ background:"#0c0a09", padding:"8px 10px", borderRadius:"7px", border:"1px solid rgba(139,90,43,0.12)" }}>
+                          <div key={x.label} style={{ background:"#1a0f14", padding:"8px 10px", borderRadius:"7px", border:"1px solid rgba(148,41,69,0.12)" }}>
                             <div style={{ color:"#5c5650", fontSize:"9px", fontWeight:500, marginBottom:"3px" }}>{x.label}</div>
                             <div style={{ color:"#fff", fontVariantNumeric:"tabular-nums", fontWeight:600, fontSize:"12px" }}>{x.val}</div>
                           </div>
@@ -895,7 +895,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                         <div style={{ marginBottom:"12px" }}>
                           <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px", fontSize:"11px", color:"#8c8780" }}>
                             <span>Volume</span>
-                            <span style={{ color:"#d4a574", fontWeight:600 }}>{Math.round((selectedClipData.volume ?? 1)*100)}%</span>
+                            <span style={{ color:"#e1496d", fontWeight:600 }}>{Math.round((selectedClipData.volume ?? 1)*100)}%</span>
                           </div>
                           <input type="range" min={0} max={1} step={0.01} value={selectedClipData.volume ?? 1} className="filter-slider" onChange={e => onSetClipVolume(selectedClipData.id, parseFloat(e.target.value))} />
                         </div>
@@ -907,18 +907,18 @@ export default function VideoEditor({ onBack, user, initialProject }) {
             </div>
           </div>
         ) : (
-          <div style={{ width:36, borderRight:"1px solid rgba(212,165,116,0.1)", display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(10,8,7,0.85)", flexShrink:0 }}>
-            <button onClick={() => setLeftSidebarCollapsed(false)} style={{ background:"none", border:"none", color:"#5c5650", cursor:"pointer", padding:"8px", transition:"color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color="#d4a574"} onMouseLeave={e => e.currentTarget.style.color="#5c5650"}>▶</button>
+          <div style={{ width:36, borderRight:"1px solid rgba(225,73,109,0.1)", display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(10,8,7,0.85)", flexShrink:0 }}>
+            <button onClick={() => setLeftSidebarCollapsed(false)} style={{ background:"none", border:"none", color:"#5c5650", cursor:"pointer", padding:"8px", transition:"color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color="#e1496d"} onMouseLeave={e => e.currentTarget.style.color="#5c5650"}>▶</button>
           </div>
         )}
 
         {/* ── Center: Preview + Toolbar + Timeline ──────────────────────── */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:"#0c0a09" }}>
+        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:"#1a0f14" }}>
 
           {/* Video Preview — takes 60% of center height */}
-          <div style={{ flex:"0 0 58%", position:"relative", background:"#080604", borderBottom:"1px solid rgba(212,165,116,0.1)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
+          <div style={{ flex:"0 0 58%", position:"relative", background:"#0f070b", borderBottom:"1px solid rgba(225,73,109,0.1)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
             {/* Preview canvas */}
-            <div style={{ position:"relative", aspectRatio:"16/9", height:"calc(100% - 24px)", maxWidth:"calc(100% - 24px)", background:"#131110", borderRadius:"10px", overflow:"hidden", border:"1px solid rgba(139,90,43,0.18)", boxShadow:"0 12px 48px rgba(0,0,0,0.6)" }}>
+            <div style={{ position:"relative", aspectRatio:"16/9", height:"calc(100% - 24px)", maxWidth:"calc(100% - 24px)", background:"#131110", borderRadius:"10px", overflow:"hidden", border:"1px solid rgba(148,41,69,0.18)", boxShadow:"0 12px 48px rgba(0,0,0,0.6)" }}>
 
               {activeClip ? (
                 activeClip.videoEl ? (
@@ -928,11 +928,11 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                 )
               ) : (
                 <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"14px" }}>
-                  <div style={{ width:"56px", height:"56px", borderRadius:"50%", border:"1.5px solid rgba(139,90,43,0.25)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(139,90,43,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 2H8l-2 4h12z"/></svg>
+                  <div style={{ width:"56px", height:"56px", borderRadius:"50%", border:"1.5px solid rgba(148,41,69,0.25)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(148,41,69,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 2H8l-2 4h12z"/></svg>
                   </div>
                   <div style={{ textAlign:"center" }}>
-                    <div style={{ fontSize:"14px", color:"rgba(139,90,43,0.6)", fontWeight:500, marginBottom:"6px" }}>No media on timeline</div>
+                    <div style={{ fontSize:"14px", color:"rgba(148,41,69,0.6)", fontWeight:500, marginBottom:"6px" }}>No media on timeline</div>
                     <div style={{ fontSize:"11px", color:"#3c3834" }}>Upload or choose stock media from the sidebar</div>
                   </div>
                 </div>
@@ -941,19 +941,19 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               {/* Text overlays */}
               {state.tracks.filter(t => t.type === "text").map(track =>
                 track.clips.filter(c => c.start <= state.playhead && c.start + c.duration > state.playhead).map(clip => (
-                  <div key={clip.id} style={{ position:"absolute", bottom:"14%", left:"50%", transform:"translateX(-50%)", background:"rgba(10,8,7,0.88)", color:"#fff", padding:"7px 18px", borderRadius:"8px", fontSize:"14px", fontFamily:"'Poppins',sans-serif", fontWeight:500, whiteSpace:"nowrap", border:"1px solid #d4a574", boxShadow:"0 4px 16px rgba(139,90,43,0.2)" }}>
+                  <div key={clip.id} style={{ position:"absolute", bottom:"14%", left:"50%", transform:"translateX(-50%)", background:"rgba(10,8,7,0.88)", color:"#fff", padding:"7px 18px", borderRadius:"8px", fontSize:"14px", fontFamily:"'Poppins',sans-serif", fontWeight:500, whiteSpace:"nowrap", border:"1px solid #e1496d", boxShadow:"0 4px 16px rgba(148,41,69,0.2)" }}>
                     {clip.text}
                   </div>
                 ))
               )}
 
               {/* Timecode overlay bottom-left */}
-              <div style={{ position:"absolute", bottom:"10px", left:"12px", background:"rgba(10,8,7,0.82)", color:"#d4a574", fontSize:"11px", padding:"4px 10px", borderRadius:"6px", fontVariantNumeric:"tabular-nums", fontWeight:600, border:"1px solid rgba(139,90,43,0.25)", backdropFilter:"blur(8px)", fontFamily:"'Poppins',sans-serif" }}>
+              <div style={{ position:"absolute", bottom:"10px", left:"12px", background:"rgba(10,8,7,0.82)", color:"#e1496d", fontSize:"11px", padding:"4px 10px", borderRadius:"6px", fontVariantNumeric:"tabular-nums", fontWeight:600, border:"1px solid rgba(148,41,69,0.25)", backdropFilter:"blur(8px)", fontFamily:"'Poppins',sans-serif" }}>
                 {fmtTime(state.playhead)} / {fmtTime(state.duration)}
               </div>
 
               {/* Resolution badge bottom-right */}
-              <div style={{ position:"absolute", bottom:"10px", right:"12px", background:"rgba(10,8,7,0.7)", color:"#5c5650", fontSize:"9px", padding:"3px 8px", borderRadius:"5px", border:"1px solid rgba(212,165,116,0.08)", fontWeight:600, letterSpacing:"0.06em" }}>
+              <div style={{ position:"absolute", bottom:"10px", right:"12px", background:"rgba(10,8,7,0.7)", color:"#5c5650", fontSize:"9px", padding:"3px 8px", borderRadius:"5px", border:"1px solid rgba(225,73,109,0.08)", fontWeight:600, letterSpacing:"0.06em" }}>
                 1920 × 1080 · 30FPS
               </div>
 
@@ -974,8 +974,8 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                 { fn:() => dispatch({type:"SET_PLAYHEAD",time:Math.min(state.duration,state.playhead+5)}),             icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-6 8.5 6V6z"/></svg>,         title:"Forward 5s" },
                 { fn:() => { dispatch({type:"SET_PLAYING",value:false}); dispatch({type:"SET_PLAYHEAD",time:state.duration}); }, icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm9-12v12h2V6z"/></svg>, title:"Go to end" },
               ].map((btn, i) => (
-                <button key={i} onClick={btn.fn} title={btn.title} style={{ width: btn.primary ? "28px" : "24px", height: btn.primary ? "28px" : "24px", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", padding:0, border:"none", background: btn.primary ? "linear-gradient(135deg,#8b5a2b,#d4a574)" : "transparent", color: btn.primary ? "#fff" : "#8c8780", cursor:"pointer", transition:"all 0.18s", boxShadow: btn.primary ? "0 2px 10px rgba(139,90,43,0.4)" : "none" }}
-                  onMouseEnter={e => { if (!btn.primary) e.currentTarget.style.color="#d4a574"; }}
+                <button key={i} onClick={btn.fn} title={btn.title} style={{ width: btn.primary ? "28px" : "24px", height: btn.primary ? "28px" : "24px", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", padding:0, border:"none", background: btn.primary ? "linear-gradient(135deg,#942945,#e1496d)" : "transparent", color: btn.primary ? "#fff" : "#8c8780", cursor:"pointer", transition:"all 0.18s", boxShadow: btn.primary ? "0 2px 10px rgba(148,41,69,0.4)" : "none" }}
+                  onMouseEnter={e => { if (!btn.primary) e.currentTarget.style.color="#e1496d"; }}
                   onMouseLeave={e => { if (!btn.primary) e.currentTarget.style.color="#8c8780"; }}
                 >
                   {btn.icon}
@@ -985,7 +985,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
           </div>
 
           {/* ── Editing Toolbar strip ──────────────────────────────────── */}
-          <div style={{ height:"44px", display:"flex", alignItems:"center", gap:"0", background:"rgba(10,8,7,0.9)", borderBottom:"1px solid rgba(212,165,116,0.1)", flexShrink:0, padding:"0 12px", overflow:"hidden" }}>
+          <div style={{ height:"44px", display:"flex", alignItems:"center", gap:"0", background:"rgba(10,8,7,0.9)", borderBottom:"1px solid rgba(225,73,109,0.1)", flexShrink:0, padding:"0 12px", overflow:"hidden" }}>
             
             {/* Exit/Back button */}
             <button onClick={() => setShowLeaveModal(true)} className="tool-btn danger" style={{ marginRight:"12px", padding:"5px 12px", gap:"6px", fontSize:"11px" }} title="Exit Studio">
@@ -1001,10 +1001,10 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               💾 Export JSON
             </button>
 
-            <div style={{ width:"1px", height:"16px", background:"rgba(212,165,116,0.15)", marginRight:"12px" }} />
+            <div style={{ width:"1px", height:"16px", background:"rgba(225,73,109,0.15)", marginRight:"12px" }} />
 
             {/* Tool selector group */}
-            <div style={{ display:"flex", gap:"2px", padding:"0 8px 0 0", marginRight:"8px", borderRight:"1px solid rgba(212,165,116,0.1)" }}>
+            <div style={{ display:"flex", gap:"2px", padding:"0 8px 0 0", marginRight:"8px", borderRight:"1px solid rgba(225,73,109,0.1)" }}>
               {tools.map(t => (
                 <button key={t.id} className={`tool-btn${activeTool===t.id?" active":""}`} onClick={() => setActiveTool(t.id)} title={t.label} style={{ padding:"5px 10px", fontSize:"11px", gap:"5px" }}>
                   {t.icon} {t.label.split(" ")[0]}
@@ -1013,7 +1013,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
             </div>
 
             {/* Edit action buttons */}
-            <div style={{ display:"flex", gap:"4px", padding:"0 8px", borderRight:"1px solid rgba(212,165,116,0.1)", marginRight:"8px" }}>
+            <div style={{ display:"flex", gap:"4px", padding:"0 8px", borderRight:"1px solid rgba(225,73,109,0.1)", marginRight:"8px" }}>
               {editActions.map(a => (
                 <button key={a.label} className={`tool-btn${a.danger?" danger":""}`} onClick={a.action} disabled={a.disabled} title={a.label} style={{ padding:"5px 10px", fontSize:"11px", gap:"5px" }}>
                   <span>{a.icon}</span> <span style={{ display:"none" }}>{a.label.split(" ")[0]}</span>
@@ -1022,10 +1022,10 @@ export default function VideoEditor({ onBack, user, initialProject }) {
             </div>
 
             {/* Zoom control */}
-            <div style={{ display:"flex", alignItems:"center", gap:"8px", padding:"0 8px", borderRight:"1px solid rgba(212,165,116,0.1)", marginRight:"8px" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:"8px", padding:"0 8px", borderRight:"1px solid rgba(225,73,109,0.1)", marginRight:"8px" }}>
               <span style={{ fontSize:"10px", color:"#5c5650", fontWeight:500 }}>ZOOM</span>
               <button className="tool-btn" onClick={() => dispatch({ type:"SET_ZOOM", value:Math.max(0.25, state.zoom - 0.25) })} style={{ padding:"3px 8px", fontSize:"12px" }}>−</button>
-              <span style={{ fontSize:"11px", color:"#d4a574", fontWeight:600, minWidth:"40px", textAlign:"center", fontVariantNumeric:"tabular-nums" }}>{Math.round(state.zoom*100)}%</span>
+              <span style={{ fontSize:"11px", color:"#e1496d", fontWeight:600, minWidth:"40px", textAlign:"center", fontVariantNumeric:"tabular-nums" }}>{Math.round(state.zoom*100)}%</span>
               <button className="tool-btn" onClick={() => dispatch({ type:"SET_ZOOM", value:Math.min(4, state.zoom + 0.25) })} style={{ padding:"3px 8px", fontSize:"12px" }}>+</button>
             </div>
 
@@ -1044,13 +1044,13 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               Export
             </button>
 
-            <div style={{ width:"1px", height:"16px", background:"rgba(212,165,116,0.15)", marginRight:"12px" }} />
+            <div style={{ width:"1px", height:"16px", background:"rgba(225,73,109,0.15)", marginRight:"12px" }} />
 
             {/* Right side: keyboard shortcut hints */}
             <div style={{ display:"flex", gap:"12px", alignItems:"center" }}>
               {[["Space","Play/Pause"], ["S","Split"], ["Del","Delete"]].map(([key, label]) => (
                 <div key={key} style={{ display:"flex", alignItems:"center", gap:"5px", fontSize:"10px", color:"#3c3834" }}>
-                  <span style={{ background:"rgba(212,165,116,0.08)", border:"1px solid rgba(212,165,116,0.12)", borderRadius:"4px", padding:"1px 5px", fontFamily:"monospace", color:"#8c8780", fontWeight:600 }}>{key}</span>
+                  <span style={{ background:"rgba(225,73,109,0.08)", border:"1px solid rgba(225,73,109,0.12)", borderRadius:"4px", padding:"1px 5px", fontFamily:"monospace", color:"#8c8780", fontWeight:600 }}>{key}</span>
                   <span>{label}</span>
                 </div>
               ))}
@@ -1069,7 +1069,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       {/* Leave Confirmation Modal */}
       {showLeaveModal && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, backdropFilter:"blur(12px)" }}>
-          <div className="glass-panel" style={{ width:"420px", padding:"30px", borderRadius:"24px", textAlign:"center", border:"1px solid rgba(212,165,116,0.25)", background:"#131110" }}>
+          <div className="glass-panel" style={{ width:"420px", padding:"30px", borderRadius:"24px", textAlign:"center", border:"1px solid rgba(225,73,109,0.25)", background:"#131110" }}>
             <div style={{ fontSize:"40px", marginBottom:"16px" }}>💾</div>
             <h3 style={{ fontFamily:"Syne,sans-serif", fontSize:"22px", fontWeight:800, color:"#fff", marginBottom:"10px", letterSpacing:"-0.03em" }}>Save project changes?</h3>
             <p style={{ fontSize:"13.5px", color:"#8c8780", lineHeight:1.6, marginBottom:"24px", fontWeight:300 }}>
@@ -1078,12 +1078,12 @@ export default function VideoEditor({ onBack, user, initialProject }) {
             
             {/* Input field for project title */}
             <div style={{ marginBottom: "24px", textAlign: "left" }}>
-              <label style={{ fontSize: "11px", color: "#d4a574", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Project Name</label>
+              <label style={{ fontSize: "11px", color: "#e1496d", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Project Name</label>
               <input 
                 type="text" 
                 value={projectTitle} 
                 onChange={e => setProjectTitle(e.target.value)} 
-                style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.18)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none", transition: "border-color 0.2s" }}
+                style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.18)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none", transition: "border-color 0.2s" }}
                 placeholder="My Awesome Video"
               />
             </div>

@@ -610,7 +610,7 @@ function editorReducer(state, action) {
 
     // ── Markers / In / Out ──────────────────────────────────────
     case "ADD_MARKER": {
-      const m = { id: uid(), time: action.time, label: action.label || "", color: action.color || "#d4a574" };
+      const m = { id: uid(), time: action.time, label: action.label || "", color: action.color || "#e1496d" };
       next = { ...state, markers: [...state.markers, m] };
       break;
     }

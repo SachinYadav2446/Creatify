@@ -1,5 +1,6 @@
 import { useRef, useMemo } from "react";
 import { TRACK_COLORS, uid } from "../constants";
+import THEME from "../theme";
 
 function Waveform({ clip, PX_PER_SEC, colors }) {
   const bars = useMemo(() => {
@@ -36,7 +37,7 @@ function pseudoRand(n) {
   return x - Math.floor(x);
 }
 
-function DrawFadeHandles({ clip, PX_PER_SEC, colors, onStartResize }) {
+function DrawFadeHandles({ clip, PX_PER_SEC, colors }) {
   const w = clip.duration * PX_PER_SEC;
   const fadeInW = Math.min((clip.audio?.fadeIn || clip.fadeIn || 0) * PX_PER_SEC, w / 2);
   const fadeOutW = Math.min((clip.audio?.fadeOut || clip.fadeOut || 0) * PX_PER_SEC, w / 2);
@@ -45,13 +46,13 @@ function DrawFadeHandles({ clip, PX_PER_SEC, colors, onStartResize }) {
       {fadeInW > 4 && (
         <svg width={fadeInW} height="100%" viewBox={`0 0 ${fadeInW} 40`} preserveAspectRatio="none"
           style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none" }}>
-          <path d={`M0 40 L${fadeInW} 40 L${fadeInW} 0 Z`} fill={colors.accent} opacity="0.25" />
+          <path d={`M0 40 L${fadeInW} 40 L${fadeInW} 0 Z`} fill={colors.accent} opacity="0.3" />
         </svg>
       )}
       {fadeOutW > 4 && (
         <svg width={fadeOutW} height="100%" viewBox={`0 0 ${fadeOutW} 40`} preserveAspectRatio="none"
           style={{ position: "absolute", right: 0, top: 0, pointerEvents: "none" }}>
-          <path d={`M0 0 L0 40 L${fadeOutW} 40 Z`} fill={colors.accent} opacity="0.25" />
+          <path d={`M0 0 L0 40 L${fadeOutW} 40 Z`} fill={colors.accent} opacity="0.3" />
         </svg>
       )}
     </>
@@ -79,11 +80,11 @@ function TransitionBadge({ clip, PX_PER_SEC, colors, side }) {
     : `M${w} 0 L0 0 L${w * 0.8} 50% L0 100% L${w} 100% Z`;
   return (
     <svg style={style} width={w} height="100%" viewBox={`0 0 ${w} 40`} preserveAspectRatio="none">
-      <path d={d} fill={colors.accent} opacity="0.3" />
-      <path d={d} fill="none" stroke={colors.border} strokeWidth="1" opacity="0.6" />
+      <path d={d} fill={colors.accent} opacity="0.35" />
+      <path d={d} fill="none" stroke={colors.border} strokeWidth="1" opacity="0.7" />
       <text x={side === "in" ? 4 : w - 4} y="20" fontSize="9"
         textAnchor={side === "in" ? "start" : "end"}
-        fill={colors.label} fontFamily="'Poppins',sans-serif" fontWeight="600">
+        fill={colors.label} fontFamily="'Poppins',sans-serif" fontWeight="700">
         {side === "in" ? "◁" : "▷"}
       </text>
     </svg>
@@ -111,11 +112,11 @@ export default function Track({
         minHeight: 58,
         display: "flex",
         alignItems: "stretch",
-        borderBottom: "1px solid rgba(139,90,43,0.1)",
+        borderBottom: `1px solid ${THEME.borderSoft}`,
         width: "100%",
         position: "relative",
-        background: state.selectedTrack === track.id ? "rgba(212,165,116,0.04)" : "transparent",
-        opacity: muted ? 0.45 : 1,
+        background: state.selectedTrack === track.id ? THEME.wineTint : "transparent",
+        opacity: muted ? 0.5 : 1,
       }}
       onClickCapture={(e) => {
         if (e.target.closest(".clip-block") || e.target.closest(".track-label-actions")) return;
@@ -127,10 +128,10 @@ export default function Track({
       <div
         className="track-label"
         style={{
-          width: 156, minWidth: 156, padding: "0 8px 0 10px",
+          width: 156, minWidth: 156, padding: "0 10px 0 12px",
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "#131110",
-          borderRight: "1px solid rgba(139,90,43,0.12)",
+          background: THEME.panel,
+          borderRight: `1px solid ${THEME.border}`,
           fontSize: 11, gap: 4,
           fontFamily: "'Instrument Sans', sans-serif",
           position: "sticky", left: 0, zIndex: 12,
@@ -150,11 +151,12 @@ export default function Track({
             onChange={(e) => dispatch({ type: "RENAME_TRACK", trackId: track.id, name: e.target.value })}
             onClick={(e) => e.stopPropagation()}
             style={{
-              fontSize: 11, color: "#e5e5e5", background: "transparent",
+              fontSize: 11, color: THEME.text, background: "transparent",
               border: "none", outline: "none", padding: 0,
               fontFamily: "'Instrument Sans',sans-serif", fontWeight: 500,
               width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
             }}
+            placeholder="Track name..."
           />
         </div>
 
@@ -164,24 +166,25 @@ export default function Track({
           <IconBtn
             title={track.muted ? "Unmute" : "Mute"}
             active={track.muted}
-            color={track.muted ? "#ef4444" : "#8c8780"}
+            color={track.muted ? "#dc2626" : THEME.textSoft}
             onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_TRACK_MUTE", trackId: track.id }); }}
           >{track.muted ? "🔇" : "🔊"}</IconBtn>
           <IconBtn
             title={track.solo ? "Unsolo" : "Solo"}
             active={track.solo}
-            color={track.solo ? "#facc15" : "#8c8780"}
+            color={track.solo ? THEME.gold : THEME.textSoft}
             onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_TRACK_SOLO", trackId: track.id }); }}
           >S</IconBtn>
           <IconBtn
             title={track.locked ? "Unlock" : "Lock"}
             active={track.locked}
-            color={track.locked ? "#f97316" : "#8c8780"}
+            color={track.locked ? "#f97316" : THEME.textSoft}
             onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_TRACK_LOCK", trackId: track.id }); }}
           >{track.locked ? "🔒" : "🔓"}</IconBtn>
           <IconBtn
             title="Remove track"
-            color="#8c8780"
+            color={THEME.textSoft}
+            hoverColor="#dc2626"
             onClick={(e) => { e.stopPropagation(); dispatch({ type: "REMOVE_TRACK", trackId: track.id }); }}
           >✕</IconBtn>
         </div>
@@ -191,7 +194,7 @@ export default function Track({
       <div
         style={{
           flex: 1, position: "relative", cursor: "crosshair",
-          background: track.locked ? "rgba(100,100,100,0.02)" : "transparent",
+          background: track.locked ? THEME.hexA("#000", 0.02) : "transparent",
         }}
         onClick={onTimelineClick}
         onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}
@@ -217,7 +220,6 @@ export default function Track({
         {track.clips.map((clip) => {
           const isSelected = selectedIds.has(clip.id);
           const clipW = Math.max(clip.duration * PX_PER_SEC - 2, 10);
-          const thumb = clipThumbSrc(clip);
           return (
             <div
               key={clip.id}
@@ -232,9 +234,7 @@ export default function Track({
                   e.dataTransfer.effectAllowed = "move";
                 } catch {}
               }}
-              onDragOver={(e) => {
-                e.stopPropagation(); e.preventDefault();
-              }}
+              onDragOver={(e) => { e.stopPropagation(); e.preventDefault(); }}
               onDrop={(e) => {
                 e.stopPropagation(); e.preventDefault();
                 const data = safeGetDropData(e, ["application/vnd.clip", "application/vnd.asset"]);
@@ -258,13 +258,15 @@ export default function Track({
                 top: 7,
                 height: 44,
                 background: colors.bg,
-                border: isSelected ? `2px solid ${colors.accent}` : `1px solid ${colors.border}`,
-                borderRadius: 7,
+                border: isSelected ? `2px solid ${THEME.wine}` : `1px solid ${colors.border}`,
+                borderRadius: 8,
                 overflow: "hidden",
                 display: "flex",
                 alignItems: "center",
                 zIndex: isSelected ? 11 : 10,
-                boxShadow: isSelected ? `0 0 0 2px ${colors.accent}66,0 4px 14px rgba(0,0,0,0.5)` : "none",
+                boxShadow: isSelected
+                  ? `0 0 0 2px ${THEME.hexA(THEME.wine, 0.4)},0 6px 18px ${THEME.hexA(THEME.wine, 0.22)}`
+                  : `0 1px 3px ${THEME.hexA("#000", 0.06)}`,
                 cursor: track.locked ? "not-allowed" : "grab",
                 transition: "box-shadow 0.1s, border-color 0.1s",
               }}
@@ -301,7 +303,7 @@ export default function Track({
                   src={clip.url} alt=""
                   style={{
                     height: "100%", width: "auto", minWidth: "40%",
-                    objectFit: "cover", opacity: 0.75, pointerEvents: "none",
+                    objectFit: "cover", opacity: 0.78, pointerEvents: "none",
                     filter: `saturate(${clip.filters?.saturation ?? 100}%) brightness(${clip.filters?.brightness ?? 100}%)`,
                   }}
                   crossOrigin="anonymous"
@@ -310,7 +312,7 @@ export default function Track({
               {clip.videoEl && (
                 <div style={{
                   position: "absolute", inset: 0,
-                  background: `linear-gradient(90deg, ${colors.bg}, ${colors.accent}22, ${colors.bg})`,
+                  background: `linear-gradient(90deg, ${colors.bg}, ${THEME.hexA(colors.accent, 0.18)}, ${colors.bg})`,
                   pointerEvents: "none",
                 }} />
               )}
@@ -322,7 +324,12 @@ export default function Track({
                   color: colors.label, fontFamily: "'Poppins',sans-serif",
                   textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden",
                 }}>
-                  <span style={{ padding: "2px 8px", borderRadius: 4, background: "rgba(34,211,168,0.12)", border: "1px solid rgba(34,211,168,0.3)" }}>
+                  <span style={{
+                    padding: "2px 8px", borderRadius: 5,
+                    background: THEME.wineTint,
+                    border: `1px solid ${THEME.hexA(THEME.wine, 0.3)}`,
+                    color: THEME.wine,
+                  }}>
                     T
                   </span>
                   <span style={{ marginLeft: 8, overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -363,26 +370,29 @@ export default function Track({
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                   maxWidth: "60%", fontWeight: 600,
                   fontFamily: "'Poppins',sans-serif",
-                  textShadow: "0 1px 2px rgba(0,0,0,0.5)",
                 }}>
                   {clip.type === "text" ? "" : clip.name}
                 </span>
-                {clip.speed && clip.speed !== 100 && (
-                  <span style={{
-                    fontSize: 9, padding: "1px 4px", borderRadius: 3,
-                    background: "rgba(0,0,0,0.45)", color: colors.accent, fontWeight: 700,
-                  }}>
-                    {clip.speed}%
-                  </span>
-                )}
-                {clip.loop && (
-                  <span style={{
-                    fontSize: 9, padding: "1px 4px", borderRadius: 3, marginLeft: 3,
-                    background: "rgba(34,211,168,0.15)", color: "#22d3a8", fontWeight: 700,
-                  }}>
-                    ⟳
-                  </span>
-                )}
+                <div style={{ display: "flex", gap: 2 }}>
+                  {clip.speed && clip.speed !== 100 && (
+                    <span style={{
+                      fontSize: 9, padding: "1px 5px", borderRadius: 4,
+                      background: THEME.wine, color: "#fff", fontWeight: 700,
+                      fontFamily: "'Poppins',sans-serif",
+                    }}>
+                      {clip.speed}%
+                    </span>
+                  )}
+                  {clip.loop && (
+                    <span style={{
+                      fontSize: 9, padding: "1px 5px", borderRadius: 4, marginLeft: 2,
+                      background: THEME.hexA(THEME.wine, 0.1), color: THEME.wine, fontWeight: 700,
+                      border: `1px solid ${THEME.hexA(THEME.wine, 0.25)}`,
+                    }}>
+                      ⟳
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Left resize handle */}
@@ -391,14 +401,14 @@ export default function Track({
                 style={{
                   position: "absolute", left: 0, top: 0, width: 10, height: "100%",
                   cursor: track.locked ? "not-allowed" : "ew-resize",
-                  background: isSelected ? `${colors.accent}55` : "transparent",
+                  background: isSelected ? THEME.hexA(THEME.wine, 0.28) : "transparent",
                   opacity: 0.9,
                 }}
                 onMouseDown={(e) => onResizeMouseDown(e, track.id, clip, "left", track.locked)}
               >
                 <div style={{
                   position: "absolute", left: 2, top: "50%", transform: "translateY(-50%)",
-                  width: 2, height: 16, borderRadius: 1, background: colors.accent, opacity: 0.6,
+                  width: 2, height: 16, borderRadius: 1, background: isSelected ? THEME.wine : colors.accent, opacity: 0.8,
                 }} />
               </div>
               {/* Right resize handle */}
@@ -407,13 +417,13 @@ export default function Track({
                 style={{
                   position: "absolute", right: 0, top: 0, width: 10, height: "100%",
                   cursor: track.locked ? "not-allowed" : "ew-resize",
-                  background: isSelected ? `${colors.accent}55` : "transparent",
+                  background: isSelected ? THEME.hexA(THEME.wine, 0.28) : "transparent",
                 }}
                 onMouseDown={(e) => onResizeMouseDown(e, track.id, clip, "right", track.locked)}
               >
                 <div style={{
                   position: "absolute", right: 2, top: "50%", transform: "translateY(-50%)",
-                  width: 2, height: 16, borderRadius: 1, background: colors.accent, opacity: 0.6,
+                  width: 2, height: 16, borderRadius: 1, background: isSelected ? THEME.wine : colors.accent, opacity: 0.8,
                 }} />
               </div>
             </div>
@@ -436,27 +446,28 @@ function trackIconFor(type) {
   }
 }
 
-function clipThumbSrc(clip) {
-  if (clip.type === "image") return clip.url;
-  return null;
-}
-
-function IconBtn({ children, onClick, title, active, color }) {
+function IconBtn({ children, onClick, title, active, color, hoverColor }) {
   return (
     <button
       title={title}
       onClick={onClick}
       style={{
-        width: 20, height: 20, borderRadius: 4, border: "none",
-        background: active ? "rgba(212,165,116,0.15)" : "transparent",
-        color: color || "#8c8780",
+        width: 20, height: 20, borderRadius: 5, border: "none",
+        background: active ? THEME.wineTint : "transparent",
+        color: color || THEME.textSoft,
         cursor: "pointer", fontSize: 10, fontWeight: 700,
         display: "flex", alignItems: "center", justifyContent: "center",
         fontFamily: "'Poppins',sans-serif",
         transition: "background 0.15s,color 0.15s",
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(212,165,116,0.1)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.background = active ? "rgba(212,165,116,0.15)" : "transparent"; }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = THEME.wineTint;
+        if (hoverColor) e.currentTarget.style.color = hoverColor;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = active ? THEME.wineTint : "transparent";
+        if (hoverColor) e.currentTarget.style.color = color || THEME.textSoft;
+      }}
     >
       {children}
     </button>

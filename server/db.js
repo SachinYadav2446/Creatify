@@ -64,6 +64,14 @@ const initSQL = `
     provider    VARCHAR(50)  DEFAULT 'email',
     google_id   VARCHAR(255),
     avatar      VARCHAR(500),
+    phone       VARCHAR(50),
+    company     VARCHAR(255),
+    country     VARCHAR(100),
+    bio         TEXT,
+    otp         VARCHAR(6),
+    otp_expires_at TIMESTAMPTZ,
+    email_verified BOOLEAN DEFAULT false,
+    profile_completed BOOLEAN DEFAULT false,
     created_at  TIMESTAMPTZ DEFAULT NOW(),
     updated_at  TIMESTAMPTZ DEFAULT NOW()
   );
@@ -153,15 +161,22 @@ const db = {
         provider: 'email',
         google_id: null,
         avatar: null,
-        created_at: new Date().toISOString()
+        phone: null,
+        company: null,
+        country: null,
+        bio: null,
+        email_verified: false,
+        profile_completed: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       memoryStore.users.push(user);
       saveUsersToFile();
       return user;
     }
     const res = await pool.query(
-      `INSERT INTO users (name, email, password, provider)
-       VALUES ($1, $2, $3, 'email') RETURNING *`,
+      `INSERT INTO users (name, email, password, provider, email_verified, profile_completed)
+       VALUES ($1, $2, $3, 'email', false, true) RETURNING *`,
       [name, email.toLowerCase(), passwordHash]
     );
     return res.rows[0];
@@ -175,6 +190,7 @@ const db = {
         user.name = name;
         user.google_id = googleId;
         user.avatar = avatar;
+        user.updated_at = new Date().toISOString();
         saveUsersToFile();
         return user;
       }
@@ -186,15 +202,22 @@ const db = {
         provider: 'google',
         google_id: googleId,
         avatar,
-        created_at: new Date().toISOString()
+        email_verified: true,
+        profile_completed: false,
+        phone: null,
+        company: null,
+        country: null,
+        bio: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       };
       memoryStore.users.push(user);
       saveUsersToFile();
       return user;
     }
     const res = await pool.query(
-      `INSERT INTO users (name, email, provider, google_id, avatar)
-       VALUES ($1, $2, 'google', $3, $4)
+      `INSERT INTO users (name, email, provider, google_id, avatar, email_verified, profile_completed)
+       VALUES ($1, $2, 'google', $3, $4, true, false)
        ON CONFLICT (email)
        DO UPDATE SET name = EXCLUDED.name, google_id = EXCLUDED.google_id, avatar = EXCLUDED.avatar, updated_at = NOW()
        RETURNING *`,
@@ -217,6 +240,116 @@ const db = {
     const res = await pool.query(
       'UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2',
       [passwordHash, userId]
+    );
+    return res.rowCount > 0;
+  },
+
+  // Mark profile as completed
+  async completeProfile(userId, updates = {}) {
+    if (useMemory) {
+      const user = memoryStore.users.find(u => u.id === userId);
+      if (user) {
+        user.profile_completed = true;
+        user.updated_at = new Date().toISOString();
+        // Update individual fields if provided
+        if (updates.name !== undefined) user.name = updates.name;
+        if (updates.phone !== undefined) user.phone = updates.phone;
+        if (updates.company !== undefined) user.company = updates.company;
+        if (updates.country !== undefined) user.country = updates.country;
+        if (updates.bio !== undefined) user.bio = updates.bio;
+        if (updates.avatar !== undefined) user.avatar = updates.avatar;
+        saveUsersToFile();
+        return user;
+      }
+      return null;
+    }
+    const { name, phone, company, country, bio, avatar } = updates;
+    const res = await pool.query(
+      `UPDATE users SET profile_completed = true, 
+                       name = COALESCE($2, name),
+                       phone = COALESCE($3, phone),
+                       company = COALESCE($4, company),
+                       country = COALESCE($5, country),
+                       bio = COALESCE($6, bio),
+                       avatar = COALESCE($7, avatar),
+                       updated_at = NOW() 
+       WHERE id = $1 RETURNING *`,
+      [userId, name, phone, company, country, bio, avatar]
+    );
+    return res.rows[0] || null;
+  },
+
+  // Save OTP to user
+  async saveOTP(email, otp, expiresInMinutes = 10) {
+    const expiresAt = new Date(Date.now() + expiresInMinutes * 60000);
+    if (useMemory) {
+      const user = memoryStore.users.find(u => u.email === email.toLowerCase());
+      if (user) {
+        user.otp = otp;
+        user.otp_expires_at = expiresAt.toISOString();
+        saveUsersToFile();
+        return true;
+      }
+      return false;
+    }
+    const res = await pool.query(
+      'UPDATE users SET otp = $1, otp_expires_at = $2 WHERE email = $3',
+      [otp, expiresAt, email.toLowerCase()]
+    );
+    return res.rowCount > 0;
+  },
+
+  // Verify OTP
+  async verifyOTP(email, otp) {
+    if (useMemory) {
+      const user = memoryStore.users.find(u => u.email === email.toLowerCase());
+      if (!user) return { valid: false, message: 'User not found' };
+      if (!user.otp) return { valid: false, message: 'No OTP found' };
+      if (user.otp !== otp) return { valid: false, message: 'Invalid OTP' };
+      const now = new Date();
+      const expiresAt = new Date(user.otp_expires_at);
+      if (now > expiresAt) return { valid: false, message: 'OTP expired' };
+      // Clear OTP and mark as verified
+      user.otp = null;
+      user.otp_expires_at = null;
+      user.email_verified = true;
+      saveUsersToFile();
+      return { valid: true, message: 'OTP verified' };
+    }
+    const user = await db.findUserByEmail(email);
+    if (!user) return { valid: false, message: 'User not found' };
+    if (!user.otp) return { valid: false, message: 'No OTP found' };
+    if (user.otp !== otp) return { valid: false, message: 'Invalid OTP' };
+    const now = new Date();
+    const expiresAt = new Date(user.otp_expires_at);
+    if (now > expiresAt) return { valid: false, message: 'OTP expired' };
+    // Clear OTP and mark as verified
+    const res = await pool.query(
+      'UPDATE users SET otp = NULL, otp_expires_at = NULL, email_verified = true, updated_at = NOW() WHERE email = $1',
+      [email.toLowerCase()]
+    );
+    return { valid: res.rowCount > 0, message: 'OTP verified' };
+  },
+
+  // Resend OTP
+  async clearOTPIfExpired(email) {
+    if (useMemory) {
+      const user = memoryStore.users.find(u => u.email === email.toLowerCase());
+      if (user && user.otp_expires_at) {
+        const now = new Date();
+        const expiresAt = new Date(user.otp_expires_at);
+        if (now > expiresAt) {
+          user.otp = null;
+          user.otp_expires_at = null;
+          saveUsersToFile();
+          return true;
+        }
+      }
+      return false;
+    }
+    const res = await pool.query(
+      'UPDATE users SET otp = NULL, otp_expires_at = NULL WHERE email = $1 AND otp_expires_at < NOW()',
+      [email.toLowerCase()]
     );
     return res.rowCount > 0;
   },

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import THEME from "../theme";
 
 // Import generated preview images
 import videoPrev  from "../assets/images/video_preview.png";
@@ -37,8 +38,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         category: "Video Edit",
         tool: "Video Editor",
         year: "2026",
-        accent: "#8b5a2b",
-        gradient: "linear-gradient(135deg, #1e110a 0%, #3a2215 50%, #0c0a09 100%)",
+        accent: "#942945",
+        gradient: "linear-gradient(135deg, #23141b 0%, #3a0c19 50%, #1a0f14 100%)",
         image: videoPrev,
         tags: ["4K UHD", "LUTs", "15s"],
         desc: "Cinematic intro sequence with warm amber color LUTs and smooth title transitions.",
@@ -60,7 +61,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         category: "Presentation",
         tool: "Slide Studio",
         year: "2026",
-        accent: "#a0522d",
+        accent: "#7c233c",
         gradient: "linear-gradient(135deg, #111827 0%, #1f2937 50%, #030712 100%)",
         image: pptPrev,
         tags: ["10 Slides", "Vector", "Pitch"],
@@ -521,14 +522,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
   // ── Tool definitions (ordered for Bento layout) ──────────────────────────
   // Grid: 4 columns. Video=2×2, Image=1×1, Logo=1×1, PPT=2×1, Social=2×2, Doc=2×1, Print=2×1
   const tools = [
-    { id:"video",  name:"Video Editor",    desc:"Full multi-track timeline with WebGL color grading, audio mixing & in-browser rendering. No uploads needed.", icon:"🎬", color:"#8b5a2b",  tag:"WebGL · WASM",       colSpan:2, rowSpan:2, image: videoPrev  },
-    { id:"image",  name:"Image Editor",    desc:"Layers, masks, filters, blend modes. Pro-grade photo editing in your browser.",                               icon:"🖼️", color:"#d4a574",  tag:"Canvas API",          colSpan:1, rowSpan:1, image: imagePrev  },
-    { id:"logo",   name:"Logo Maker",      desc:"Vector-based logo studio. AI suggestions, custom icons, SVG export.",                                         icon:"✦",  color:"#f5c842",  tag:"SVG · AI-assisted",   colSpan:1, rowSpan:1, image: null       },
+    { id:"video",  name:"Video Editor",    desc:"Full multi-track timeline with WebGL color grading, audio mixing & in-browser rendering. No uploads needed.", icon:"🎬", color:"#942945",  tag:"WebGL · WASM",       colSpan:2, rowSpan:2, image: videoPrev  },
+    { id:"image",  name:"Image Editor",    desc:"Layers, masks, filters, blend modes. Pro-grade photo editing in your browser.",                               icon:"🖼️", color:"#e1496d",  tag:"Canvas API",          colSpan:1, rowSpan:1, image: imagePrev  },
+    { id:"logo",   name:"Logo Maker",      desc:"Vector-based logo studio. AI suggestions, custom icons, SVG export.",                                         icon:"✦",  color:"#ec4899",  tag:"SVG · AI-assisted",   colSpan:1, rowSpan:1, image: null       },
     { id:"ai",     name:"AI Magic Studio", desc:"AI-powered background removal, prompt-based generative artwork styles, and smart resizing tools.",            icon:"✨",  color:"#a855f7",  tag:"AI · Canvas API",     colSpan:2, rowSpan:1, image: aiPrev      },
-    { id:"ppt",    name:"Presentations",   desc:"Slides that animate. Real-time collaboration, 500+ templates, one-click export.",                             icon:"📊", color:"#a0522d",  tag:"PPTX · PDF · HTML5",  colSpan:2, rowSpan:1, image: pptPrev    },
-    { id:"social", name:"Social Studio",   desc:"All platform sizes at once. Schedule and auto-publish when you're done.",                                     icon:"📱", color:"#c49a6c",  tag:"Stories · Reels",     colSpan:2, rowSpan:2, image: socialPrev },
-    { id:"doc",    name:"Documents",       desc:"Rich docs with embedded media, tables, charts. Beautiful by default.",                                        icon:"📄", color:"#deb887",  tag:"DOCX · PDF",          colSpan:2, rowSpan:1, image: null       },
-    { id:"print",  name:"Print Design",    desc:"Flyers, posters, business cards. CMYK-ready, bleed lines included.",                                          icon:"🖨️", color:"#8b5a2b",  tag:"Print-ready PDF",     colSpan:4, rowSpan:1, image: null       },
+    { id:"ppt",    name:"Presentations",   desc:"Slides that animate. Real-time collaboration, 500+ templates, one-click export.",                             icon:"📊", color:"#7c233c",  tag:"PPTX · PDF · HTML5",  colSpan:2, rowSpan:1, image: pptPrev    },
+    { id:"social", name:"Social Studio",   desc:"All platform sizes at once. Schedule and auto-publish when you're done.",                                     icon:"📱", color:"#dd728b",  tag:"Stories · Reels",     colSpan:2, rowSpan:2, image: socialPrev },
+    { id:"doc",    name:"Documents",       desc:"Rich docs with embedded media, tables, charts. Beautiful by default.",                                        icon:"📄", color:"#eba5b6",  tag:"DOCX · PDF",          colSpan:2, rowSpan:1, image: null       },
+    { id:"print",  name:"Print Design",    desc:"Flyers, posters, business cards. CMYK-ready, bleed lines included.",                                          icon:"🖨️", color:"#942945",  tag:"Print-ready PDF",     colSpan:4, rowSpan:1, image: null       },
   ];
 
   const pricing = [
@@ -539,231 +540,277 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
   // ── Gradient fallbacks for cards without images ──────────────────────────
   const cardGradients = {
-    logo:  "linear-gradient(135deg, #1a1608 0%, #3d2e07 40%, #f5c84220 100%)",
+    logo:  "linear-gradient(135deg, #1a0f14 0%, #3a0c19 40%, #ec489920 100%)",
     ai:    "linear-gradient(135deg, #180825 0%, #3a0e5b 50%, #a855f720 100%)",
-    doc:   "linear-gradient(135deg, #0f1a14 0%, #1b3325 50%, #deb88720 100%)",
-    print: "linear-gradient(135deg, #1a0f0f 0%, #3d1a1a 50%, #8b5a2b30 100%)",
+    doc:   "linear-gradient(135deg, #170b11 0%, #23141b 50%, #eba5b620 100%)",
+    print: "linear-gradient(135deg, #1a0f14 0%, #3a0c19 50%, #94294530 100%)",
   };
 
   const colors = {
-    bg: isDark ? "#0c0a09" : "#faf8f5",
-    text: isDark ? "#f5f0e8" : "#2d2d2d",
+    bg: isDark ? "#1a0f14" : "#f7f4f7",
+    text: isDark ? "#fdf2f4" : "#2d2d2d",
     textMuted: isDark ? "#a8a29e" : "#666",
     navBg: isDark ? "rgba(12, 10, 9, 0.94)" : "rgba(250, 248, 245, 0.94)",
     border: isDark ? "rgba(212, 165, 116, 0.22)" : "rgba(139, 90, 43, 0.1)",
     btnBg: isDark ? "rgba(212, 165, 116, 0.12)" : "rgba(139, 90, 43, 0.1)",
     btnBorder: isDark ? "rgba(212, 165, 116, 0.25)" : "rgba(139, 90, 43, 0.2)",
-    marqueeBg: isDark ? "#171514" : "#f5f0e8",
+    marqueeBg: isDark ? "#23141b" : "#fdf2f4",
     logoGlow: isDark ? "rgba(212, 165, 116, 0.2)" : "rgba(139, 90, 43, 0.35)",
     cardBorder: isDark ? "rgba(212, 165, 116, 0.22)" : "rgba(139, 90, 43, 0.15)",
     cardShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 4px 20px rgba(139, 90, 43, 0.08)",
   };
 
+  const [homeTab, setHomeTab] = useState("home");
+  const [searchVal, setSearchVal] = useState("");
+
+  const sidebarW = 72;
+  const pageMax = 1400;
+
+  const AvatarCircle = ({ size = 36, onClick, showBorder = false }) => (
+    <button
+      onClick={onClick}
+      style={{
+        width: size, height: size, borderRadius: "50%",
+        background: user?.avatar && user.avatar.length > 2 ? "transparent" : "linear-gradient(135deg, #942945, #e1496d)",
+        color: "#fff", border: showBorder ? `1.5px solid ${isDark ? "rgba(225,73,109,0.5)" : "rgba(148,41,69,0.3)"}` : "none",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontWeight: 700, fontSize: size * 0.38, fontFamily: "'Poppins',sans-serif",
+        cursor: "pointer", overflow: "hidden", padding: 0, outline: "none",
+        boxShadow: "0 2px 8px rgba(148,41,69,0.18)",
+      }}
+    >
+      {user?.avatar && user.avatar.length > 2 ? (
+        <img src={user.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : user ? (
+        (user.name ? user.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() : user.email?.[0]?.toUpperCase() || "U")
+      ) : "U"}
+    </button>
+  );
+
+  const SidebarIcon = ({ active, icon, label, onClick, crownBadge, bottom = false }) => (
+    <div style={{ position: "relative", width: "100%", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: bottom ? 6 : 0 }}>
+      <button
+        onClick={onClick}
+        title={label}
+        style={{
+          width: 44, height: 44, borderRadius: 12, display: "flex",
+          alignItems: "center", justifyContent: "center",
+          background: active ? THEME.wineTint : "transparent",
+          border: active
+            ? `1px solid ${THEME.hexA(THEME.wine, 0.35)}`
+            : "1px solid transparent",
+          color: active ? THEME.wine : THEME.text,
+          cursor: "pointer", transition: "all 0.2s", outline: "none", position: "relative",
+        }}
+        onMouseEnter={e => {
+          if (!active) {
+            e.currentTarget.style.background = THEME.wineTint;
+          }
+        }}
+        onMouseLeave={e => {
+          if (!active) {
+            e.currentTarget.style.background = "transparent";
+          }
+        }}
+      >
+        {icon}
+        {crownBadge && (
+          <div style={{
+            position: "absolute", top: -4, right: -4,
+            background: THEME.grad.gold,
+            width: 14, height: 14, borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 8, boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
+          }}>👑</div>
+        )}
+      </button>
+      <span style={{
+        fontSize: 9.5, marginTop: 3, color: active ? THEME.wine : THEME.textMuted,
+        fontFamily: "'Poppins',sans-serif", fontWeight: active ? 600 : 400, letterSpacing: "-0.01em",
+      }}>{label}</span>
+    </div>
+  );
+
+  const HeroToolBtn = ({ icon, label, bg, onClick, isCrown }) => {
+    const [h, setH] = useState(false);
+    return (
+      <button onClick={onClick}
+        onMouseEnter={() => setH(true)} onMouseLeave={() => setH(false)}
+        style={{
+          display: "flex", flexDirection: "column", alignItems: "center", gap: 7,
+          background: "none", border: "none", cursor: "pointer", padding: 0,
+          minWidth: 72, outline: "none",
+        }}>
+        <div style={{
+          width: 58, height: 58, borderRadius: "50%", background: bg,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 26, color: "#fff", position: "relative",
+          transform: h ? "translateY(-2px) scale(1.06)" : "none",
+          transition: "all 0.25s cubic-bezier(0.16,1,0.3,1)",
+          boxShadow: h ? "0 10px 24px rgba(0,0,0,0.18)" : "0 2px 8px rgba(0,0,0,0.08)",
+        }}>
+          {icon}
+          {isCrown && <div style={{ position: "absolute", top: -4, right: -4, fontSize: 14 }}>👑</div>}
+        </div>
+        <span style={{
+          fontSize: 11.5, color: isDark ? "rgba(245,240,232,0.78)" : "rgba(45,45,45,0.82)",
+          fontFamily: "'Poppins',sans-serif", fontWeight: 400, whiteSpace: "nowrap",
+        }}>{label}</span>
+      </button>
+    );
+  };
+
   return (
-    <div style={{ margin:0, padding:0, width:"100%", background:colors.bg, color:colors.text, fontFamily:"'Instrument Sans',sans-serif", overflowX:"hidden", transition:"background 0.3s, color 0.3s" }}>
+    <div style={{
+      margin: 0, padding: 0, width: "100%",
+      background: isDark ? "#f6f5fb" : "#f7f6fb",
+      color: colors.text,
+      fontFamily: "'Instrument Sans',sans-serif", overflowX: "hidden",
+      transition: "background 0.3s, color 0.3s", minHeight: "100vh",
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Instrument+Sans:wght@300;400;500;600&family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
 
-
-
-      {/* ── Premium Nav ── */}
-      <nav style={{ position:"fixed", top:0, left:0, right:0, width:"100%", zIndex:100, padding: navScrolled ? "0 40px" : "0 48px", height: navScrolled ? "58px" : "68px", display:"flex", alignItems:"center", backdropFilter:"blur(32px) saturate(200%)", background: navScrolled ? (isDark ? "rgba(12,10,9,0.97)" : "rgba(250,248,245,0.97)") : colors.navBg, borderBottom:`1px solid ${navScrolled ? colors.border : "transparent"}`, boxShadow: navScrolled ? (isDark ? "0 4px 40px rgba(0,0,0,0.35)" : "0 4px 40px rgba(139,90,43,0.08)") : "none", transition:"all 0.4s cubic-bezier(0.16,1,0.3,1)" }}>
-
-        {/* Logo mark + wordmark */}
-        <div style={{ display:"flex", alignItems:"center", gap:"10px", cursor:"pointer", flexShrink:0 }} onClick={() => window.scrollTo({top:0,behavior:"smooth"})}>
-          {/* Icon mark */}
-          <div style={{ width:"32px", height:"32px", borderRadius:"9px", background:"linear-gradient(135deg,#8b5a2b,#d4a574)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:`0 2px 10px ${colors.logoGlow}` }}>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M3 8 L8 2 L13 8 L8 14 Z" fill="white" opacity="0.9"/>
+      {/* ═══════════════ CANVA-STYLE VERTICAL SIDEBAR ═══════════════ */}
+      <aside style={{
+        position: "fixed", top: 0, left: 0, bottom: 0, width: sidebarW,
+        background: THEME.grad.sidebar,
+        borderRight: `1px solid ${THEME.borderSoft}`,
+        zIndex: 200,
+        display: "flex", flexDirection: "column", alignItems: "center",
+        padding: "14px 0 12px",
+        boxShadow: "2px 0 20px rgba(148,41,69,0.05)",
+      }}>
+        {/* Logo icon (top) */}
+        <div
+          style={{ cursor: "pointer", marginBottom: 10 }}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          title="Creatify Home"
+        >
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: THEME.grad.primary,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: THEME.shadow.sm,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8 L8 2 L13 8 L8 14 Z" fill="white" opacity="0.95"/>
               <circle cx="8" cy="8" r="2" fill="white"/>
             </svg>
           </div>
-          {/* Wordmark */}
-          <div style={{ fontFamily:"Syne,sans-serif", fontWeight:800, fontSize:"20px", letterSpacing:"-0.04em", color:colors.text }}>
-            Creat<span style={{ color:"#8b5a2b" }}>ify</span>
-          </div>
         </div>
 
-        {/* Spacer to push links to the right */}
-        <div style={{ flex: 1 }} />
-
-        {/* Nav links – smooth scroll within homepage */}
-        <div style={{ display:"flex", gap:"4px", alignItems:"center" }}>
-          {[
-            { label:"home",      id:null,                 text:"Home" },
-            { label:"tools",     id:"tools-section",      text:"Tools" },
-            { label:"about",     id:"about-section",      text:"About" },
-            { label:"pipeline",  id:"pipeline-section",   text:"How it works" },
-            { label:"pricing",   id:"pricing-section",    text:"Pricing" },
-          ].map(({ label, id, text }) => {
-            const isActive = activeNav === label;
-            return (
-              <button
-                key={label}
-                onClick={() => scrollTo(id, label)}
-                style={{
-                  background: isActive
-                    ? (isDark ? "rgba(212,165,116,0.18)" : "rgba(139,90,43,0.1)")
-                    : "transparent",
-                  border: isActive
-                    ? (isDark ? "1px solid rgba(212,165,116,0.3)" : "1px solid rgba(139,90,43,0.2)")
-                    : "1px solid transparent",
-                  color: isActive ? (isDark ? "#d4a574" : "#8b5a2b") : colors.textMuted,
-                  fontSize:"13px",
-                  fontFamily:"'Poppins',sans-serif",
-                  fontWeight: isActive ? 500 : 400,
-                  padding:"6px 15px",
-                  borderRadius:"40px",
-                  cursor:"pointer",
-                  transition:"all 0.25s cubic-bezier(0.16,1,0.3,1)",
-                  outline:"none",
-                  letterSpacing:"-0.01em",
-                  whiteSpace:"nowrap",
-                }}
-                onMouseEnter={e => {
-                  if (!isActive) {
-                    e.currentTarget.style.color = colors.text;
-                    e.currentTarget.style.background = isDark ? "rgba(212,165,116,0.09)" : "rgba(139,90,43,0.05)";
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!isActive) {
-                    e.currentTarget.style.color = colors.textMuted;
-                    e.currentTarget.style.background = "transparent";
-                  }
-                }}
-              >
-                {text}
-              </button>
-            );
-          })}
+        {/* Create button (big +) */}
+        <div style={{ position: "relative", width: "100%", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 12 }}>
+          <button
+            title="Create a new design"
+            onClick={() => onNavigate(user ? "editor" : "auth", "signup")}
+            style={{
+              width: 48, height: 48, borderRadius: 16,
+              background: THEME.grad.primary,
+              border: "none", color: "#fff", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 22, fontWeight: 300, outline: "none",
+              boxShadow: "0 4px 14px rgba(148,41,69,0.35)",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px) scale(1.04)"; e.currentTarget.style.filter = "brightness(1.06)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.filter = "none"; }}
+          >＋</button>
+          <span style={{
+            fontSize: 10, marginTop: 4, color: THEME.wine,
+            fontFamily: "'Poppins',sans-serif", fontWeight: 600, letterSpacing: "-0.01em",
+          }}>Create</span>
         </div>
 
-        {/* Spacer between links and CTAs */}
-        <div style={{ width: "32px" }} />
+        <div style={{ width: "70%", height: 1, background: THEME.hexA(THEME.wine, 0.12), margin: "4px 0 10px" }} />
 
-        {/* Right side CTAs */}
-        <div style={{ display:"flex", gap:"10px", alignItems:"center", flexShrink:0 }}>
+        {/* Nav stack */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, width: "100%" }}>
+          <SidebarIcon active={activeNav === "home"} label="Home" onClick={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 7v11h-6v-7H9v7H3V10z"/></svg>} />
+          <SidebarIcon active={activeNav === "projects"} label="Projects" onClick={() => { setActiveNav("projects"); scrollTo("past-work-section", "projects"); }}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>} />
+          <SidebarIcon active={activeNav === "templates"} label="Templates" onClick={() => { setActiveNav("templates"); scrollTo("tools-section", "templates"); }}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>} />
+          <SidebarIcon active={activeNav === "brand"} label="Brand" crownBadge onClick={() => setActiveNav("brand")}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>} />
+          <SidebarIcon active={activeNav === "ai"} label="Canva AI" onClick={() => { setActiveNav("ai"); onNavigate(user ? "ai_magic" : "auth", "signup"); }}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>} />
+          <SidebarIcon active={activeNav === "more"} label="More" onClick={() => setActiveNav("more")}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>} />
+        </div>
+
+        {/* Bottom icons: notifications, avatar */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%" }}>
+          <button
+            onClick={() => onNavigate("profile")}
+            title="Profile & settings"
+            style={{
+              width: 44, height: 44, borderRadius: 12,
+              background: THEME.wineTint,
+              border: `1px solid ${THEME.hexA(THEME.wine, 0.2)}`,
+              color: THEME.wine, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.2s", outline: "none", fontSize: 18,
+            }}
+          >🔔</button>
+
+          {/* Avatar (bottom) */}
           {user ? (
-            <button
-              onClick={() => onNavigate("profile")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                background: isDark ? "rgba(212, 165, 116, 0.12)" : "rgba(139,90,43,0.06)",
-                border: isDark ? "1px solid rgba(212, 165, 116, 0.25)" : "1px solid rgba(139,90,43,0.15)",
-                padding: "5px 14px 5px 6px",
-                borderRadius: "40px",
-                cursor: "pointer",
-                transition: "all 0.3s",
-                outline: "none"
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = isDark ? "rgba(212, 165, 116, 0.22)" : "rgba(139,90,43,0.1)";
-                setCursorHovered(true);
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = isDark ? "rgba(212, 165, 116, 0.12)" : "rgba(139,90,43,0.06)";
-                setCursorHovered(false);
-              }}
-            >
-              {/* Avatar */}
+            <div style={{ position: "relative" }}>
+              <AvatarCircle size={40} onClick={() => onNavigate("profile")} showBorder />
               <div style={{
-                width: "30px",
-                height: "30px",
-                borderRadius: "50%",
-                background: user.avatar && user.avatar.length > 2 ? "transparent" : "linear-gradient(135deg, #8b5a2b, #d4a574)",
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontWeight: 700,
-                fontSize: "12px",
-                boxShadow: "0 2px 8px rgba(139,90,43,0.2)",
-                overflow: "hidden"
-              }}>
-                {user.avatar && user.avatar.length > 2 ? (
-                  <img src={user.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : user.avatar ? (
-                  user.avatar.toUpperCase()
-                ) : (
-                  user.name ? user.name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase() : user.email[0].toUpperCase()
-                )}
-              </div>
-
-              <span style={{ fontSize: "13px", fontWeight: 500, color: colors.text, maxWidth: "100px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {user.name || "Creator"}
-              </span>
-            </button>
+                position: "absolute", bottom: -1, right: -1, width: 12, height: 12,
+                borderRadius: "50%", background: "#22c55e", border: "2px solid #fff",
+              }} />
+            </div>
           ) : (
-            <>
-              <button
-                style={{ background:"none", border:`1px solid ${colors.btnBorder}`, color:colors.textMuted, padding:"8px 20px", borderRadius:"40px", fontSize:"13px", fontFamily:"'Poppins',sans-serif", fontWeight:300, cursor:"pointer", transition:"all 0.2s", letterSpacing:"-0.01em" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor="#8b5a2b"; e.currentTarget.style.color="#8b5a2b"; setCursorHovered(true); }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor=colors.btnBorder; e.currentTarget.style.color=colors.textMuted; setCursorHovered(false); }}
-                onClick={() => onNavigate("auth","signin")}>Sign in</button>
-              <button
-                style={{ background:"linear-gradient(135deg,#8b5a2b,#a0522d)", border:"none", color:"#fff", padding:"9px 22px", borderRadius:"40px", fontSize:"13px", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer", transition:"all 0.2s", letterSpacing:"-0.01em", boxShadow:"0 2px 12px rgba(139,90,43,0.3)" }}
-                onMouseEnter={e => { e.currentTarget.style.transform="translateY(-1px)"; e.currentTarget.style.boxShadow="0 6px 20px rgba(139,90,43,0.4)"; setCursorHovered(true); }}
-                onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 2px 12px rgba(139,90,43,0.3)"; setCursorHovered(false); }}
-                onClick={() => onNavigate("auth","signup")}>Start for free</button>
-            </>
+            <button
+              onClick={() => onNavigate("auth", "signin")}
+              title="Sign in"
+              style={{
+                width: 40, height: 40, borderRadius: "50%",
+                background: THEME.grad.primary,
+                color: "#fff", fontWeight: 700, fontFamily: "'Poppins',sans-serif",
+                cursor: "pointer", border: "none", fontSize: 13,
+                boxShadow: THEME.shadow.chip, outline: "none",
+              }}
+            >U</button>
           )}
         </div>
-      </nav>
+      </aside>
 
-      {/* Hero */}
-      <section style={{ position:"relative", height:"100vh", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
-        <canvas ref={canvasRef} style={{ position:"absolute", inset:0, zIndex:0 }} />
+      {/* ═══════════════ MAIN CONTENT (right of sidebar) ═══════════════ */}
+      <main style={{ marginLeft: sidebarW, width: `calc(100% - ${sidebarW}px)`, position: "relative", overflow: "hidden" }}>
 
-        {/* ── Grid overlay – fades away around the center text ── */}
-        <div style={{
-          position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
-          backgroundImage: `linear-gradient(${
-            isDark ? "rgba(212,165,116,0.07)" : "rgba(139,90,43,0.06)"
-          } 1px, transparent 1px), linear-gradient(90deg, ${
-            isDark ? "rgba(212,165,116,0.07)" : "rgba(139,90,43,0.06)"
-          } 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
-          maskImage: "radial-gradient(ellipse 55% 55% at 50% 50%, transparent 0%, black 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 55% 55% at 50% 50%, transparent 0%, black 100%)",
-        }} />
-
-        <div style={{ position:"absolute", width:"600px", height:"600px", borderRadius:"50%", filter:"blur(80px)", background:"rgba(139,90,43,0.08)", top:"-200px", right:"-100px", pointerEvents:"none", zIndex:0 }} />
-        <div style={{ position:"absolute", width:"500px", height:"500px", borderRadius:"50%", filter:"blur(80px)", background:"rgba(212,165,116,0.07)", bottom:"-100px", left:"-150px", pointerEvents:"none", zIndex:0 }} />
-
-        <div style={{ position:"relative", zIndex:2, textAlign:"center", maxWidth:"900px", padding:"0 24px" }}>
-          {/* Spacer to make up for removed badge layout height */}
-          <div style={{ height: "40px" }} />
-          <h1 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(52px,8vw,96px)", fontWeight:800, lineHeight:0.95, letterSpacing:"-0.04em", marginBottom:"24px", animation:"fadeUp 0.8s 0.4s both" }}>
-            <span style={{ display:"block", color:colors.text }}>Design Without</span>
-            <span style={{ display:"block", fontStyle:"italic", fontFamily:"Instrument Serif,serif", background:"linear-gradient(135deg,#8b5a2b,#d4a574,#c49a6c)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>Limits.</span>
-          </h1>
-          <p style={{ fontSize:"18px", color:colors.textMuted, maxWidth:"520px", margin:"0 auto 40px", lineHeight:1.6, fontWeight:300, animation:"fadeUp 0.8s 0.6s both" }}>
-            Videos, logos, presentations, social posts — all in one powerful browser-based studio. No installs, no friction.
-          </p>
-          <div style={{ display:"flex", gap:"12px", justifyContent:"center", animation:"fadeUp 0.8s 0.8s both" }}>
-            <button style={{ background:"#8b5a2b", color:"#fff", border:"none", padding:"16px 36px", borderRadius:"50px", fontSize:"16px", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer", transition:"all 0.25s" }}
-              onMouseEnter={e => { e.currentTarget.style.background="#704822"; e.currentTarget.style.transform="translateY(-2px)"; setCursorHovered(true); }}
-              onMouseLeave={e => { e.currentTarget.style.background="#8b5a2b"; e.currentTarget.style.transform="none"; setCursorHovered(false); }}
-              onClick={() => onNavigate("auth","signup")}>Start designing free</button>
-            <button style={{ background: isDark ? "rgba(212,165,116,0.12)" : "rgba(139,90,43,0.1)", color:colors.text, border: isDark ? "1px solid rgba(212,165,116,0.25)" : "1px solid rgba(139,90,43,0.2)", padding:"16px 32px", borderRadius:"50px", fontSize:"16px", fontFamily:"'Poppins',sans-serif", fontWeight:300, cursor:"pointer", transition:"all 0.25s", backdropFilter:"blur(8px)" }}
-              onMouseEnter={e => { e.currentTarget.style.background="rgba(139,90,43,0.15)"; setCursorHovered(true); }}
-              onMouseLeave={e => { e.currentTarget.style.background="rgba(139,90,43,0.1)"; setCursorHovered(false); }}
-              onClick={() => onNavigate("auth","signup")}>Watch a demo</button>
+        {/* ═══════════════ PLAIN HERO SECTION WITH HEADING ═══════════════ */}
+        <section style={{
+          position: "relative", padding: "80px 48px 60px",
+          background: THEME.grad.hero,
+        }}>
+          <div style={{ maxWidth: pageMax, margin: "0 auto" }}>
+            <div style={{ textAlign: "center", padding: "20px 0" }}>
+              <h1 style={{
+                fontFamily: "Syne,sans-serif", fontWeight: 700,
+                fontSize: "clamp(40px, 5.2vw, 70px)",
+                letterSpacing: "-0.04em", lineHeight: 1.05, margin: 0,
+                background: `linear-gradient(135deg, ${THEME.wine} 0%, ${THEME.wineMid} 50%, ${THEME.gold} 100%)`,
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>
+                What will you design today?
+              </h1>
+            </div>
           </div>
-        </div>
-        <div style={{ position:"absolute", bottom:"40px", left:"50%", transform:"translateX(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:"8px", color:"#999", fontSize:"11px", letterSpacing:"0.1em", animation:"fadeIn 1s 1.5s both" }}>
-          <div style={{ width:"1px", height:"40px", background:"linear-gradient(#999,transparent)", animation:"scrollAnim 2s infinite" }} />
-          <span>SCROLL</span>
-        </div>
-      </section>
+        </section>
 
       {/* Marquee */}
       <div style={{ padding:"28px 0", borderTop:`1px solid ${colors.border}`, borderBottom:`1px solid ${colors.border}`, overflow:"hidden", background:colors.marqueeBg, transition:"background 0.3s, border-color 0.3s" }}>
         <div style={{ display:"flex", whiteSpace:"nowrap", animation:"marquee 25s linear infinite" }}>
           {[...Array(2)].flatMap(() => ["Video Editor","Logo Maker","Presentations","Social Media","Brand Kit","Print Design","Documents","Mockups","Infographics"].map((item,i) => (
             <span key={item+i} style={{ display:"inline-flex", alignItems:"center", gap:"12px", padding:"0 40px", fontSize:"12px", color:colors.textMuted, letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:500 }}>
-              <span style={{ width:"4px", height:"4px", background:"#8b5a2b", borderRadius:"50%", flexShrink:0 }} />{item}
+              <span style={{ width:"4px", height:"4px", background:"#942945", borderRadius:"50%", flexShrink:0 }} />{item}
             </span>
           )))}
         </div>
@@ -772,7 +819,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       {/* ── PAST WORK — Horizontal Scrollable Showcase ── */}
       <section className="reveal" id="past-work-section" style={{
         padding: "96px 0 80px",
-        background: isDark ? "#0c0a09" : "#faf8f5",
+        background: isDark ? "#1a0f14" : "#f7f4f7",
         opacity: revealedSections.has("past-work-section") ? 1 : 0,
         transform: revealedSections.has("past-work-section") ? "translateY(0)" : "translateY(40px)",
         transition: "opacity 0.7s, transform 0.7s",
@@ -782,7 +829,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         {/* Header */}
         <div style={{ padding: "0 48px", marginBottom: "40px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "20px" }}>
           <div>
-            <div style={{ fontSize: "11px", letterSpacing: "0.16em", color: "#8b5a2b", textTransform: "uppercase", marginBottom: "12px", fontWeight: 600 }}>Made with Creatify</div>
+            <div style={{ fontSize: "11px", letterSpacing: "0.16em", color: "#942945", textTransform: "uppercase", marginBottom: "12px", fontWeight: 600 }}>Made with Creatify</div>
             <h2 style={{ fontFamily: "Syne,sans-serif", fontSize: "clamp(32px,4vw,52px)", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1, color: colors.text, margin: 0 }}>
               Past Work.
             </h2>
@@ -803,7 +850,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                     display: "flex", alignItems: "center", justifyContent: "center",
                     transition: "all 0.2s", outline: "none",
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#8b5a2b"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#8b5a2b"; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#942945"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#942945"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = colors.textMuted; e.currentTarget.style.borderColor = colors.border; }}
                 >{icon}</button>
               ))}
@@ -874,12 +921,12 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                   scrollSnapAlign: "start",
                   position: "relative",
                   overflow: "hidden",
-                  background: work.gradient || "linear-gradient(135deg,#1a1207,#0c0a09)",
-                  border: isHov ? `1px solid ${work.accent || "#8b5a2b"}55` : `1px solid ${colors.border}`,
+                  background: work.gradient || "linear-gradient(135deg,#170b11,#1a0f14)",
+                  border: isHov ? `1px solid ${work.accent || "#942945"}55` : `1px solid ${colors.border}`,
                   cursor: "pointer",
                   transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s",
                   transform: isHov ? "translateY(-4px) scale(1.01)" : "none",
-                  boxShadow: isHov ? `0 16px 40px ${(work.accent||"#8b5a2b")}20` : "0 4px 15px rgba(0,0,0,0.15)",
+                  boxShadow: isHov ? `0 16px 40px ${(work.accent||"#942945")}20` : "0 4px 15px rgba(0,0,0,0.15)",
                   userSelect: "none",
                 }}
               >
@@ -923,7 +970,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 </button>
 
                 {/* Accent orb */}
-                <div style={{ position:"absolute", width:"120px", height:"120px", borderRadius:"50%", filter:"blur(40px)", background:(work.accent||"#8b5a2b")+"2a", top:"-30px", right:"-30px", opacity: isHov ? 1 : 0.5, transition:"opacity 0.4s", pointerEvents:"none" }} />
+                <div style={{ position:"absolute", width:"120px", height:"120px", borderRadius:"50%", filter:"blur(40px)", background:(work.accent||"#942945")+"2a", top:"-30px", right:"-30px", opacity: isHov ? 1 : 0.5, transition:"opacity 0.4s", pointerEvents:"none" }} />
 
                 {/* Image or icon */}
                 {work.image ? (
@@ -934,7 +981,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
                 {/* Top bar */}
                 <div style={{ position:"absolute", top:"14px", left:"14px", right:"14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <div style={{ fontSize:"9px", color: work.accent||"#d4a574", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase", background:(work.accent||"#8b5a2b")+"1a", border:`1px solid ${(work.accent||"#8b5a2b")}33`, borderRadius:"30px", padding:"2px 8px" }}>
+                  <div style={{ fontSize:"9px", color: work.accent||"#e1496d", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase", background:(work.accent||"#942945")+"1a", border:`1px solid ${(work.accent||"#942945")}33`, borderRadius:"30px", padding:"2px 8px" }}>
                     {work.category || "Project"}
                   </div>
                   <div style={{ fontSize:"9px", color:"rgba(255,255,255,0.25)", fontWeight:400 }}>{work.year || ""}</div>
@@ -943,7 +990,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 {/* Bottom panel */}
                 <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"16px 14px", background:"linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 70%, transparent 100%)", transform: isHov ? "none" : "translateY(2px)", opacity: isHov ? 1 : 0.95, transition:"all 0.4s" }}>
                   {work.tool && (
-                    <div style={{ fontSize:"8px", fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color: work.accent||"#d4a574", marginBottom:"4px", opacity:0.8 }}>{work.tool}</div>
+                    <div style={{ fontSize:"8px", fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color: work.accent||"#e1496d", marginBottom:"4px", opacity:0.8 }}>{work.tool}</div>
                   )}
                   <div style={{ fontFamily:"Syne,sans-serif", fontSize:"14px", fontWeight:800, color:"#fff", letterSpacing:"-0.02em", lineHeight:1.2, marginBottom: isHov && work.desc ? "6px" : 0 }}>
                     {work.title || "Untitled Project"}
@@ -979,18 +1026,18 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             }}>
               <div style={{ width:"32px", height:"32px", borderRadius:"50%", border:`1.5px dashed ${colors.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                  <path d="M7 1v12M1 7h12" stroke={isDark?"rgba(212,165,116,0.25)":"rgba(139,90,43,0.2)"} strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M7 1v12M1 7h12" stroke={isDark?"rgba(225,73,109,0.25)":"rgba(148,41,69,0.2)"} strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </div>
-              <div style={{ fontSize:"11px", color: isDark ? "rgba(212,165,116,0.2)" : "rgba(139,90,43,0.2)", fontWeight:400, letterSpacing:"0.04em" }}>{label}</div>
+              <div style={{ fontSize:"11px", color: isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.2)", fontWeight:400, letterSpacing:"0.04em" }}>{label}</div>
             </div>
           ))}
         </div>
 
         {/* Scroll indicator line */}
         <div style={{ padding:"0 48px", marginTop:"8px" }}>
-          <div style={{ height:"1px", background: isDark ? "rgba(212,165,116,0.08)" : "rgba(139,90,43,0.07)", borderRadius:"1px", position:"relative" }}>
-            <div style={{ position:"absolute", left:0, top:0, height:"100%", width:"18%", background: "linear-gradient(90deg,#8b5a2b,#d4a574)", borderRadius:"1px" }} />
+          <div style={{ height:"1px", background: isDark ? "rgba(225,73,109,0.08)" : "rgba(148,41,69,0.07)", borderRadius:"1px", position:"relative" }}>
+            <div style={{ position:"absolute", left:0, top:0, height:"100%", width:"18%", background: "linear-gradient(90deg,#942945,#e1496d)", borderRadius:"1px" }} />
           </div>
         </div>
       </section>
@@ -1006,7 +1053,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           {/* Section header */}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:"56px", flexWrap:"wrap", gap:"16px" }}>
             <div>
-              <div style={{ fontSize:"11px", letterSpacing:"0.14em", color:"#8b5a2b", textTransform:"uppercase", marginBottom:"14px", fontWeight:500 }}>Everything you need</div>
+              <div style={{ fontSize:"11px", letterSpacing:"0.14em", color:"#942945", textTransform:"uppercase", marginBottom:"14px", fontWeight:500 }}>Everything you need</div>
               <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, color:colors.text }}>One studio.<br/>All formats.</h2>
             </div>
             <p style={{ fontSize:"16px", color:colors.textMuted, maxWidth:"440px", lineHeight:1.65, fontWeight:300 }}>
@@ -1040,8 +1087,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                     position:"relative", borderRadius:"24px", overflow:"hidden",
                     cursor:"pointer", transition:"all 0.4s cubic-bezier(0.16,1,0.3,1)",
                     transform: isHovered ? "translateY(-4px) scale(1.01)" : "none",
-                    boxShadow: isHovered ? `0 28px 70px ${tool.color}30` : "0 4px 20px rgba(139,90,43,0.08)",
-                    border: `1px solid ${isHovered ? tool.color + "60" : "rgba(139,90,43,0.15)"}`,
+                    boxShadow: isHovered ? `0 28px 70px ${tool.color}30` : "0 4px 20px rgba(148,41,69,0.08)",
+                    border: `1px solid ${isHovered ? tool.color + "60" : "rgba(148,41,69,0.15)"}`,
                   }}
                 >
                   {/* Background: image or gradient */}
@@ -1074,9 +1121,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                       {tool.id === "logo" && (
                         <div style={{ marginBottom:"14px" }}>
                           <svg width="44" height="44" viewBox="0 0 100 100" style={{ transform:`rotate(${logoAngle}deg)`, transition:"transform 0.05s linear", display:"block" }}>
-                            <circle cx="50" cy="50" r="35" fill="none" stroke="#f5c842" strokeWidth="2.5" strokeDasharray="15,10"/>
-                            <polygon points="50,18 78,66 22,66" fill="none" stroke="#f5c842" strokeWidth="3" strokeLinejoin="round"/>
-                            <circle cx="50" cy="50" r="8" fill="#f5c842"/>
+                            <circle cx="50" cy="50" r="35" fill="none" stroke="#ec4899" strokeWidth="2.5" strokeDasharray="15,10"/>
+                            <polygon points="50,18 78,66 22,66" fill="none" stroke="#ec4899" strokeWidth="3" strokeLinejoin="round"/>
+                            <circle cx="50" cy="50" r="8" fill="#ec4899"/>
                           </svg>
                         </div>
                       )}
@@ -1119,10 +1166,10 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                   {/* Video playhead overlay */}
                   {tool.id === "video" && isHovered && (
                     <div style={{ position:"absolute", bottom:"100px", left:"28px", right:"28px", zIndex:3 }}>
-                      <div style={{ background:"rgba(0,0,0,0.7)", backdropFilter:"blur(8px)", borderRadius:"10px", padding:"10px", border:"1px solid rgba(139,90,43,0.3)" }}>
+                      <div style={{ background:"rgba(0,0,0,0.7)", backdropFilter:"blur(8px)", borderRadius:"10px", padding:"10px", border:"1px solid rgba(148,41,69,0.3)" }}>
                         <div style={{ fontSize:"8px", color:"#22d3a8", fontWeight:700, marginBottom:"6px" }}>● LIVE PLAYBACK</div>
                         <div style={{ position:"relative", height:"6px", background:"rgba(255,255,255,0.1)", borderRadius:"3px" }}>
-                          <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${timelinePlayhead}%`, background:`linear-gradient(90deg, #8b5a2b, #d4a574)`, borderRadius:"3px", transition:"width 0.05s" }} />
+                          <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${timelinePlayhead}%`, background:`linear-gradient(90deg, #942945, #e1496d)`, borderRadius:"3px", transition:"width 0.05s" }} />
                           <div style={{ position:"absolute", top:"-3px", width:"12px", height:"12px", borderRadius:"50%", background:"#ef4444", boxShadow:"0 0 8px #ef4444", transition:"left 0.05s", left:`calc(${timelinePlayhead}% - 6px)` }} />
                         </div>
                       </div>
@@ -1136,9 +1183,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                         const off = (idx - activeSlide + 3) % 3;
                         return (
                           <div key={idx} style={{ width:"48px", height:"32px", borderRadius:"4px", background:"rgba(255,255,255,0.15)", backdropFilter:"blur(6px)", border:`1.5px solid rgba(255,255,255,${0.6 - off*0.2})`, opacity: 1 - off*0.3, transform:`translateY(${off*-4}px) scale(${1-off*0.06})`, transition:"all 0.4s" }}>
-                            <div style={{ width:"40%", height:"3px", background:"#a0522d", borderRadius:"1px", margin:"5px 4px 3px" }} />
+                            <div style={{ width:"40%", height:"3px", background:"#7c233c", borderRadius:"1px", margin:"5px 4px 3px" }} />
                             <div style={{ display:"flex", gap:"2px", alignItems:"flex-end", padding:"0 4px 4px", height:"12px" }}>
-                              {[8,13,6,10].map((h,i) => <div key={i} style={{ flex:1, height:`${h}px`, background:"rgba(160,82,45,0.6)", borderRadius:"1px" }} />)}
+                              {[8,13,6,10].map((h,i) => <div key={i} style={{ flex:1, height:`${h}px`, background:"rgba(124,35,60,0.6)", borderRadius:"1px" }} />)}
                             </div>
                           </div>
                         );
@@ -1156,10 +1203,10 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       <div style={{ background:colors.marqueeBg, borderTop:`1px solid ${colors.border}`, borderBottom:`1px solid ${colors.border}`, padding:"64px 48px", transition:"background 0.3s, border-color 0.3s" }}>
         <div className="stats-inner reveal" id="stats-section" style={{ maxWidth:"1400px", margin:"0 auto", display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"32px", opacity: revealedSections.has("stats-section") ? 1 : 0, transform: revealedSections.has("stats-section") ? "translateY(0)" : "translateY(40px)", transition:"opacity 0.7s, transform 0.7s" }}>
           {[
-            { value:"12M+", label:"Designs created daily",    color:"#8b5a2b" },
-            { value:"3.8M", label:"Active creators",          color:"#d4a574" },
+            { value:"12M+", label:"Designs created daily",    color:"#942945" },
+            { value:"3.8M", label:"Active creators",          color:"#e1496d" },
             { value:"500K+",label:"Templates available",      color:"#22d3a8" },
-            { value:"180+", label:"Countries represented",    color:"#c49a6c" },
+            { value:"180+", label:"Countries represented",    color:"#dd728b" },
           ].map((s,i) => (
             <div key={i} style={{ textAlign:"center" }}>
               <div className="stat-num" style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,4vw,56px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, color:s.color }}>{s.value}</div>
@@ -1173,16 +1220,16 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       <section className="reveal" id="features-section" style={{ background:colors.marqueeBg, borderBottom:`1px solid ${colors.border}`, opacity: revealedSections.has("features-section") ? 1 : 0, transform: revealedSections.has("features-section") ? "translateY(0)" : "translateY(40px)", transition:"opacity 0.7s, transform 0.7s, background 0.3s, border-color 0.3s" }}>
         <div style={{ maxWidth:"1400px", margin:"0 auto", padding:"100px 48px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:"80px", alignItems:"center" }}>
           <div>
-            <div style={{ fontSize:"11px", letterSpacing:"0.14em", color:"#8b5a2b", textTransform:"uppercase", marginBottom:"16px", fontWeight:500 }}>The Editor</div>
-            <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, marginBottom:"20px", color:colors.text }}>A canvas<br/>built for<br/><em style={{ fontFamily:"Instrument Serif,serif", color:"#8b5a2b" }}>flow.</em></h2>
+            <div style={{ fontSize:"11px", letterSpacing:"0.14em", color:"#942945", textTransform:"uppercase", marginBottom:"16px", fontWeight:500 }}>The Editor</div>
+            <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, marginBottom:"20px", color:colors.text }}>A canvas<br/>built for<br/><em style={{ fontFamily:"Instrument Serif,serif", color:"#942945" }}>flow.</em></h2>
             <p style={{ fontSize:"16px", color:colors.textMuted, lineHeight:1.7, margin:"0 0 32px", fontWeight:300 }}>Every tool is one click away. No buried menus. No learning curve. Just your ideas, amplified.</p>
             <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
               {[
-                { icon:"🎨", title:"Smart layers & artboards",  desc:"Unlimited layers with blend modes and masks",      color:"#8b5a2b" },
+                { icon:"🎨", title:"Smart layers & artboards",  desc:"Unlimited layers with blend modes and masks",      color:"#942945" },
                 { icon:"⚡", title:"Real-time collaboration",   desc:"Edit with your team simultaneously",               color:"#22d3a8" },
-                { icon:"📤", title:"Export anywhere",           desc:"PNG, SVG, MP4, PPTX, PDF — all from browser",     color:"#d4a574" },
+                { icon:"📤", title:"Export anywhere",           desc:"PNG, SVG, MP4, PPTX, PDF — all from browser",     color:"#e1496d" },
               ].map((f,i) => (
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:"14px", padding:"16px 18px", background: isDark ? "rgba(212,165,116,0.06)" : "rgba(139,90,43,0.05)", border: isDark ? "1px solid rgba(212,165,116,0.15)" : "1px solid rgba(139,90,43,0.1)", borderRadius:"12px" }}>
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:"14px", padding:"16px 18px", background: isDark ? "rgba(225,73,109,0.06)" : "rgba(148,41,69,0.05)", border: isDark ? "1px solid rgba(225,73,109,0.15)" : "1px solid rgba(148,41,69,0.1)", borderRadius:"12px" }}>
                   <div style={{ width:"36px", height:"36px", background:`${f.color}20`, borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{f.icon}</div>
                   <div><div style={{ fontSize:"14px", fontWeight:500, marginBottom:"2px", color:colors.text }}>{f.title}</div><div style={{ fontSize:"12px", color:colors.textMuted }}>{f.desc}</div></div>
                 </div>
@@ -1190,16 +1237,16 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             </div>
           </div>
           {/* Visual mockup */}
-          <div style={{ position:"relative", aspectRatio:"4/3", borderRadius:"24px", overflow:"hidden", background:"#111318", border:"1px solid rgba(139,90,43,0.15)" }}>
-            <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(139,90,43,0.12), rgba(34,211,168,0.06))" }} />
+          <div style={{ position:"relative", aspectRatio:"4/3", borderRadius:"24px", overflow:"hidden", background:"#111318", border:"1px solid rgba(148,41,69,0.15)" }}>
+            <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(148,41,69,0.12), rgba(34,211,168,0.06))" }} />
             <div style={{ position:"absolute", width:"52px", top:0, bottom:0, left:0, background:"rgba(255,255,255,0.03)", borderRight:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", alignItems:"center", padding:"16px 0", gap:"8px" }}>
-              {["↖","✏","▭","○","T"].map((ic,i) => <div key={i} style={{ width:"32px", height:"32px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", background:i===0?"#8b5a2b":"rgba(255,255,255,0.05)", color:i===0?"#fff":"rgba(255,255,255,0.5)" }}>{ic}</div>)}
+              {["↖","✏","▭","○","T"].map((ic,i) => <div key={i} style={{ width:"32px", height:"32px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", background:i===0?"#942945":"rgba(255,255,255,0.05)", color:i===0?"#fff":"rgba(255,255,255,0.5)" }}>{ic}</div>)}
             </div>
             <div style={{ position:"absolute", inset:0, left:"52px", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <div style={{ fontFamily:"Syne,sans-serif", fontSize:"28px", fontWeight:800, color:"rgba(255,255,255,0.06)", letterSpacing:"-0.04em" }}>CREATIFY</div>
             </div>
-            <div style={{ position:"absolute", width:"120px", height:"80px", top:"20px", left:"80px", borderRadius:"12px", background:"linear-gradient(135deg,rgba(212,165,116,0.3),rgba(196,154,108,0.2))", border:"1px solid rgba(212,165,116,0.3)", animation:"float1 4s ease-in-out infinite" }} />
-            <div style={{ position:"absolute", width:"80px", height:"100px", top:"40px", right:"30px", borderRadius:"12px", background:"linear-gradient(135deg,rgba(139,90,43,0.3),rgba(245,200,66,0.2))", border:"1px solid rgba(139,90,43,0.3)", animation:"float2 5s ease-in-out infinite" }} />
+            <div style={{ position:"absolute", width:"120px", height:"80px", top:"20px", left:"80px", borderRadius:"12px", background:"linear-gradient(135deg,rgba(225,73,109,0.3),rgba(196,154,108,0.2))", border:"1px solid rgba(225,73,109,0.3)", animation:"float1 4s ease-in-out infinite" }} />
+            <div style={{ position:"absolute", width:"80px", height:"100px", top:"40px", right:"30px", borderRadius:"12px", background:"linear-gradient(135deg,rgba(148,41,69,0.3),rgba(245,200,66,0.2))", border:"1px solid rgba(148,41,69,0.3)", animation:"float2 5s ease-in-out infinite" }} />
           </div>
         </div>
       </section>
@@ -1218,7 +1265,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
         {/* ─ Top editorial band: full-width dark */}
         <div style={{
-          background: isDark ? "#080604" : "#0c0a09",
+          background: isDark ? "#0f070b" : "#1a0f14",
           padding: "80px 48px",
           position: "relative",
           overflow: "hidden",
@@ -1226,16 +1273,16 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           {/* Subtle grid */}
           <div style={{
             position:"absolute", inset:0, pointerEvents:"none",
-            backgroundImage: `linear-gradient(rgba(212,165,116,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(212,165,116,0.04) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(rgba(225,73,109,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(225,73,109,0.04) 1px, transparent 1px)`,
             backgroundSize: "64px 64px",
           }} />
           {/* Glow */}
-          <div style={{ position:"absolute", width:"500px", height:"500px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(139,90,43,0.1)", top:"-100px", right:"-100px", pointerEvents:"none" }} />
+          <div style={{ position:"absolute", width:"500px", height:"500px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(148,41,69,0.1)", top:"-100px", right:"-100px", pointerEvents:"none" }} />
 
           <div style={{ maxWidth:"1400px", margin:"0 auto", position:"relative" }}>
             {/* Eyebrow */}
-            <div style={{ fontSize:"11px", letterSpacing:"0.18em", color:"#8b5a2b", textTransform:"uppercase", fontWeight:600, marginBottom:"32px", display:"flex", alignItems:"center", gap:"12px" }}>
-              <div style={{ width:"24px", height:"1px", background:"#8b5a2b" }} /> Our Story
+            <div style={{ fontSize:"11px", letterSpacing:"0.18em", color:"#942945", textTransform:"uppercase", fontWeight:600, marginBottom:"32px", display:"flex", alignItems:"center", gap:"12px" }}>
+              <div style={{ width:"24px", height:"1px", background:"#942945" }} /> Our Story
             </div>
 
             {/* Pull quote */}
@@ -1246,11 +1293,11 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 fontWeight: 800,
                 letterSpacing: "-0.04em",
                 lineHeight: 1,
-                color: "#f5f0e8",
+                color: "#fdf2f4",
                 margin: 0,
               }}>
                 Built for creators,<br/>
-                <em style={{ fontFamily:"Instrument Serif,serif", fontWeight:400, color:"#d4a574", fontStyle:"italic" }}>by creators.</em>
+                <em style={{ fontFamily:"Instrument Serif,serif", fontWeight:400, color:"#e1496d", fontStyle:"italic" }}>by creators.</em>
               </h2>
               <p style={{ fontSize:"17px", color:"rgba(255,255,255,0.38)", lineHeight:1.7, fontWeight:300, maxWidth:"620px", marginTop:"28px" }}>
                 Creatify was born from a simple frustration — professional design tools demanded years of training and steep subscriptions. We built an entirely browser-native suite so anyone can create at a professional level, instantly.
@@ -1277,7 +1324,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                   borderRight: "1px solid rgba(255,255,255,0.07)",
                   borderBottom: "1px solid rgba(255,255,255,0.07)",
                 }}>
-                  <div style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(28px,3.5vw,44px)", fontWeight:800, letterSpacing:"-0.04em", background:"linear-gradient(135deg,#f5f0e8,#d4a574)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", lineHeight:1, marginBottom:"8px" }}>{s.value}</div>
+                  <div style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(28px,3.5vw,44px)", fontWeight:800, letterSpacing:"-0.04em", background:"linear-gradient(135deg,#fdf2f4,#e1496d)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", lineHeight:1, marginBottom:"8px" }}>{s.value}</div>
                   <div style={{ fontSize:"12px", color:"rgba(255,255,255,0.3)", letterSpacing:"0.04em", fontWeight:400 }}>{s.label}</div>
                 </div>
               ))}
@@ -1295,8 +1342,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
             {/* Left — Mission statement */}
             <div>
-              <div style={{ fontSize:"11px", letterSpacing:"0.16em", color:"#8b5a2b", textTransform:"uppercase", fontWeight:600, marginBottom:"20px", display:"flex", alignItems:"center", gap:"10px" }}>
-                <div style={{ width:"20px", height:"1px", background:"#8b5a2b" }} /> Mission
+              <div style={{ fontSize:"11px", letterSpacing:"0.16em", color:"#942945", textTransform:"uppercase", fontWeight:600, marginBottom:"20px", display:"flex", alignItems:"center", gap:"10px" }}>
+                <div style={{ width:"20px", height:"1px", background:"#942945" }} /> Mission
               </div>
               <p style={{ fontSize:"18px", color:colors.text, lineHeight:1.75, fontWeight:300, margin:0, letterSpacing:"-0.01em" }}>
                 We believe creativity is a human right, not a premium feature. Every tool in Creatify is designed to collapse the distance between an idea and a finished, professional piece of work.
@@ -1310,8 +1357,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
             {/* Right — Principles (clean list, no emoji boxes) */}
             <div>
-              <div style={{ fontSize:"11px", letterSpacing:"0.16em", color:"#8b5a2b", textTransform:"uppercase", fontWeight:600, marginBottom:"20px", display:"flex", alignItems:"center", gap:"10px" }}>
-                <div style={{ width:"20px", height:"1px", background:"#8b5a2b" }} /> Principles
+              <div style={{ fontSize:"11px", letterSpacing:"0.16em", color:"#942945", textTransform:"uppercase", fontWeight:600, marginBottom:"20px", display:"flex", alignItems:"center", gap:"10px" }}>
+                <div style={{ width:"20px", height:"1px", background:"#942945" }} /> Principles
               </div>
               <div style={{ display:"flex", flexDirection:"column" }}>
                 {[
@@ -1324,7 +1371,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                     padding:"24px 0",
                     borderBottom: i < arr.length-1 ? `1px solid ${colors.border}` : "none",
                   }}>
-                    <div style={{ fontFamily:"Syne,sans-serif", fontSize:"11px", fontWeight:700, color: isDark ? "rgba(212,165,116,0.3)" : "rgba(139,90,43,0.3)", letterSpacing:"0.06em", paddingTop:"3px" }}>{p.num}</div>
+                    <div style={{ fontFamily:"Syne,sans-serif", fontSize:"11px", fontWeight:700, color: isDark ? "rgba(225,73,109,0.3)" : "rgba(148,41,69,0.3)", letterSpacing:"0.06em", paddingTop:"3px" }}>{p.num}</div>
                     <div>
                       <div style={{ fontSize:"15px", fontWeight:600, color:colors.text, marginBottom:"6px", letterSpacing:"-0.01em" }}>{p.title}</div>
                       <div style={{ fontSize:"13px", color:colors.textMuted, lineHeight:1.6, fontWeight:300 }}>{p.body}</div>
@@ -1338,125 +1385,24 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       </section>
 
 
-      {/* ── HIGH-FIDELITY PRODUCTION PIPELINE ── */}
-      <section className="reveal" id="pipeline-section" style={{
-        background: colors.bg,
-        borderBottom: `1px solid ${colors.border}`,
-        opacity: revealedSections.has("pipeline-section") ? 1 : 0,
-        transform: revealedSections.has("pipeline-section") ? "translateY(0)" : "translateY(40px)",
-        transition: "opacity 0.7s, transform 0.7s, background 0.3s, border-color 0.3s"
-      }}>
-        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "100px 48px" }}>
-          <div style={{ textAlign: "center", marginBottom: "72px" }}>
-            <div style={{ fontSize: "11px", letterSpacing: "0.14em", color: "#8b5a2b", textTransform: "uppercase", marginBottom: "16px", fontWeight: 500 }}>High-Performance Engine</div>
-            <h2 style={{ fontFamily: "Syne,sans-serif", fontSize: "clamp(36px,5vw,56px)", fontWeight: 800, letterSpacing: "-0.04em", color: colors.text, lineHeight: 1 }}>How it compiles.</h2>
-            <p style={{ fontSize: "16px", color: colors.textMuted, maxWidth: "540px", margin: "16px auto 0", lineHeight: 1.6, fontWeight: 300 }}>
-              Running natively inside your browser. No remote servers processing your raw footage — everything compiles locally.
-            </p>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "40px", position: "relative" }}>
-            {/* Step 1 */}
-            <div style={{
-              background: isDark ? "rgba(23, 21, 20, 0.4)" : "rgba(139, 90, 43, 0.03)",
-              border: `1px solid ${colors.border}`,
-              borderRadius: "20px",
-              padding: "36px",
-              position: "relative",
-              overflow: "hidden",
-              transition: "transform 0.3s",
-            }}
-            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "none"}
-            >
-              <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: "64px", fontStyle: "italic", color: "#d4a574", lineHeight: 1, marginBottom: "20px" }}>01</div>
-              <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "18px", fontWeight: 800, marginBottom: "12px", color: colors.text }}>Local Asset Ingestion</h3>
-              <p style={{ fontSize: "13.5px", color: colors.textMuted, lineHeight: 1.6, fontWeight: 300, margin: 0 }}>
-                Direct file system access via File System Access API. Video clips, audio tracks, and images load instantly into memory. Zero upload buffering.
-              </p>
-              {/* Micro decoration: simulated files importing */}
-              <div style={{ display: "flex", gap: "8px", marginTop: "24px" }}>
-                {["📹 MOV", "🎵 WAV", "🖼️ PNG"].map((ext, idx) => (
-                  <div key={idx} style={{ padding: "4px 8px", background: "rgba(212, 165, 116, 0.08)", border: "1px solid rgba(212, 165, 116, 0.2)", borderRadius: "6px", fontSize: "9px", color: "#d4a574", fontWeight: 600 }}>
-                    {ext}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Step 2 */}
-            <div style={{
-              background: isDark ? "rgba(23, 21, 20, 0.4)" : "rgba(139, 90, 43, 0.03)",
-              border: `1px solid ${colors.border}`,
-              borderRadius: "20px",
-              padding: "36px",
-              position: "relative",
-              overflow: "hidden",
-              transition: "transform 0.3s"
-            }}
-            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "none"}
-            >
-              <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: "64px", fontStyle: "italic", color: "#d4a574", lineHeight: 1, marginBottom: "20px" }}>02</div>
-              <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "18px", fontWeight: 800, marginBottom: "12px", color: colors.text }}>GPU Shader Compositing</h3>
-              <p style={{ fontSize: "13.5px", color: colors.textMuted, lineHeight: 1.6, fontWeight: 300, margin: 0 }}>
-                WebGL fragment shaders process contrast, exposure, and color grades. High-speed filters, transitions, and overlays calculate frame-by-frame on your GPU at a locked 60fps.
-              </p>
-              {/* Micro decoration: dynamic grid visual */}
-              <div style={{ display: "flex", gap: "3px", marginTop: "28px", height: "16px", alignItems: "flex-end" }}>
-                {[6, 12, 8, 14, 10, 16, 11, 7, 13, 9, 15, 8].map((h, idx) => (
-                  <div key={idx} style={{ flex: 1, height: `${h}px`, background: "linear-gradient(to top, #8b5a2b, #22d3a8)", borderRadius: "1px" }} />
-                ))}
-              </div>
-            </div>
-
-            {/* Step 3 */}
-            <div style={{
-              background: isDark ? "rgba(23, 21, 20, 0.4)" : "rgba(139, 90, 43, 0.03)",
-              border: `1px solid ${colors.border}`,
-              borderRadius: "20px",
-              padding: "36px",
-              position: "relative",
-              overflow: "hidden",
-              transition: "transform 0.3s"
-            }}
-            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "none"}
-            >
-              <div style={{ fontFamily: "'Instrument Serif', serif", fontSize: "64px", fontStyle: "italic", color: "#d4a574", lineHeight: 1, marginBottom: "20px" }}>03</div>
-              <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "18px", fontWeight: 800, marginBottom: "12px", color: colors.text }}>Local WebAssembly Render</h3>
-              <p style={{ fontSize: "13.5px", color: colors.textMuted, lineHeight: 1.6, fontWeight: 300, margin: 0 }}>
-                A multi-threaded WebAssembly build of FFmpeg compiles final tracks directly to an MP4 video bundle. No network charges, no server waiting queues.
-              </p>
-              {/* Micro decoration: progress indicator */}
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "24px" }}>
-                <div style={{ width: "20px", height: "20px", borderRadius: "50%", border: "2px solid #22d3a8", borderTopColor: "transparent", animation: "spin 1s linear infinite" }} />
-                <span style={{ fontSize: "10px", color: "#22d3a8", fontWeight: 700, letterSpacing: "0.04em" }}>COMPILING MP4 DIRECT...</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
 
       {/* Footer CTA */}
       <section style={{ background:"linear-gradient(135deg,#1a0f0a,#2d1a0f)", padding:"100px 48px", textAlign:"center", width:"100%", position:"relative", overflow:"hidden" }}>
         {/* Glowing orb background */}
-        <div style={{ position:"absolute", width:"600px", height:"600px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(139,90,43,0.15)", top:"50%", left:"50%", transform:"translate(-50%,-50%)", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", width:"600px", height:"600px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(148,41,69,0.15)", top:"50%", left:"50%", transform:"translate(-50%,-50%)", pointerEvents:"none" }} />
         <div style={{ position:"relative", zIndex:1 }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", background:"rgba(212,165,116,0.12)", border:"1px solid rgba(212,165,116,0.2)", borderRadius:"40px", padding:"6px 16px", fontSize:"12px", color:"#d4a574", marginBottom:"28px", letterSpacing:"0.02em" }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", background:"rgba(225,73,109,0.12)", border:"1px solid rgba(225,73,109,0.2)", borderRadius:"40px", padding:"6px 16px", fontSize:"12px", color:"#e1496d", marginBottom:"28px", letterSpacing:"0.02em" }}>
             <span style={{ width:"5px", height:"5px", background:"#22d3a8", borderRadius:"50%", display:"inline-block", animation:"pulse 2s infinite" }} />
             3.8M creators and counting
           </div>
           <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(40px,6vw,72px)", fontWeight:800, letterSpacing:"-0.04em", color:"#fff", marginBottom:"20px", lineHeight:0.95 }}>
-            Ready to create<br/><em style={{ fontFamily:"Instrument Serif,serif", color:"#d4a574", fontWeight:400 }}>something great?</em>
+            Ready to create<br/><em style={{ fontFamily:"Instrument Serif,serif", color:"#e1496d", fontWeight:400 }}>something great?</em>
           </h2>
           <p style={{ fontSize:"16px", color:"rgba(255,255,255,0.45)", marginBottom:"44px", fontWeight:300, maxWidth:"420px", margin:"0 auto 44px", lineHeight:1.6 }}>Join millions of creators. Free forever, no credit card required.</p>
           <div style={{ display:"flex", gap:"14px", justifyContent:"center", flexWrap:"wrap" }}>
-            <button style={{ background:"linear-gradient(135deg,#8b5a2b,#d4a574)", color:"#fff", border:"none", padding:"18px 48px", borderRadius:"50px", fontSize:"17px", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer", transition:"all 0.3s", boxShadow:"0 8px 40px rgba(139,90,43,0.5)", letterSpacing:"-0.02em" }}
-              onMouseEnter={e => { e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 16px 60px rgba(139,90,43,0.6)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 8px 40px rgba(139,90,43,0.5)"; }}
+            <button style={{ background:"linear-gradient(135deg,#942945,#e1496d)", color:"#fff", border:"none", padding:"18px 48px", borderRadius:"50px", fontSize:"17px", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer", transition:"all 0.3s", boxShadow:"0 8px 40px rgba(148,41,69,0.5)", letterSpacing:"-0.02em" }}
+              onMouseEnter={e => { e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 16px 60px rgba(148,41,69,0.6)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 8px 40px rgba(148,41,69,0.5)"; }}
               onClick={() => onNavigate("auth","signup")}>Start for free</button>
             <button style={{ background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.8)", border:"1px solid rgba(255,255,255,0.12)", padding:"18px 36px", borderRadius:"50px", fontSize:"17px", fontFamily:"'Poppins',sans-serif", fontWeight:300, cursor:"pointer", transition:"all 0.3s", backdropFilter:"blur(8px)", letterSpacing:"-0.02em" }}
               onMouseEnter={e => { e.currentTarget.style.background="rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.25)"; }}
@@ -1466,49 +1412,15 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing-section" className="reveal" style={{ padding:"100px 48px", background: isDark ? "#0e0c0b" : "#f7f4f0", width:"100%", opacity: revealedSections.has("pricing-section") ? 1 : 0, transform: revealedSections.has("pricing-section") ? "translateY(0)" : "translateY(40px)", transition:"opacity 0.7s, transform 0.7s" }}>
-        <div style={{ maxWidth:"1400px", margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:"60px" }}>
-            <div style={{ fontSize:"11px", letterSpacing:"0.14em", color:"#8b5a2b", textTransform:"uppercase", marginBottom:"16px", fontWeight:500 }}>Simple pricing</div>
-            <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,5vw,56px)", fontWeight:800, letterSpacing:"-0.04em", color:colors.text }}>Start free.<br/>Scale when ready.</h2>
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"20px" }}>
-            {pricing.map((plan,i) => (
-              <div key={i} style={{ background: plan.popular ? "#8b5a2b" : (isDark ? "#171514" : "#fff"), border: plan.popular ? "none" : `1px solid ${colors.border}`, borderRadius:"24px", padding:"36px 32px", position:"relative", boxShadow: plan.popular ? "0 24px 60px rgba(139,90,43,0.3)" : colors.cardShadow, transition:"all 0.3s" }}>
-                {plan.popular && <div style={{ position:"absolute", top:"-12px", left:"50%", transform:"translateX(-50%)", background:"#f5c842", color:"#0c0a09", fontSize:"11px", fontWeight:700, padding:"4px 16px", borderRadius:"20px", letterSpacing:"0.04em" }}>MOST POPULAR</div>}
-                <div style={{ fontFamily:"Syne,sans-serif", fontSize:"20px", fontWeight:800, color: plan.popular ? "#fff" : colors.text, marginBottom:"8px" }}>{plan.name}</div>
-                <div style={{ display:"flex", alignItems:"baseline", gap:"4px", marginBottom:"6px" }}>
-                  <span style={{ fontFamily:"Syne,sans-serif", fontSize:"44px", fontWeight:800, color: plan.popular ? "#fff" : colors.text }}>${plan.price}</span>
-                  {plan.price > 0 && <span style={{ fontSize:"13px", color: plan.popular ? "rgba(255,255,255,0.7)" : colors.textMuted }}>/mo</span>}
-                </div>
-                <div style={{ fontSize:"12px", color: plan.popular ? "rgba(255,255,255,0.65)" : colors.textMuted, marginBottom:"28px" }}>{plan.period}</div>
-                <button style={{ width:"100%", padding:"13px", borderRadius:"12px", background: plan.popular ? "rgba(255,255,255,0.15)" : "#8b5a2b", color:"#fff", border: plan.popular ? "1px solid rgba(255,255,255,0.25)" : "none", fontSize:"14px", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer", marginBottom:"28px", transition:"all 0.2s" }}
-                  onMouseEnter={e => e.currentTarget.style.opacity="0.85"}
-                  onMouseLeave={e => e.currentTarget.style.opacity="1"}
-                  onClick={() => onNavigate("auth","signup")}
-                >Get started {plan.price === 0 ? "free" : "now"}</button>
-                <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-                  {plan.features.map((f,j) => (
-                    <div key={j} style={{ display:"flex", alignItems:"center", gap:"10px", fontSize:"13px", color: plan.popular ? "rgba(255,255,255,0.85)" : colors.text }}>
-                      <span style={{ color:"#22d3a8", fontWeight:700, fontSize:"14px" }}>✓</span>{f}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer style={{ background:"#111", padding:"36px 48px", borderTop:"1px solid rgba(255,255,255,0.05)", width:"100%" }}>
         <div style={{ maxWidth:"1400px", margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:"16px" }}>
           <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-            <div style={{ width:"24px", height:"24px", borderRadius:"6px", background:"linear-gradient(135deg,#8b5a2b,#d4a574)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <div style={{ width:"24px", height:"24px", borderRadius:"6px", background:"linear-gradient(135deg,#942945,#e1496d)", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8 L8 2 L13 8 L8 14 Z" fill="white" opacity="0.9"/><circle cx="8" cy="8" r="2" fill="white"/></svg>
             </div>
-            <div style={{ fontFamily:"Syne,sans-serif", fontWeight:800, fontSize:"16px", color:"#fff", letterSpacing:"-0.03em" }}>Creat<span style={{ color:"#d4a574" }}>ify</span></div>
+            <div style={{ fontFamily:"Syne,sans-serif", fontWeight:800, fontSize:"16px", color:"#fff", letterSpacing:"-0.03em" }}>Creat<span style={{ color:"#e1496d" }}>ify</span></div>
           </div>
           <div style={{ display:"flex", gap:"32px" }}>
             {["Privacy","Terms","Support","Blog"].map(l => <a key={l} href="#" style={{ fontSize:"12px", color:"rgba(255,255,255,0.3)", textDecoration:"none", transition:"color 0.2s" }} onMouseEnter={e=>e.target.style.color="rgba(255,255,255,0.7)"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,0.3)"}>{l}</a>)}
@@ -1517,6 +1429,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         </div>
       </footer>
 
+        </main>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=Poppins:wght@300;400;500;600&display=swap');
         * { box-sizing: border-box; }

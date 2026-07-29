@@ -27,7 +27,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
   const [activeLayerId, setActiveLayerId] = useState(null);
 
   // Brush settings
-  const [brushColor, setBrushColor] = useState("#d4a574");
+  const [brushColor, setBrushColor] = useState("#e1496d");
   const [brushSize, setBrushSize] = useState(8);
   const [brushOpacity, setBrushOpacity] = useState(1);
 
@@ -131,8 +131,8 @@ export default function ImageEditor({ onBack, user, initialProject }) {
         ctx.textBaseline = "middle";
         ctx.fillText(layer.text, layer.x, layer.y);
       } else if (layer.type === "shape") {
-        ctx.fillStyle = layer.color || "#d4a574";
-        ctx.strokeStyle = layer.color || "#d4a574";
+        ctx.fillStyle = layer.color || "#e1496d";
+        ctx.strokeStyle = layer.color || "#e1496d";
         ctx.lineWidth = 3;
         const w = layer.width || 80;
         const h = layer.height || 80;
@@ -185,7 +185,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
     if (activeTool === "select" && activeLayerId) {
       const activeLayer = layers.find(l => l.id === activeLayerId);
       if (activeLayer && activeLayer.visible) {
-        ctx.strokeStyle = "#d4a574";
+        ctx.strokeStyle = "#e1496d";
         ctx.lineWidth = 1.5;
         ctx.setLineDash([6, 4]);
         
@@ -364,7 +364,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
       name: `Shape: ${shape}`,
       type: "shape",
       shape: shape,
-      color: "#d4a574",
+      color: "#e1496d",
       visible: true,
       opacity: 1,
       x: 250,
@@ -470,8 +470,8 @@ export default function ImageEditor({ onBack, user, initialProject }) {
       category: "Image Edit",
       tool: "Image Editor",
       year: new Date().getFullYear().toString(),
-      accent: "#d4a574",
-      gradient: "linear-gradient(135deg, #1e1b18 0%, #30261c 50%, #0c0a09 100%)",
+      accent: "#e1496d",
+      gradient: "linear-gradient(135deg, #1e1b18 0%, #30261c 50%, #1a0f14 100%)",
       image: canvasRef.current ? canvasRef.current.toDataURL() : "",
       tags: ["Canvas API", `${layers.length} Layers`, "Filters"],
       desc: `Visual canvas edit with ${layers.length} graphic layers.`,
@@ -549,7 +549,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
   };
 
   return (
-    <div style={{ background: "#0c0a09", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden", userSelect: "none" }}>
+    <div style={{ background: "#1a0f14", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden", userSelect: "none" }}>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Syne:wght@700;800&family=Outfit:wght@400;600&display=swap" rel="stylesheet" />
       <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileUpload} />
 
@@ -557,10 +557,10 @@ export default function ImageEditor({ onBack, user, initialProject }) {
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         
         {/* Left Side: presets, layers, inputs */}
-        <div style={{ width: "300px", minWidth: "300px", borderRight: "1px solid rgba(212,165,116,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column" }}>
+        <div style={{ width: "300px", minWidth: "300px", borderRight: "1px solid rgba(225,73,109,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column" }}>
           {/* Header Panel Tab */}
-          <div style={{ padding: "16px", borderBottom: "1px solid rgba(212,165,116,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: "11px", letterSpacing: "0.06em", color: "#d4a574", fontWeight: 700 }}>IMAGE ASSETS</span>
+          <div style={{ padding: "16px", borderBottom: "1px solid rgba(225,73,109,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: "11px", letterSpacing: "0.06em", color: "#e1496d", fontWeight: 700 }}>IMAGE ASSETS</span>
             <button className="tool-btn" onClick={() => fileInputRef.current.click()} style={{ padding: "4px 8px", fontSize: "10px" }}>+ Upload</button>
           </div>
 
@@ -570,7 +570,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
               <span style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "8px", fontWeight: 600 }}>STOCK BACKDROP</span>
               <div style={{ display: "flex", gap: "8px" }}>
                 {STOCK_IMAGES.map(item => (
-                  <div key={item.id} onClick={() => addStockLayer(item.url)} style={{ flex: 1, height: "48px", borderRadius: "8px", overflow: "hidden", cursor: "pointer", border: "1px solid rgba(212,165,116,0.15)", position: "relative" }}>
+                  <div key={item.id} onClick={() => addStockLayer(item.url)} style={{ flex: 1, height: "48px", borderRadius: "8px", overflow: "hidden", cursor: "pointer", border: "1px solid rgba(225,73,109,0.15)", position: "relative" }}>
                     <img src={item.url} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.25)" }} />
                   </div>
@@ -581,7 +581,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
             {/* Brush Controls */}
             <div>
               <span style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "8px", fontWeight: 600 }}>PAINT BRUSH SETTINGS</span>
-              <div style={{ background: "rgba(212,165,116,0.03)", border: "1px solid rgba(212,165,116,0.1)", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ background: "rgba(225,73,109,0.03)", border: "1px solid rgba(225,73,109,0.1)", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
                 <div style={{ display: "flex", justifyBetween: "space-between", alignItems: "center" }}>
                   <span style={{ fontSize: "11px" }}>Brush Size: {brushSize}px</span>
                   <input type="range" min="2" max="40" value={brushSize} onChange={e => setBrushSize(parseInt(e.target.value))} className="filter-slider" style={{ width: "100px" }} />
@@ -596,11 +596,11 @@ export default function ImageEditor({ onBack, user, initialProject }) {
             {/* Text Overlay tool */}
             <div>
               <span style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "8px", fontWeight: 600 }}>ADD TEXT ELEMENT</span>
-              <div style={{ background: "rgba(212,165,116,0.03)", border: "1px solid rgba(212,165,116,0.1)", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                <input type="text" value={textInput} onChange={e => setTextInput(e.target.value)} style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "8px", fontSize: "11px" }} placeholder="Enter title text..." />
+              <div style={{ background: "rgba(225,73,109,0.03)", border: "1px solid rgba(225,73,109,0.1)", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <input type="text" value={textInput} onChange={e => setTextInput(e.target.value)} style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "8px", fontSize: "11px" }} placeholder="Enter title text..." />
                 <div style={{ display: "flex", gap: "8px" }}>
                   <input type="color" value={textColor} onChange={e => setTextColor(e.target.value)} style={{ flex: 1, height: "24px", background: "none", border: "none", cursor: "pointer" }} />
-                  <select value={textFont} onChange={e => setTextFont(e.target.value)} style={{ flex: 2, background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", fontSize: "11px", padding: "4px" }}>
+                  <select value={textFont} onChange={e => setTextFont(e.target.value)} style={{ flex: 2, background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "4px" }}>
                     <option value="Syne">Syne (Title)</option>
                     <option value="Poppins">Poppins (Sans)</option>
                     <option value="Outfit">Outfit (Clean)</option>
@@ -613,7 +613,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
             {/* Add Shape element */}
             <div>
               <span style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "8px", fontWeight: 600 }}>ADD SHAPE / STICKER</span>
-              <div style={{ background: "rgba(212,165,116,0.03)", border: "1px solid rgba(212,165,116,0.1)", borderRadius: "10px", padding: "10px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+              <div style={{ background: "rgba(225,73,109,0.03)", border: "1px solid rgba(225,73,109,0.1)", borderRadius: "10px", padding: "10px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
                 <button className="tool-btn" onClick={() => addShapeLayer("rect")} style={{ fontSize: "11px", padding: "6px", justifyContent: "center" }}>■ Rectangle</button>
                 <button className="tool-btn" onClick={() => addShapeLayer("circle")} style={{ fontSize: "11px", padding: "6px", justifyContent: "center" }}>● Circle</button>
                 <button className="tool-btn" onClick={() => addShapeLayer("border")} style={{ fontSize: "11px", padding: "6px", justifyContent: "center" }}>⚃ Border</button>
@@ -626,8 +626,8 @@ export default function ImageEditor({ onBack, user, initialProject }) {
               const activeLayer = layers.find(l => l.id === activeLayerId);
               if (!activeLayer) return null;
               return (
-                <div style={{ background: "rgba(212,165,116,0.04)", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
-                  <span style={{ fontSize: "10px", color: "#d4a574", display: "block", fontWeight: 700 }}>EDIT SELECTED LAYER</span>
+                <div style={{ background: "rgba(225,73,109,0.04)", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
+                  <span style={{ fontSize: "10px", color: "#e1496d", display: "block", fontWeight: 700 }}>EDIT SELECTED LAYER</span>
                   
                   {activeLayer.type === "text" && (
                     <>
@@ -637,7 +637,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                           type="text"
                           value={activeLayer.text || ""}
                           onChange={e => updateActiveLayerProp("text", e.target.value)}
-                          style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                          style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                         />
                       </div>
                       
@@ -670,7 +670,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                           <select
                             value={activeLayer.font || "Poppins"}
                             onChange={e => updateActiveLayerProp("font", e.target.value)}
-                            style={{ width: "100%", background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", fontSize: "11px", padding: "4px" }}
+                            style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "4px" }}
                           >
                             <option value="Syne">Syne</option>
                             <option value="Poppins">Poppins</option>
@@ -689,7 +689,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                           type="number"
                           value={activeLayer.width || 0}
                           onChange={e => updateActiveLayerProp("width", parseInt(e.target.value) || 0)}
-                          style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                          style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                         />
                       </div>
                       <div>
@@ -698,7 +698,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                           type="number"
                           value={activeLayer.height || 0}
                           onChange={e => updateActiveLayerProp("height", parseInt(e.target.value) || 0)}
-                          style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                          style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                         />
                       </div>
                     </div>
@@ -710,7 +710,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                         <label style={{ fontSize: "9px", color: "#5c5650", display: "block", marginBottom: "3px" }}>Shape Color</label>
                         <input
                           type="color"
-                          value={activeLayer.color || "#d4a574"}
+                          value={activeLayer.color || "#e1496d"}
                           onChange={e => updateActiveLayerProp("color", e.target.value)}
                           style={{ width: "100%", height: "24px", background: "none", border: "none", cursor: "pointer" }}
                         />
@@ -725,7 +725,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                             updateActiveLayerProp("width", val);
                             updateActiveLayerProp("height", val);
                           }}
-                          style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                          style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                         />
                       </div>
                     </div>
@@ -739,7 +739,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                           type="number"
                           value={activeLayer.x || 0}
                           onChange={e => updateActiveLayerProp("x", parseInt(e.target.value) || 0)}
-                          style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                          style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                         />
                       </div>
                       <div>
@@ -748,7 +748,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                           type="number"
                           value={activeLayer.y || 0}
                           onChange={e => updateActiveLayerProp("y", parseInt(e.target.value) || 0)}
-                          style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                          style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                         />
                       </div>
                     </div>
@@ -778,7 +778,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                 {layers.map((layer, idx) => {
                   const isActive = activeLayerId === layer.id;
                   return (
-                    <div key={layer.id} onClick={() => setActiveLayerId(layer.id)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "8px", background: isActive ? "rgba(212,165,116,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${isActive ? "#d4a574" : "rgba(255,255,255,0.05)"}`, cursor: "pointer" }}>
+                    <div key={layer.id} onClick={() => setActiveLayerId(layer.id)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", borderRadius: "8px", background: isActive ? "rgba(225,73,109,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${isActive ? "#e1496d" : "rgba(255,255,255,0.05)"}`, cursor: "pointer" }}>
                       <span style={{ fontSize: "12px" }}>{layer.type === "image" ? "🖼️" : layer.type === "text" ? "T" : "🎨"}</span>
                       <span style={{ fontSize: "11px", flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{layer.name}</span>
                       
@@ -787,7 +787,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                       <button onClick={(e) => { e.stopPropagation(); moveLayerOrder(idx, -1); }} style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: "9px" }}>▼</button>
                       
                       {/* Visibility Toggle */}
-                      <button onClick={(e) => { e.stopPropagation(); toggleVisibility(layer.id); }} style={{ background: "none", border: "none", color: layer.visible ? "#d4a574" : "#666", cursor: "pointer", fontSize: "11px" }}>
+                      <button onClick={(e) => { e.stopPropagation(); toggleVisibility(layer.id); }} style={{ background: "none", border: "none", color: layer.visible ? "#e1496d" : "#666", cursor: "pointer", fontSize: "11px" }}>
                         {layer.visible ? "👁️" : "✕"}
                       </button>
                       {/* Delete */}
@@ -801,13 +801,13 @@ export default function ImageEditor({ onBack, user, initialProject }) {
         </div>
 
         {/* Center: Canvas preview workspace */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#080604", position: "relative" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#0f070b", position: "relative" }}>
           
           {/* Header Controls Strip */}
-          <div style={{ height: "48px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(212,165,116,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between" }}>
+          <div style={{ height: "48px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(225,73,109,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <button onClick={() => setShowLeaveModal(true)} className="tool-btn danger" style={{ padding: "5px 12px", fontSize: "11px" }}>Exit</button>
-              <div style={{ width: "1px", height: "16px", background: "rgba(212,165,116,0.15)" }} />
+              <div style={{ width: "1px", height: "16px", background: "rgba(225,73,109,0.15)" }} />
               <span style={{ fontFamily: "Syne", fontSize: "15px", fontWeight: 800 }}>ImageStudio</span>
             </div>
 
@@ -828,7 +828,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                   <button className="tool-btn" onClick={() => adjustLayerPosition("x", 10)} title="Move Right">▶</button>
                 </div>
               )}
-              <select value={exportFormat} onChange={e => setExportFormat(e.target.value)} style={{ background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.2)", borderRadius: "6px", fontSize: "11px", padding: "6px", outline: "none", cursor: "pointer" }}>
+              <select value={exportFormat} onChange={e => setExportFormat(e.target.value)} style={{ background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.2)", borderRadius: "6px", fontSize: "11px", padding: "6px", outline: "none", cursor: "pointer" }}>
                 <option value="png">PNG Format</option>
                 <option value="jpeg">JPEG Format</option>
               </select>
@@ -858,15 +858,15 @@ export default function ImageEditor({ onBack, user, initialProject }) {
           </div>
 
           {/* Zoom & Navigation control footer */}
-          <div style={{ height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(10,8,7,0.85)", borderTop: "1px solid rgba(212,165,116,0.08)", gap: "10px", fontSize: "11px" }}>
+          <div style={{ height: "32px", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(10,8,7,0.85)", borderTop: "1px solid rgba(225,73,109,0.08)", gap: "10px", fontSize: "11px" }}>
             <button style={{ background: "none", border: "none", color: "#666", cursor: "pointer" }} onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}>−</button>
-            <span style={{ color: "#d4a574" }}>Zoom: {Math.round(zoom * 100)}%</span>
+            <span style={{ color: "#e1496d" }}>Zoom: {Math.round(zoom * 100)}%</span>
             <button style={{ background: "none", border: "none", color: "#666", cursor: "pointer" }} onClick={() => setZoom(z => Math.min(2, z + 0.1))}>+</button>
           </div>
         </div>
 
         {/* Right Side: adjustments and preset LUTs */}
-        <div style={{ width: "260px", minWidth: "260px", borderLeft: "1px solid rgba(212,165,116,0.12)", background: "rgba(10,8,7,0.5)", padding: "16px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto" }}>
+        <div style={{ width: "260px", minWidth: "260px", borderLeft: "1px solid rgba(225,73,109,0.12)", background: "rgba(10,8,7,0.5)", padding: "16px", display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto" }}>
           
           {/* Preset LUT filters */}
           <div>
@@ -885,7 +885,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
             </div>
           </div>
 
-          <div style={{ height: "1px", background: "rgba(212,165,116,0.08)" }} />
+          <div style={{ height: "1px", background: "rgba(225,73,109,0.08)" }} />
 
           {/* Sliders */}
           <div>
@@ -902,7 +902,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
                 <div key={slider.label}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "11px" }}>
                     <span style={{ color: "#8c8780" }}>{slider.label}</span>
-                    <span style={{ color: "#d4a574" }}>{slider.val}</span>
+                    <span style={{ color: "#e1496d" }}>{slider.val}</span>
                   </div>
                   <input type="range" min={slider.min} max={slider.max} value={slider.val} onChange={e => slider.set(parseFloat(e.target.value))} className="filter-slider" />
                 </div>
@@ -915,7 +915,7 @@ export default function ImageEditor({ onBack, user, initialProject }) {
       {/* Exit confirmation modal */}
       {showLeaveModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, backdropFilter: "blur(12px)" }}>
-          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(212,165,116,0.25)", background: "#131110" }}>
+          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(225,73,109,0.25)", background: "#131110" }}>
             <div style={{ fontSize: "40px", marginBottom: "16px" }}>🎨</div>
             <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "10px", letterSpacing: "-0.03em" }}>Save artwork changes?</h3>
             <p style={{ fontSize: "13.5px", color: "#8c8780", lineHeight: 1.6, marginBottom: "24px", fontWeight: 300 }}>
@@ -924,12 +924,12 @@ export default function ImageEditor({ onBack, user, initialProject }) {
             
             {/* Input field for project title */}
             <div style={{ marginBottom: "24px", textAlign: "left" }}>
-              <label style={{ fontSize: "11px", color: "#d4a574", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Artwork Name</label>
+              <label style={{ fontSize: "11px", color: "#e1496d", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Artwork Name</label>
               <input 
                 type="text" 
                 value={projectTitle} 
                 onChange={e => setProjectTitle(e.target.value)} 
-                style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.18)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none" }}
+                style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.18)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none" }}
                 placeholder="My Awesome Art"
               />
             </div>

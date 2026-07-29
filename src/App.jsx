@@ -26,8 +26,8 @@ export default function App() {
 
   // Sync theme setting to body/root styles for seamless app-wide integration
   useEffect(() => {
-    document.documentElement.style.setProperty("--app-bg", appTheme === "dark" ? "#0c0a09" : "#faf8f5");
-    document.documentElement.style.setProperty("--app-text", appTheme === "dark" ? "#f5f0e8" : "#2d2d2d");
+    document.documentElement.style.setProperty("--app-bg", appTheme === "dark" ? "#1a0f14" : "#f7f4f7");
+    document.documentElement.style.setProperty("--app-text", appTheme === "dark" ? "#fdf2f4" : "#2d2d2d");
   }, [appTheme]);
 
   // Load session on startup

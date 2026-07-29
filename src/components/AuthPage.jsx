@@ -32,7 +32,7 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
     if (/[^A-Za-z0-9]/.test(password)) score++;
     setPasswordStrength(
       score >= 4 ? { score, label: "Strong",  color: "#22d3a8" } :
-      score >= 2 ? { score, label: "Medium",  color: "#f5c842" } :
+      score >= 2 ? { score, label: "Medium",  color: "#ec4899" } :
                   { score, label: "Weak",    color: "#ef4444" }
     );
   }, [password]);
@@ -109,20 +109,20 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
   return (
     <div style={{
       margin: 0, padding: 0, minHeight: "100vh", display: "flex", alignItems: "center",
-      justifyContent: "center", background: "#faf8f5",
+      justifyContent: "center", background: "#f7f4f7",
       fontFamily: "'Instrument Sans', sans-serif", position: "relative", overflow: "hidden"
     }}>
       {/* Background orbs */}
-      <div style={{ position:"absolute", width:"600px", height:"600px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(139,90,43,0.06)", top:"-200px", right:"-100px", pointerEvents:"none" }} />
-      <div style={{ position:"absolute", width:"500px", height:"500px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(212,165,116,0.05)", bottom:"-100px", left:"-150px", pointerEvents:"none" }} />
+      <div style={{ position:"absolute", width:"600px", height:"600px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(148,41,69,0.06)", top:"-200px", right:"-100px", pointerEvents:"none" }} />
+      <div style={{ position:"absolute", width:"500px", height:"500px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(225,73,109,0.05)", bottom:"-100px", left:"-150px", pointerEvents:"none" }} />
 
 
 
       {/* ── Main Auth Card ────────────────────────────────────────────────── */}
       <div style={{
         width:"100%", maxWidth:"460px", padding:"40px", borderRadius:"24px",
-        background:"rgba(255,255,255,0.85)", border:"1px solid rgba(139,90,43,0.15)",
-        backdropFilter:"blur(30px)", boxShadow:"0 20px 60px rgba(139,90,43,0.08)",
+        background:"rgba(255,255,255,0.85)", border:"1px solid rgba(148,41,69,0.15)",
+        backdropFilter:"blur(30px)", boxShadow:"0 20px 60px rgba(148,41,69,0.08)",
         position:"relative", zIndex:10, display:"flex", flexDirection:"column"
       }}>
         {/* Back button */}
@@ -134,7 +134,7 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
             alignSelf:"flex-start", marginBottom:"28px", padding:"4px 8px",
             borderRadius:"6px", transition:"all 0.2s"
           }}
-            onMouseEnter={e => { e.target.style.color="#8b5a2b"; e.target.style.background="rgba(139,90,43,0.06)"; }}
+            onMouseEnter={e => { e.target.style.color="#942945"; e.target.style.background="rgba(148,41,69,0.06)"; }}
             onMouseLeave={e => { e.target.style.color="#666666"; e.target.style.background="none"; }}
           >Back to home</button>
         )}
@@ -144,12 +144,12 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
           <div style={{ textAlign:"center", padding:"20px 0" }}>
             <div style={{
               display:"inline-flex", width:"64px", height:"64px", borderRadius:"50%",
-              background:"rgba(139,90,43,0.08)", alignItems:"center", justifyContent:"center",
+              background:"rgba(148,41,69,0.08)", alignItems:"center", justifyContent:"center",
               fontSize:"28px", marginBottom:"24px", position:"relative"
             }}>
               <div style={{
                 position:"absolute", width:"100%", height:"100%", borderRadius:"50%",
-                border:"2px solid rgba(139,90,43,0.1)", borderTop:"2px solid #8b5a2b",
+                border:"2px solid rgba(148,41,69,0.1)", borderTop:"2px solid #942945",
                 animation:"spin 1s linear infinite"
               }} />
               ⚙️
@@ -172,9 +172,9 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
                   }}>
                     <div style={{
                       width:"28px", height:"28px", borderRadius:"50%",
-                      background: isCompleted ? "#22d3a8" : isActive ? "rgba(139,90,43,0.15)" : "#e5e5e5",
+                      background: isCompleted ? "#22d3a8" : isActive ? "rgba(148,41,69,0.15)" : "#e5e5e5",
                       display:"flex", alignItems:"center", justifyContent:"center",
-                      fontSize:"13px", color: isCompleted ? "#fff" : "#8b5a2b",
+                      fontSize:"13px", color: isCompleted ? "#fff" : "#942945",
                       transition:"all 0.4s", flexShrink:0
                     }}>
                       {isCompleted ? "✓" : step.icon}
@@ -194,7 +194,7 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
           /* ── Form View ──────────────────────────────────────────────── */
           <div>
             <div style={{ fontFamily:"Syne,sans-serif", fontSize:"28px", fontWeight:800, letterSpacing:"-0.04em", color:"#2d2d2d", marginBottom:"6px" }}>
-              Creat<span style={{ color:"#8b5a2b" }}>ify</span>
+              Creat<span style={{ color:"#942945" }}>ify</span>
             </div>
             <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"20px", fontWeight:700, color:"#2d2d2d", marginBottom:"4px", letterSpacing:"-0.02em" }}>
               {isSignUp ? "Create your account" : "Welcome back"}
@@ -217,8 +217,8 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
                   <label style={{ display:"block", fontSize:"11px", fontWeight:500, color:"#666", marginBottom:"6px", letterSpacing:"0.03em" }}>FULL NAME</label>
                   <input type="text" placeholder="Enter your name" value={name} onChange={e => setName(e.target.value)}
                     style={inputStyle}
-                    onFocus={e => { e.target.style.borderColor="#8b5a2b"; e.target.style.boxShadow="0 0 0 3px rgba(139,90,43,0.12)"; }}
-                    onBlur={e  => { e.target.style.borderColor="rgba(139,90,43,0.2)"; e.target.style.boxShadow="none"; }}
+                    onFocus={e => { e.target.style.borderColor="#942945"; e.target.style.boxShadow="0 0 0 3px rgba(148,41,69,0.12)"; }}
+                    onBlur={e  => { e.target.style.borderColor="rgba(148,41,69,0.2)"; e.target.style.boxShadow="none"; }}
                   />
                 </div>
               )}
@@ -227,8 +227,8 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
                 <label style={{ display:"block", fontSize:"11px", fontWeight:500, color:"#666", marginBottom:"6px", letterSpacing:"0.03em" }}>EMAIL ADDRESS</label>
                 <input type="email" placeholder="name@company.com" value={email} onChange={e => setEmail(e.target.value)}
                   style={inputStyle}
-                  onFocus={e => { e.target.style.borderColor="#8b5a2b"; e.target.style.boxShadow="0 0 0 3px rgba(139,90,43,0.12)"; }}
-                  onBlur={e  => { e.target.style.borderColor="rgba(139,90,43,0.2)"; e.target.style.boxShadow="none"; }}
+                  onFocus={e => { e.target.style.borderColor="#942945"; e.target.style.boxShadow="0 0 0 3px rgba(148,41,69,0.12)"; }}
+                  onBlur={e  => { e.target.style.borderColor="rgba(148,41,69,0.2)"; e.target.style.boxShadow="none"; }}
                 />
               </div>
 
@@ -237,15 +237,15 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
                   <label style={{ fontSize:"11px", fontWeight:500, color:"#666", letterSpacing:"0.03em" }}>PASSWORD</label>
                   {!isSignUp && (
                     <a href="#" onClick={e => { e.preventDefault(); alert("Password reset email sent! (demo)"); }}
-                      style={{ fontSize:"11px", color:"#8b5a2b", textDecoration:"none", fontWeight:500 }}>
+                      style={{ fontSize:"11px", color:"#942945", textDecoration:"none", fontWeight:500 }}>
                       Forgot password?
                     </a>
                   )}
                 </div>
                 <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)}
                   style={inputStyle}
-                  onFocus={e => { e.target.style.borderColor="#8b5a2b"; e.target.style.boxShadow="0 0 0 3px rgba(139,90,43,0.12)"; }}
-                  onBlur={e  => { e.target.style.borderColor="rgba(139,90,43,0.2)"; e.target.style.boxShadow="none"; }}
+                  onFocus={e => { e.target.style.borderColor="#942945"; e.target.style.boxShadow="0 0 0 3px rgba(148,41,69,0.12)"; }}
+                  onBlur={e  => { e.target.style.borderColor="rgba(148,41,69,0.2)"; e.target.style.boxShadow="none"; }}
                 />
                 {isSignUp && password && (
                   <div style={{ marginTop:"10px" }}>
@@ -255,7 +255,7 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
                     </div>
                     <div style={{ display:"flex", gap:"4px" }}>
                       {[1,2,3,4,5].map(i => (
-                        <div key={i} style={{ flex:1, height:"4px", borderRadius:"2px", background: passwordStrength.score >= i ? passwordStrength.color : "rgba(139,90,43,0.1)", transition:"background 0.3s" }} />
+                        <div key={i} style={{ flex:1, height:"4px", borderRadius:"2px", background: passwordStrength.score >= i ? passwordStrength.color : "rgba(148,41,69,0.1)", transition:"background 0.3s" }} />
                       ))}
                     </div>
                   </div>
@@ -263,12 +263,12 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
               </div>
 
               <button type="submit" style={{
-                background:"#8b5a2b", color:"#fff", border:"none", padding:"14px",
+                background:"#942945", color:"#fff", border:"none", padding:"14px",
                 borderRadius:"12px", fontSize:"14px", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer",
-                transition:"all 0.2s", marginTop:"6px", boxShadow:"0 4px 12px rgba(139,90,43,0.18)"
+                transition:"all 0.2s", marginTop:"6px", boxShadow:"0 4px 12px rgba(148,41,69,0.18)"
               }}
                 onMouseEnter={e => { e.target.style.background="#704822"; e.target.style.transform="translateY(-1px)"; }}
-                onMouseLeave={e => { e.target.style.background="#8b5a2b"; e.target.style.transform="none"; }}
+                onMouseLeave={e => { e.target.style.background="#942945"; e.target.style.transform="none"; }}
               >
                 {isSignUp ? "Create Workspace" : "Access Workspace"}
               </button>
@@ -280,7 +280,7 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
             <div style={{ marginTop:"28px", textAlign:"center", fontSize:"13px", color:"#888", fontWeight:300 }}>
               {isSignUp ? "Already have an account? " : "Don't have an account? "}
               <button onClick={() => { setIsSignUp(!isSignUp); setError(""); }}
-                style={{ background:"none", border:"none", color:"#8b5a2b", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer", fontSize:"13px", padding:"0 2px" }}
+                style={{ background:"none", border:"none", color:"#942945", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer", fontSize:"13px", padding:"0 2px" }}
                 onMouseEnter={e => e.target.style.textDecoration="underline"}
                 onMouseLeave={e => e.target.style.textDecoration="none"}
               >
@@ -302,7 +302,7 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
 
 const inputStyle = {
   width:"100%", padding:"12px 16px", borderRadius:"12px",
-  border:"1px solid rgba(139,90,43,0.2)", background:"rgba(255,255,255,0.7)",
+  border:"1px solid rgba(148,41,69,0.2)", background:"rgba(255,255,255,0.7)",
   fontSize:"14px", fontFamily:"inherit", color:"#2d2d2d",
   outline:"none", transition:"all 0.2s", boxSizing:"border-box"
 };

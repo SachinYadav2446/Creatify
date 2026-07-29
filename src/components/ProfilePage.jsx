@@ -18,13 +18,13 @@ export default function ProfilePage({ onBack, onNavigate, user, onSignOut, theme
 
   // High contrast palette: Sidebar contrasts heavily with details pane
   const colors = {
-    bg: isDark ? "#0c0a09" : "#faf8f5",
-    text: isDark ? "#f5f0e8" : "#2d2d2d",
+    bg: isDark ? "#1a0f14" : "#f7f4f7",
+    text: isDark ? "#fdf2f4" : "#2d2d2d",
     sidebarBg: isDark ? "#161413" : "#f0eae1", 
     cardBg: isDark ? "rgba(23, 21, 20, 0.8)" : "rgba(255, 255, 255, 0.9)",
     border: isDark ? "rgba(212, 165, 116, 0.35)" : "rgba(139, 90, 43, 0.28)",
-    accent: "#8b5a2b",
-    accentLight: isDark ? "rgba(212,165,116,0.18)" : "rgba(139, 90, 43, 0.08)",
+    accent: "#942945",
+    accentLight: isDark ? "rgba(225,73,109,0.18)" : "rgba(139, 90, 43, 0.08)",
     subtext: isDark ? "#8c8780" : "#666666",
     navHover: isDark ? "rgba(212, 165, 116, 0.1)" : "rgba(139, 90, 43, 0.05)"
   };
@@ -172,10 +172,10 @@ export default function ProfilePage({ onBack, onNavigate, user, onSignOut, theme
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "36px", padding: "0 6px" }}>
           <div style={{
             width: "48px", height: "48px", borderRadius: "50%",
-            background: user.avatar && user.avatar.length > 2 ? "transparent" : "linear-gradient(135deg, #8b5a2b, #d4a574)",
+            background: user.avatar && user.avatar.length > 2 ? "transparent" : "linear-gradient(135deg, #942945, #e1496d)",
             color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
             fontWeight: 700, fontSize: "16px", flexShrink: 0, overflow: "hidden",
-            boxShadow: "0 4px 12px rgba(139,90,43,0.15)"
+            boxShadow: "0 4px 12px rgba(148,41,69,0.15)"
           }}>
             {user.avatar && user.avatar.length > 2 ? (
               <img src={user.avatar} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -528,7 +528,7 @@ const inputStyle = (isDark) => ({
   width: "100%",
   padding: "10px 14px",
   borderRadius: "10px",
-  border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(139,90,43,0.18)",
+  border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(148,41,69,0.18)",
   background: isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.7)",
   color: isDark ? "#ffffff" : "#2d2d2d",
   fontSize: "13.5px",

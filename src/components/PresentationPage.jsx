@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 
 // ── 30 Curated Themes with beautiful color swatches ──────────────────────────
 export const PRESENTATION_THEMES = [
-  { name: "Onyx Gold",       bg: "linear-gradient(135deg, #131110 0%, #0c0a09 100%)", primary: "#d4a574", secondary: "#8b5a2b", text: "#ffffff", desc: "Dark mode gold", archetype: "minimal" },
-  { name: "Champagne Cream",  bg: "linear-gradient(135deg, #f5f0e8 0%, #e8dec9 100%)", primary: "#8b5a2b", secondary: "#d4a574", text: "#2d2d2d", desc: "Elegant light beige", archetype: "editorial" },
+  { name: "Onyx Gold",       bg: "linear-gradient(135deg, #131110 0%, #1a0f14 100%)", primary: "#e1496d", secondary: "#942945", text: "#ffffff", desc: "Dark mode gold", archetype: "minimal" },
+  { name: "Champagne Cream",  bg: "linear-gradient(135deg, #fdf2f4 0%, #e8dec9 100%)", primary: "#942945", secondary: "#e1496d", text: "#2d2d2d", desc: "Elegant light beige", archetype: "editorial" },
   { name: "Royal Violet",    bg: "linear-gradient(135deg, #1f1035 0%, #0d061a 100%)", primary: "#c3b0cc", secondary: "#a88bb3", text: "#ffffff", desc: "Deep dark purple", archetype: "glass" },
   { name: "Forest Sage",     bg: "linear-gradient(135deg, #132219 0%, #08120c 100%)", primary: "#22d3a8", secondary: "#139c7b", text: "#ffffff", desc: "Sage green and mint", archetype: "organic" },
   { name: "Midnight Ocean",  bg: "linear-gradient(135deg, #091220 0%, #03070f 100%)", primary: "#29b6f6", secondary: "#0288d1", text: "#ffffff", desc: "Cool deep navy blue", archetype: "glass" },
@@ -25,7 +25,7 @@ export const PRESENTATION_THEMES = [
   { name: "Electric Lime",   bg: "linear-gradient(135deg, #090d0b 0%, #030403 100%)", primary: "#84cc16", secondary: "#65a30d", text: "#ffffff", desc: "Black and high-key lime", archetype: "cyber" },
   { name: "Vintage Sepia",   bg: "linear-gradient(135deg, #faf7f2 0%, #eee3d3 100%)", primary: "#5c3d2e", secondary: "#865439", text: "#3d241c", desc: "Nostalgic typewriter beige", archetype: "editorial" },
   { name: "Cotton Candy",    bg: "linear-gradient(135deg, #fae8ff 0%, #e0f2fe 100%)", primary: "#a21caf", secondary: "#0369a1", text: "#1e1b4b", desc: "Whimsical pastel pink-blue", archetype: "glass" },
-  { name: "Volcanic Ash",    bg: "linear-gradient(135deg, #1c1917 0%, #0c0a09 100%)", primary: "#ef4444", secondary: "#b91c1c", text: "#ffffff", desc: "Ashen grey & volcanic red", archetype: "cyber" },
+  { name: "Volcanic Ash",    bg: "linear-gradient(135deg, #1c1917 0%, #1a0f14 100%)", primary: "#ef4444", secondary: "#b91c1c", text: "#ffffff", desc: "Ashen grey & volcanic red", archetype: "cyber" },
   { name: "Matcha Latte",    bg: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", primary: "#166534", secondary: "#22c55e", text: "#14532d", desc: "Soft organic matcha tea", archetype: "organic" },
   { name: "Cherry Blossom",  bg: "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)", primary: "#be123c", secondary: "#fb7185", text: "#4c0519", desc: "Soft sakura floral pink", archetype: "organic" },
   { name: "Bronze Patina",   bg: "linear-gradient(135deg, #111e25 0%, #070d10 100%)", primary: "#e28743", secondary: "#c86b29", text: "#ffffff", desc: "Teal verdigris & cooper bronze", archetype: "minimal" },
@@ -202,7 +202,7 @@ export default function PresentationPage({ onBack, user, initialPresentation }) 
       category: "Presentation",
       tool: "Slide Studio",
       year: new Date().getFullYear().toString(),
-      accent: "#a0522d",
+      accent: "#7c233c",
       gradient: "linear-gradient(135deg, #111827 0%, #1f2937 50%, #030712 100%)",
       image: initialPresentation?.image || initialPresentation?.data?.image || "", 
       tags: [`${slides.length} Slides`, "Vector", "Pitch"],
@@ -1105,7 +1105,7 @@ import React from 'react';
 
 export default function PresentationSlide() {
   return (
-    <div className="w-full max-w-[850px] aspect-[16/9] rounded-2xl overflow-hidden relative flex flex-col justify-between p-[8%] select-none box-border shadow-2xl border border-[rgba(212,165,116,0.15)] bg-[${currentTheme.bg}] text-[${currentTheme.text}]"
+    <div className="w-full max-w-[850px] aspect-[16/9] rounded-2xl overflow-hidden relative flex flex-col justify-between p-[8%] select-none box-border shadow-2xl border border-[rgba(225,73,109,0.15)] bg-[${currentTheme.bg}] text-[${currentTheme.text}]"
       style={{ background: "${currentTheme.bg}" }}
     >
       {/* Background Ornament/Theme Archetype: ${currentTheme.styleName} */}
@@ -1137,12 +1137,12 @@ export default function PresentationSlide() {
   return (
     <div 
       onClick={() => { setSelectedElementId(null); setSelectedFieldId(null); setShowLayoutDropdown(false); }}
-      style={{ background: "#0c0a09", color: "#e5e5e5", fontFamily: "'Poppins', sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden", userSelect: "none", margin: 0, padding: 0 }}
+      style={{ background: "#1a0f14", color: "#e5e5e5", fontFamily: "'Poppins', sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden", userSelect: "none", margin: 0, padding: 0 }}
     >
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Instrument+Sans:wght@300;400;500;600&family=Syne:wght@700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&family=Inter:wght@400;700;900&family=Outfit:wght@300;600;800&display=swap" rel="stylesheet" />
       <style>{`
         *{margin:0;padding:0;box-sizing:border-box}
-        body,html{height:100%;width:100%;overflow:hidden;background:#0c0a09}
+        body,html{height:100%;width:100%;overflow:hidden;background:#1a0f14}
         @media print {
           body * {
             visibility: hidden;
@@ -1170,14 +1170,14 @@ export default function PresentationSlide() {
           }
         }
         ::-webkit-scrollbar{width:6px;height:6px}
-        ::-webkit-scrollbar-track{background:#0c0a09}
-        ::-webkit-scrollbar-thumb{background:rgba(212,165,116,0.2);border-radius:3px}
-        ::-webkit-scrollbar-thumb:hover{background:#d4a574}
+        ::-webkit-scrollbar-track{background:#1a0f14}
+        ::-webkit-scrollbar-thumb{background:rgba(225,73,109,0.2);border-radius:3px}
+        ::-webkit-scrollbar-thumb:hover{background:#e1496d}
         
-        .tool-btn{background:rgba(212,165,116,0.05);border:1px solid rgba(212,165,116,0.15);color:#e5e5e5;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'Poppins',sans-serif;font-weight:400;display:flex;align-items:center;gap:8px;transition:all 0.2s;white-space:nowrap}
-        .tool-btn:hover{background:rgba(212,165,116,0.15);color:#d4a574;border-color:#d4a574;transform:translateY(-1px)}
-        .tool-btn.primary{background:linear-gradient(135deg,#8b5a2b,#d4a574);border:none;color:#ffffff;box-shadow:0 2px 10px rgba(139,90,43,0.3);font-weight:500}
-        .tool-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(139,90,43,0.45);background:linear-gradient(135deg,#9c6a3b,#e5b685)}
+        .tool-btn{background:rgba(225,73,109,0.05);border:1px solid rgba(225,73,109,0.15);color:#e5e5e5;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'Poppins',sans-serif;font-weight:400;display:flex;align-items:center;gap:8px;transition:all 0.2s;white-space:nowrap}
+        .tool-btn:hover{background:rgba(225,73,109,0.15);color:#e1496d;border-color:#e1496d;transform:translateY(-1px)}
+        .tool-btn.primary{background:linear-gradient(135deg,#942945,#e1496d);border:none;color:#ffffff;box-shadow:0 2px 10px rgba(148,41,69,0.3);font-weight:500}
+        .tool-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(148,41,69,0.45);background:linear-gradient(135deg,#9c6a3b,#e5b685)}
         .tool-btn.danger{color:#ef4444;border-color:rgba(239,68,68,0.2);background:rgba(239,68,68,0.04)}
         .tool-btn.danger:hover{background:rgba(239,68,68,0.15);color:#ef4444;border-color:#ef4444;transform:translateY(-1px)}
         
@@ -1194,14 +1194,14 @@ export default function PresentationSlide() {
         }
         .theme-swatch{width:100%;height:46px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all 0.2s;display:flex;flex-direction:column;padding:8px;justify-content:center;font-size:11px;font-family:'Poppins',sans-serif}
         .theme-swatch:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,0.15)}
-        .theme-swatch.active{border-color:#d4a574;box-shadow:0 0 8px rgba(212,165,116,0.3)}
+        .theme-swatch.active{border-color:#e1496d;box-shadow:0 0 8px rgba(225,73,109,0.3)}
         
         .slide-thumb{border:2px solid transparent;border-radius:12px;overflow:hidden;aspect-ratio:16/9;width:100%;cursor:pointer;background:#1a1a1a;position:relative;transition:all 0.25s}
-        .slide-thumb:hover{transform:scale(1.02);border-color:rgba(212,165,116,0.3)}
-        .slide-thumb.active{border-color:#d4a574;box-shadow:0 0 12px rgba(212,165,116,0.25)}
+        .slide-thumb:hover{transform:scale(1.02);border-color:rgba(225,73,109,0.3)}
+        .slide-thumb.active{border-color:#e1496d;box-shadow:0 0 12px rgba(225,73,109,0.25)}
 
-        .element-btn{background:rgba(212,165,116,0.03);border:1px dashed rgba(212,165,116,0.2);color:#e5e5e5;padding:12px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;font-size:11px;font-family:'Poppins',sans-serif}
-        .element-btn:hover{background:rgba(212,165,116,0.1);border-color:#d4a574;color:#d4a574;transform:translateY(-1px)}
+        .element-btn{background:rgba(225,73,109,0.03);border:1px dashed rgba(225,73,109,0.2);color:#e5e5e5;padding:12px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;font-size:11px;font-family:'Poppins',sans-serif}
+        .element-btn:hover{background:rgba(225,73,109,0.1);border-color:#e1496d;color:#e1496d;transform:translateY(-1px)}
 
         @keyframes slideFadeIn {
           from { opacity: 0; transform: translateY(10px); }
@@ -1228,7 +1228,7 @@ export default function PresentationSlide() {
       `}</style>
 
       {/* Header bar */}
-      <div className="sidebar-panel" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: "1px solid rgba(212,165,116,0.12)", flexShrink: 0, zIndex: 10 }}>
+      <div className="sidebar-panel" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", borderBottom: "1px solid rgba(225,73,109,0.12)", flexShrink: 0, zIndex: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {/* Back button */}
           <button onClick={handleBackClick} className="tool-btn" style={{ padding: "6px 14px", fontSize: "12px", gap: "6px" }} title="Back to Home">
@@ -1236,17 +1236,17 @@ export default function PresentationSlide() {
             Back
           </button>
 
-          <div style={{ width: "1px", height: "20px", background: "rgba(212,165,116,0.15)" }} />
+          <div style={{ width: "1px", height: "20px", background: "rgba(225,73,109,0.15)" }} />
 
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }} onClick={handleBackClick}>
-            <div style={{ width: "24px", height: "24px", borderRadius: "6px", background: "linear-gradient(135deg,#8b5a2b,#d4a574)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: "24px", height: "24px", borderRadius: "6px", background: "linear-gradient(135deg,#942945,#e1496d)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8 L8 2 L13 8 L8 14 Z" fill="white" opacity="0.9"/><circle cx="8" cy="8" r="2" fill="white"/></svg>
             </div>
             <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "18px", letterSpacing: "-0.04em", color: "#ffffff" }}>
-              Creat<span style={{ color: "#d4a574" }}>ify</span>
+              Creat<span style={{ color: "#e1496d" }}>ify</span>
             </div>
-            <span style={{ fontSize: "9px", background: "rgba(212, 165, 116, 0.12)", border: "1px solid rgba(212, 165, 116, 0.3)", color: "#d4a574", padding: "2px 6px", borderRadius: "8px", fontWeight: 600, fontFamily: "'Poppins', sans-serif", letterSpacing: "0.02em" }}>SLIDES</span>
+            <span style={{ fontSize: "9px", background: "rgba(212, 165, 116, 0.12)", border: "1px solid rgba(212, 165, 116, 0.3)", color: "#e1496d", padding: "2px 6px", borderRadius: "8px", fontWeight: 600, fontFamily: "'Poppins', sans-serif", letterSpacing: "0.02em" }}>SLIDES</span>
           </div>
         </div>
 
@@ -1261,11 +1261,11 @@ export default function PresentationSlide() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           </button>
 
-          <div style={{ width: "1px", height: "20px", background: "rgba(212,165,116,0.15)" }} />
+          <div style={{ width: "1px", height: "20px", background: "rgba(225,73,109,0.15)" }} />
 
           {/* User profile */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px", background: "rgba(212, 165, 116, 0.08)", border: "1px solid rgba(212, 165, 116, 0.2)", padding: "4px 12px 4px 6px", borderRadius: "30px" }}>
-            <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "linear-gradient(135deg, #8b5a2b, #d4a574)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, fontFamily: "'Poppins', sans-serif" }}>
+            <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "linear-gradient(135deg, #942945, #e1496d)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 700, fontFamily: "'Poppins', sans-serif" }}>
               {user ? user.name[0].toUpperCase() : "C"}
             </div>
             <span style={{ fontSize: "12px", color: "#e5e5e5", fontWeight: 500, fontFamily: "'Poppins', sans-serif" }}>
@@ -1276,13 +1276,13 @@ export default function PresentationSlide() {
       </div>
 
       {/* Main Layout */}
-      <div style={{ display: "flex", flex: 1, overflow: "hidden", background: "#0c0a09" }}>
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", background: "#1a0f14" }}>
         
         {/* Left Tabbed Sidebar Container */}
         <div style={{ display: "flex", height: "100%", zIndex: 5, flexShrink: 0 }}>
           
           {/* Narrow 68px Icon Rail */}
-          <div className="sidebar-panel" style={{ width: "68px", minWidth: "68px", borderRight: "1px solid rgba(212,165,116,0.12)", display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "16px", gap: "20px", background: "rgba(19, 17, 16, 0.95)" }}>
+          <div className="sidebar-panel" style={{ width: "68px", minWidth: "68px", borderRight: "1px solid rgba(225,73,109,0.12)", display: "flex", flexDirection: "column", alignItems: "center", paddingTop: "16px", gap: "20px", background: "rgba(19, 17, 16, 0.95)" }}>
             {[
               { id: "slides",   label: "Slides",    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg> },
               { id: "elements", label: "Elements",  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 22 22 22"/><circle cx="12" cy="12" r="4" opacity="0.4"/></svg> },
@@ -1302,7 +1302,7 @@ export default function PresentationSlide() {
                     }
                   }}
                   style={{
-                    background: "none", border: "none", color: active && leftPanelOpen ? "#d4a574" : "#8c8780", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", width: "100%", padding: "8px 0", borderLeft: active && leftPanelOpen ? "3px solid #d4a574" : "3px solid transparent", transition: "all 0.2s"
+                    background: "none", border: "none", color: active && leftPanelOpen ? "#e1496d" : "#8c8780", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", width: "100%", padding: "8px 0", borderLeft: active && leftPanelOpen ? "3px solid #e1496d" : "3px solid transparent", transition: "all 0.2s"
                   }}
                   title={tab.label}
                 >
@@ -1317,7 +1317,7 @@ export default function PresentationSlide() {
               <button 
                 onClick={() => setLeftPanelOpen(!leftPanelOpen)}
                 className="tool-btn"
-                style={{ padding: "8px", borderRadius: "50%", width: "32px", height: "32px", justifyContent: "center", background: "rgba(212,165,116,0.05)" }}
+                style={{ padding: "8px", borderRadius: "50%", width: "32px", height: "32px", justifyContent: "center", background: "rgba(225,73,109,0.05)" }}
                 title={leftPanelOpen ? "Collapse Panel" : "Expand Panel"}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transform: leftPanelOpen ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.3s" }}>
@@ -1335,7 +1335,7 @@ export default function PresentationSlide() {
               minWidth: leftPanelOpen ? "260px" : "0px", 
               opacity: leftPanelOpen ? 1 : 0,
               pointerEvents: leftPanelOpen ? "auto" : "none",
-              borderRight: leftPanelOpen ? "1px solid rgba(212,165,116,0.12)" : "none", 
+              borderRight: leftPanelOpen ? "1px solid rgba(225,73,109,0.12)" : "none", 
               display: "flex", 
               flexDirection: "column", 
               height: "100%", 
@@ -1345,8 +1345,8 @@ export default function PresentationSlide() {
             }}
           >
             {/* Tab Content Header */}
-            <div style={{ padding: "16px 16px 8px 16px", display: "flex", alignItems: "center", borderBottom: "1px solid rgba(212,165,116,0.08)" }}>
-              <span style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#d4a574", fontWeight: 600, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase" }}>
+            <div style={{ padding: "16px 16px 8px 16px", display: "flex", alignItems: "center", borderBottom: "1px solid rgba(225,73,109,0.08)" }}>
+              <span style={{ fontSize: "11px", letterSpacing: "0.08em", color: "#e1496d", fontWeight: 600, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase" }}>
                 {leftTab === "slides" ? "Slides Outline" : leftTab === "elements" ? "Elements Panel" : leftTab === "themes" ? "Themes Presets" : "Export Tools"}
               </span>
             </div>
@@ -1357,7 +1357,7 @@ export default function PresentationSlide() {
               {/* 📁 SLIDES Tab */}
               {leftTab === "slides" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <div style={{ paddingBottom: "12px", borderBottom: "1px solid rgba(212,165,116,0.08)", display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div style={{ paddingBottom: "12px", borderBottom: "1px solid rgba(225,73,109,0.08)", display: "flex", flexDirection: "column", gap: "10px" }}>
                     <button className="tool-btn primary" style={{ width: "100%", justifyContent: "center" }} onClick={addSlide}>
                       + Add Slide
                     </button>
@@ -1370,7 +1370,7 @@ export default function PresentationSlide() {
                       return (
                         <div key={s.id} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <span style={{ fontSize: "10px", color: active ? "#d4a574" : "#8c8780", fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}>Slide {idx + 1}</span>
+                            <span style={{ fontSize: "10px", color: active ? "#e1496d" : "#8c8780", fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}>Slide {idx + 1}</span>
                             <div style={{ display: "flex", gap: "4px" }}>
                               <button style={{ background: "none", border: "none", color: idx === 0 ? "#444" : "#8c8780", fontSize: "10px", cursor: idx === 0 ? "not-allowed" : "pointer" }} onClick={(e) => { e.stopPropagation(); moveSlide(idx, "up"); }} disabled={idx === 0}>▲</button>
                               <button style={{ background: "none", border: "none", color: idx === slides.length - 1 ? "#444" : "#8c8780", fontSize: "10px", cursor: idx === slides.length - 1 ? "not-allowed" : "pointer" }} onClick={(e) => { e.stopPropagation(); moveSlide(idx, "down"); }} disabled={idx === slides.length - 1}>▼</button>
@@ -1401,7 +1401,7 @@ export default function PresentationSlide() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                   
                   {/* File Upload Importer */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", borderBottom: "1px solid rgba(212,165,116,0.08)", paddingBottom: "14px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", borderBottom: "1px solid rgba(225,73,109,0.08)", paddingBottom: "14px" }}>
                     <label style={{ fontSize: "9px", color: "#8c8780", fontWeight: 500, letterSpacing: "0.03em" }}>MY UPLOADS</label>
                     <button className="tool-btn primary" style={{ justifyContent: "center", width: "100%", gap: "6px" }} onClick={() => imageInputRef.current.click()}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -1518,7 +1518,7 @@ export default function PresentationSlide() {
                     <select 
                       value={transitionStyle} 
                       onChange={e => setTransitionStyle(e.target.value)}
-                      style={{ ...editorInputStyle, background: "#131110", border: "1px solid rgba(212,165,116,0.2)", cursor: "pointer" }}
+                      style={{ ...editorInputStyle, background: "#131110", border: "1px solid rgba(225,73,109,0.2)", cursor: "pointer" }}
                     >
                       <option value="none">No Transition</option>
                       <option value="fade">Elegant Fade</option>
@@ -1528,7 +1528,7 @@ export default function PresentationSlide() {
                     </select>
                   </div>
 
-                  <div style={{ width: "100%", height: "1px", background: "rgba(212,165,116,0.1)", margin: "4px 0" }} />
+                  <div style={{ width: "100%", height: "1px", background: "rgba(225,73,109,0.1)", margin: "4px 0" }} />
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     <label style={{ fontSize: "9px", color: "#8c8780" }}>REACT EXPORTER</label>
@@ -1537,7 +1537,7 @@ export default function PresentationSlide() {
                     </button>
                   </div>
 
-                  <div style={{ width: "100%", height: "1px", background: "rgba(212,165,116,0.1)", margin: "4px 0" }} />
+                  <div style={{ width: "100%", height: "1px", background: "rgba(225,73,109,0.1)", margin: "4px 0" }} />
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     <label style={{ fontSize: "9px", color: "#8c8780" }}>DOWNLOAD PRESENTATION</label>
@@ -1556,7 +1556,7 @@ export default function PresentationSlide() {
         </div>
 
         {/* Center Live Slide Preview Canvas */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "#0c0a09", padding: "24px" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", background: "#1a0f14", padding: "24px" }}>
           
           {/* Top Canvas Toolbar */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexShrink: 0, gap: "16px", minHeight: "40px" }}>
@@ -1595,10 +1595,10 @@ export default function PresentationSlide() {
                         width: "100%", 
                         justifyContent: "flex-start", 
                         border: "none", 
-                        background: activeSlide.layout === l.id ? "rgba(212,165,116,0.15)" : "none", 
+                        background: activeSlide.layout === l.id ? "rgba(225,73,109,0.15)" : "none", 
                         padding: "8px 10px", 
                         borderRadius: "6px",
-                        color: activeSlide.layout === l.id ? "#d4a574" : "#e5e5e5"
+                        color: activeSlide.layout === l.id ? "#e1496d" : "#e5e5e5"
                       }} 
                       onClick={(e) => { e.stopPropagation(); updateSlideContent("layout", l.id); setShowLayoutDropdown(false); }}
                     >
@@ -1614,7 +1614,7 @@ export default function PresentationSlide() {
               const el = activeSlide.elements?.find(x => x.id === selectedElementId);
               if (!el) return null;
               return (
-                <div className="glass-panel" style={{ display: "flex", gap: "8px", alignItems: "center", padding: "4px 12px", borderRadius: "8px", border: "1px solid rgba(212,165,116,0.2)" }} onClick={(e) => e.stopPropagation()}>
+                <div className="glass-panel" style={{ display: "flex", gap: "8px", alignItems: "center", padding: "4px 12px", borderRadius: "8px", border: "1px solid rgba(225,73,109,0.2)" }} onClick={(e) => e.stopPropagation()}>
                   
                   {/* TEXT ELEMENT CONTROLS */}
                   {el.type === "text" && (
@@ -1623,7 +1623,7 @@ export default function PresentationSlide() {
                       <select 
                         value={el.fontFamily || "Poppins"} 
                         onChange={e => updateElementProperty(el.id, "fontFamily", e.target.value)}
-                        style={{ background: "#131110", border: "1px solid rgba(212,165,116,0.15)", color: "#fff", fontSize: "11px", padding: "4px 8px", borderRadius: "6px", outline: "none", cursor: "pointer" }}
+                        style={{ background: "#131110", border: "1px solid rgba(225,73,109,0.15)", color: "#fff", fontSize: "11px", padding: "4px 8px", borderRadius: "6px", outline: "none", cursor: "pointer" }}
                       >
                         <option value="Poppins">Poppins</option>
                         <option value="Syne">Syne</option>
@@ -1638,7 +1638,7 @@ export default function PresentationSlide() {
                       <select 
                         value={el.fontWeight || "normal"} 
                         onChange={e => updateElementProperty(el.id, "fontWeight", e.target.value)}
-                        style={{ background: "#131110", border: "1px solid rgba(212,165,116,0.15)", color: "#fff", fontSize: "11px", padding: "4px 8px", borderRadius: "6px", outline: "none", cursor: "pointer" }}
+                        style={{ background: "#131110", border: "1px solid rgba(225,73,109,0.15)", color: "#fff", fontSize: "11px", padding: "4px 8px", borderRadius: "6px", outline: "none", cursor: "pointer" }}
                       >
                         <option value="300">Light</option>
                         <option value="normal">Normal</option>
@@ -1652,8 +1652,8 @@ export default function PresentationSlide() {
                       <button 
                         onClick={(e) => { e.stopPropagation(); updateElementProperty(el.id, "fontStyle", el.fontStyle === "italic" ? "normal" : "italic"); }}
                         style={{
-                          background: el.fontStyle === "italic" ? "rgba(212,165,116,0.2)" : "none",
-                          border: "none", color: el.fontStyle === "italic" ? "#d4a574" : "#8c8780",
+                          background: el.fontStyle === "italic" ? "rgba(225,73,109,0.2)" : "none",
+                          border: "none", color: el.fontStyle === "italic" ? "#e1496d" : "#8c8780",
                           padding: "4px 8px", borderRadius: "6px", fontSize: "11px", cursor: "pointer", fontWeight: "bold"
                         }}
                       >
@@ -1667,7 +1667,7 @@ export default function PresentationSlide() {
                           type="number" min="8" max="100" 
                           value={el.fontSize || 16} 
                           onChange={e => updateElementProperty(el.id, "fontSize", parseInt(e.target.value) || 12)} 
-                          style={{ width: "45px", background: "#131110", border: "1px solid rgba(212,165,116,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", textAlign: "center", outline: "none" }} 
+                          style={{ width: "45px", background: "#131110", border: "1px solid rgba(225,73,109,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", textAlign: "center", outline: "none" }} 
                         />
                       </div>
 
@@ -1688,7 +1688,7 @@ export default function PresentationSlide() {
                             key={align} 
                             onClick={(e) => { e.stopPropagation(); updateElementProperty(el.id, "align", align); }}
                             style={{
-                              border: "none", background: el.align === align ? "rgba(212,165,116,0.2)" : "none", color: el.align === align ? "#d4a574" : "#8c8780", padding: "2px 6px", borderRadius: "4px", fontSize: "9px", cursor: "pointer"
+                              border: "none", background: el.align === align ? "rgba(225,73,109,0.2)" : "none", color: el.align === align ? "#e1496d" : "#8c8780", padding: "2px 6px", borderRadius: "4px", fontSize: "9px", cursor: "pointer"
                             }}
                           >
                             {align[0].toUpperCase()}
@@ -1703,14 +1703,14 @@ export default function PresentationSlide() {
                     <>
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                         <span style={{ fontSize: "9px", color: "#8c8780" }}>W:</span>
-                        <input type="number" min="2" max="100" value={Math.round(el.w) || 15} onChange={e => updateElementProperty(el.id, "w", parseFloat(e.target.value) || 15)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(212,165,116,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
+                        <input type="number" min="2" max="100" value={Math.round(el.w) || 15} onChange={e => updateElementProperty(el.id, "w", parseFloat(e.target.value) || 15)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(225,73,109,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
                         <span style={{ fontSize: "9px", color: "#8c8780" }}>H:</span>
-                        <input type="number" min="2" max="100" value={Math.round(el.h) || 15} onChange={e => updateElementProperty(el.id, "h", parseFloat(e.target.value) || 15)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(212,165,116,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
+                        <input type="number" min="2" max="100" value={Math.round(el.h) || 15} onChange={e => updateElementProperty(el.id, "h", parseFloat(e.target.value) || 15)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(225,73,109,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                         <span style={{ fontSize: "9px", color: "#8c8780" }}>Rot:</span>
-                        <input type="number" min="-360" max="360" value={el.rotation || 0} onChange={e => updateElementProperty(el.id, "rotation", parseInt(e.target.value) || 0)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(212,165,116,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
+                        <input type="number" min="-360" max="360" value={el.rotation || 0} onChange={e => updateElementProperty(el.id, "rotation", parseInt(e.target.value) || 0)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(225,73,109,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
                       </div>
 
                       <input type="color" value={el.color || theme.primary} onChange={e => updateElementProperty(el.id, "color", e.target.value)} style={{ background: "none", border: "none", width: "22px", height: "22px", cursor: "pointer", padding: 0 }} />
@@ -1729,14 +1729,14 @@ export default function PresentationSlide() {
                     <>
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                         <span style={{ fontSize: "9px", color: "#8c8780" }}>W:</span>
-                        <input type="number" min="2" max="100" value={Math.round(el.w) || 25} onChange={e => updateElementProperty(el.id, "w", parseFloat(e.target.value) || 25)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(212,165,116,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
+                        <input type="number" min="2" max="100" value={Math.round(el.w) || 25} onChange={e => updateElementProperty(el.id, "w", parseFloat(e.target.value) || 25)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(225,73,109,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
                         <span style={{ fontSize: "9px", color: "#8c8780" }}>H:</span>
-                        <input type="number" min="2" max="100" value={Math.round(el.h) || 25} onChange={e => updateElementProperty(el.id, "h", parseFloat(e.target.value) || 25)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(212,165,116,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
+                        <input type="number" min="2" max="100" value={Math.round(el.h) || 25} onChange={e => updateElementProperty(el.id, "h", parseFloat(e.target.value) || 25)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(225,73,109,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                         <span style={{ fontSize: "9px", color: "#8c8780" }}>Rot:</span>
-                        <input type="number" min="-360" max="360" value={el.rotation || 0} onChange={e => updateElementProperty(el.id, "rotation", parseInt(e.target.value) || 0)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(212,165,116,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
+                        <input type="number" min="-360" max="360" value={el.rotation || 0} onChange={e => updateElementProperty(el.id, "rotation", parseInt(e.target.value) || 0)} style={{ width: "42px", background: "#131110", border: "1px solid rgba(225,73,109,0.15)", color: "#fff", fontSize: "11px", padding: "4px", borderRadius: "6px", outline: "none" }} />
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -1747,7 +1747,7 @@ export default function PresentationSlide() {
                   )}
 
                   {/* GLOBAL CONTROLS FOR ALL ELEMENT TYPES (OPACITY, LAYER ORDER, DUPLICATE, DELETE) */}
-                  <div style={{ width: "1px", height: "16px", background: "rgba(212,165,116,0.2)" }} />
+                  <div style={{ width: "1px", height: "16px", background: "rgba(225,73,109,0.2)" }} />
 
                   {/* Opacity */}
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -1759,12 +1759,12 @@ export default function PresentationSlide() {
                   <button onClick={(e) => { e.stopPropagation(); updateElementProperty(el.id, "zIndex", (el.zIndex || 10) + 1); }} style={{ background: "none", border: "none", color: "#8c8780", fontSize: "11px", cursor: "pointer", padding: "2px" }} title="Bring to Front">▲</button>
                   <button onClick={(e) => { e.stopPropagation(); updateElementProperty(el.id, "zIndex", Math.max(1, (el.zIndex || 10) - 1)); }} style={{ background: "none", border: "none", color: "#8c8780", fontSize: "11px", cursor: "pointer", padding: "2px" }} title="Send to Back">▼</button>
 
-                  <div style={{ width: "1px", height: "16px", background: "rgba(212,165,116,0.2)" }} />
+                  <div style={{ width: "1px", height: "16px", background: "rgba(225,73,109,0.2)" }} />
 
                   {/* Duplicate */}
                   <button 
                     onClick={(e) => { e.stopPropagation(); duplicateElement(el.id); }} 
-                    style={{ background: "none", border: "none", color: "#d4a574", fontSize: "10px", fontWeight: 500, cursor: "pointer", padding: "2px 4px" }}
+                    style={{ background: "none", border: "none", color: "#e1496d", fontSize: "10px", fontWeight: 500, cursor: "pointer", padding: "2px 4px" }}
                     title="Duplicate Element"
                   >
                     Dup
@@ -2408,11 +2408,11 @@ export default function PresentationSlide() {
             </div>
 
             <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 6, height: 8, overflow: "hidden", marginTop: "8px" }}>
-              <div style={{ height: "100%", background: "linear-gradient(90deg,#8b5a2b,#d4a574)", borderRadius: 6, width: `${exportProgress}%`, transition: "width 0.1s" }} />
+              <div style={{ height: "100%", background: "linear-gradient(90deg,#942945,#e1496d)", borderRadius: 6, width: `${exportProgress}%`, transition: "width 0.1s" }} />
             </div>
 
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-              <span style={{ color: "#d4a574", fontWeight: 600 }}>
+              <span style={{ color: "#e1496d", fontWeight: 600 }}>
                 {exportProgress === 100 ? "✓ Success" : `${Math.round(exportProgress)}%`}
               </span>
               <span style={{ color: "#8c8780" }}>
@@ -2451,7 +2451,7 @@ export default function PresentationSlide() {
               readOnly 
               value={generateReactCode()} 
               style={{
-                width: "100%", height: "360px", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.2)", borderRadius: "10px", color: "#a5d6a7", padding: "12px", fontSize: "11px", fontFamily: "monospace", outline: "none", resize: "none"
+                width: "100%", height: "360px", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.2)", borderRadius: "10px", color: "#a5d6a7", padding: "12px", fontSize: "11px", fontFamily: "monospace", outline: "none", resize: "none"
               }} 
             />
 
@@ -2468,7 +2468,7 @@ export default function PresentationSlide() {
       {/* Leave Confirmation Modal */}
       {showLeaveModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100001 }}>
-          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(212,165,116,0.25)", background: "#131110" }}>
+          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(225,73,109,0.25)", background: "#131110" }}>
             <div style={{ fontSize: "40px", marginBottom: "16px" }}>💾</div>
             <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "10px", letterSpacing: "-0.03em" }}>Save presentation?</h3>
             <p style={{ fontSize: "13.5px", color: "#8c8780", lineHeight: 1.6, marginBottom: "24px", fontWeight: 300 }}>
@@ -2477,12 +2477,12 @@ export default function PresentationSlide() {
             
             {/* Input field for project title */}
             <div style={{ marginBottom: "24px", textAlign: "left" }}>
-              <label style={{ fontSize: "11px", color: "#d4a574", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Presentation Title</label>
+              <label style={{ fontSize: "11px", color: "#e1496d", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Presentation Title</label>
               <input 
                 type="text" 
                 value={projectTitle} 
                 onChange={e => setProjectTitle(e.target.value)} 
-                style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.18)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none", transition: "border-color 0.2s" }}
+                style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.18)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none", transition: "border-color 0.2s" }}
                 placeholder="My Awesome Presentation"
               />
             </div>

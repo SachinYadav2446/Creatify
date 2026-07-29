@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 
 const BRAND_PALETTES = [
-  { name: "Gold Obsidian", bg: "#0c0a09", primary: "#d4a574", secondary: "#8b5a2b", text: "#f5f0e8" },
+  { name: "Gold Obsidian", bg: "#1a0f14", primary: "#e1496d", secondary: "#942945", text: "#fdf2f4" },
   { name: "Cyber Neon", bg: "#030712", primary: "#22d3a8", secondary: "#3b82f6", text: "#f3f4f6" },
-  { name: "Nordic Forest", bg: "#faf8f5", primary: "#2d5a27", secondary: "#8fbc8f", text: "#2d2d2d" },
+  { name: "Nordic Forest", bg: "#f7f4f7", primary: "#2d5a27", secondary: "#8fbc8f", text: "#2d2d2d" },
   { name: "Royal Violet", bg: "#0f0728", primary: "#a855f7", secondary: "#ec4899", text: "#fdf2ff" }
 ];
 
@@ -33,12 +33,12 @@ export default function LogoMaker({ onBack, user, initialProject }) {
 
   // Editor states
   const [logoElements, setLogoElements] = useState([
-    { id: "el_icon", type: "icon", shape: "rocket", x: 150, y: 110, size: 70, color: "#d4a574", opacity: 1, rotate: 0, fillType: "solid", strokeColor: "#d4a574", strokeWidth: 0, strokeType: "none" },
-    { id: "el_brand", type: "text", text: "CINECUT", x: 150, y: 220, size: 32, font: "Syne", color: "#f5f0e8", letterSpacing: 3, rotate: 0, fillType: "solid", strokeColor: "#d4a574", strokeWidth: 0, strokeType: "none", opacity: 1 },
-    { id: "el_tag", type: "text", text: "Create without limits", x: 150, y: 260, size: 12, font: "Poppins", color: "#8c8780", letterSpacing: 1, rotate: 0, fillType: "solid", strokeColor: "#d4a574", strokeWidth: 0, strokeType: "none", opacity: 1 }
+    { id: "el_icon", type: "icon", shape: "rocket", x: 150, y: 110, size: 70, color: "#e1496d", opacity: 1, rotate: 0, fillType: "solid", strokeColor: "#e1496d", strokeWidth: 0, strokeType: "none" },
+    { id: "el_brand", type: "text", text: "CINECUT", x: 150, y: 220, size: 32, font: "Syne", color: "#fdf2f4", letterSpacing: 3, rotate: 0, fillType: "solid", strokeColor: "#e1496d", strokeWidth: 0, strokeType: "none", opacity: 1 },
+    { id: "el_tag", type: "text", text: "Create without limits", x: 150, y: 260, size: 12, font: "Poppins", color: "#8c8780", letterSpacing: 1, rotate: 0, fillType: "solid", strokeColor: "#e1496d", strokeWidth: 0, strokeType: "none", opacity: 1 }
   ]);
-  const [canvasBg, setCanvasBg] = useState("#0c0a09");
-  const [lastCanvasColor, setLastCanvasColor] = useState("#0c0a09");
+  const [canvasBg, setCanvasBg] = useState("#1a0f14");
+  const [lastCanvasColor, setLastCanvasColor] = useState("#1a0f14");
   const [activeElementId, setActiveElementId] = useState("el_icon");
 
   const [activePaletteIdx, setActivePaletteIdx] = useState(0);
@@ -133,16 +133,16 @@ export default function LogoMaker({ onBack, user, initialProject }) {
             { id: "el_brand", type: "text", text: brandName, x: 150, y: 220, size: 28, font: "Outfit", color: "#2d2d2d", letterSpacing: 1, rotate: 0 },
             { id: "el_tag", type: "text", text: tagline, x: 150, y: 255, size: 12, font: "Poppins", color: "#8fbc8f", letterSpacing: 0, rotate: 0 }
           ],
-          bg: "#faf8f5"
+          bg: "#f7f4f7"
         },
         {
           name: "Modern Stellar",
           elements: [
-            { id: "el_icon", type: "icon", shape: "rocket", x: 150, y: 100, size: 85, color: "#d4a574", opacity: 1, rotate: -30 },
-            { id: "el_brand", type: "text", text: brandName.toUpperCase(), x: 150, y: 220, size: 30, font: "Syne", color: "#f5f0e8", letterSpacing: 3, rotate: 0 },
-            { id: "el_tag", type: "text", text: tagline, x: 150, y: 260, size: 10, font: "Poppins", color: "#8b5a2b", letterSpacing: 1, rotate: 0 }
+            { id: "el_icon", type: "icon", shape: "rocket", x: 150, y: 100, size: 85, color: "#e1496d", opacity: 1, rotate: -30 },
+            { id: "el_brand", type: "text", text: brandName.toUpperCase(), x: 150, y: 220, size: 30, font: "Syne", color: "#fdf2f4", letterSpacing: 3, rotate: 0 },
+            { id: "el_tag", type: "text", text: tagline, x: 150, y: 260, size: 10, font: "Poppins", color: "#942945", letterSpacing: 1, rotate: 0 }
           ],
-          bg: "#0c0a09"
+          bg: "#1a0f14"
         }
       ];
       setAiSuggestions(suggestions);
@@ -168,11 +168,11 @@ export default function LogoMaker({ onBack, user, initialProject }) {
       x: 150,
       y: 150,
       size: 60,
-      color: "#d4a574",
+      color: "#e1496d",
       opacity: 1,
       rotate: 0,
       fillType: "solid",
-      strokeColor: "#d4a574",
+      strokeColor: "#e1496d",
       strokeWidth: 0,
       strokeType: "none"
     };
@@ -190,11 +190,11 @@ export default function LogoMaker({ onBack, user, initialProject }) {
       x: 150,
       y: 150,
       size: 70,
-      color: "#d4a574",
+      color: "#e1496d",
       opacity: 1,
       rotate: 0,
       fillType: "solid",
-      strokeColor: "#d4a574",
+      strokeColor: "#e1496d",
       strokeWidth: 0,
       strokeType: "none"
     };
@@ -217,7 +217,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
       letterSpacing: 2,
       rotate: 0,
       fillType: "solid",
-      strokeColor: "#d4a574",
+      strokeColor: "#e1496d",
       strokeWidth: 0,
       strokeType: "none",
       opacity: 1
@@ -313,8 +313,8 @@ export default function LogoMaker({ onBack, user, initialProject }) {
       category: "Logo Design",
       tool: "Logo Maker",
       year: new Date().getFullYear().toString(),
-      accent: "#f5c842",
-      gradient: "linear-gradient(135deg, #1a1608 0%, #3d2e07 40%, #0c0a09 100%)",
+      accent: "#ec4899",
+      gradient: "linear-gradient(135deg, #1a0f14 0%, #3a0c19 40%, #1a0f14 100%)",
       image: "", // We can render a fallback icon since it's vector
       icon: "✦",
       tags: ["SVG Vector", `${logoElements.length} Shapes`, "Mockups"],
@@ -646,7 +646,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
               width={el.size + 12}
               height={el.size + 12}
               fill="none"
-              stroke="#f5c842"
+              stroke="#ec4899"
               strokeWidth="1.5"
               strokeDasharray="4 3"
               style={{ pointerEvents: "none" }}
@@ -662,7 +662,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
               width={textWidth + 12}
               height={textHeight + 12}
               fill="none"
-              stroke="#f5c842"
+              stroke="#ec4899"
               strokeWidth="1.5"
               strokeDasharray="4 3"
               style={{ pointerEvents: "none" }}
@@ -726,17 +726,17 @@ export default function LogoMaker({ onBack, user, initialProject }) {
   const activeElement = logoElements.find(el => el.id === activeElementId);
 
   return (
-    <div style={{ background: "#0c0a09", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden", userSelect: "none" }}>
+    <div style={{ background: "#1a0f14", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden", userSelect: "none" }}>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Syne:wght@700;800&family=Outfit:wght@400;600&family=Cinzel:wght@600;800&family=Pacifico&family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
 
       {/* Main Studio Body */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         
         {/* Left Panel: Tabs */}
-        <div style={{ width: "320px", minWidth: "320px", borderRight: "1px solid rgba(212,165,116,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column" }}>
+        <div style={{ width: "320px", minWidth: "320px", borderRight: "1px solid rgba(225,73,109,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column" }}>
           
           {/* Tabs bar */}
-          <div style={{ display: "flex", borderBottom: "1px solid rgba(212,165,116,0.08)" }}>
+          <div style={{ display: "flex", borderBottom: "1px solid rgba(225,73,109,0.08)" }}>
             {[
               { id: "ai", label: "AI Suggestions" },
               { id: "editor", label: "Vector Layers" },
@@ -744,7 +744,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
             ].map(tab => {
               const isActive = activeTab === tab.id;
               return (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: 1, padding: "12px 0 10px", background: "none", border: "none", borderBottom: isActive ? "2px solid #f5c842" : "2px solid transparent", color: isActive ? "#f5c842" : "#666", fontWeight: isActive ? 600 : 400, fontSize: "11px", cursor: "pointer", transition: "all 0.2s" }}>
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex: 1, padding: "12px 0 10px", background: "none", border: "none", borderBottom: isActive ? "2px solid #ec4899" : "2px solid transparent", color: isActive ? "#ec4899" : "#666", fontWeight: isActive ? 600 : 400, fontSize: "11px", cursor: "pointer", transition: "all 0.2s" }}>
                   {tab.label}
                 </button>
               );
@@ -756,19 +756,19 @@ export default function LogoMaker({ onBack, user, initialProject }) {
             {/* AI Generator Panel */}
             {activeTab === "ai" && (
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                <span style={{ fontSize: "10px", color: "#f5c842", fontWeight: 700, letterSpacing: "0.06em" }}>AI BRAND ENGINE</span>
+                <span style={{ fontSize: "10px", color: "#ec4899", fontWeight: 700, letterSpacing: "0.06em" }}>AI BRAND ENGINE</span>
                 
                 <div>
                   <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "6px" }}>Brand / Company Name</label>
-                  <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "12px" }} />
+                  <input type="text" value={brandName} onChange={e => setBrandName(e.target.value)} style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "12px" }} />
                 </div>
 
                 <div>
                   <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "6px" }}>Slogan / Tagline</label>
-                  <input type="text" value={tagline} onChange={e => setTagline(e.target.value)} style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "12px" }} />
+                  <input type="text" value={tagline} onChange={e => setTagline(e.target.value)} style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "8px 12px", fontSize: "12px" }} />
                 </div>
 
-                <button className="tool-btn primary" onClick={generateAISuggestions} disabled={isGenerating} style={{ justifyContent: "center", padding: "10px", background: "linear-gradient(135deg,#8b5a2b,#f5c842)", border: "none", color: "#fff" }}>
+                <button className="tool-btn primary" onClick={generateAISuggestions} disabled={isGenerating} style={{ justifyContent: "center", padding: "10px", background: "linear-gradient(135deg,#942945,#ec4899)", border: "none", color: "#fff" }}>
                   {isGenerating ? "Processing design matrices..." : "✦ Generate Design Suggestions"}
                 </button>
 
@@ -778,7 +778,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                     <span style={{ fontSize: "10px", color: "#5c5650", fontWeight: 600 }}>SELECT SUGGESTED LOGO</span>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                       {aiSuggestions.map((sug, i) => (
-                        <div key={i} onClick={() => loadSuggestion(sug)} style={{ background: "#0c0a09", border: "1px solid rgba(212,165,116,0.12)", borderRadius: "10px", padding: "12px", cursor: "pointer", textAlign: "center", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = "#f5c842"} onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(212,165,116,0.12)"}>
+                        <div key={i} onClick={() => loadSuggestion(sug)} style={{ background: "#1a0f14", border: "1px solid rgba(225,73,109,0.12)", borderRadius: "10px", padding: "12px", cursor: "pointer", textAlign: "center", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = "#ec4899"} onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(225,73,109,0.12)"}>
                           <div style={{ fontSize: "28px", marginBottom: "4px" }}>✦</div>
                           <span style={{ fontSize: "11px", fontWeight: 500 }}>{sug.name}</span>
                         </div>
@@ -798,7 +798,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                   <span style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "8px", fontWeight: 600 }}>BRAND COLOR THEMES</span>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "6px" }}>
                     {BRAND_PALETTES.map((pal, idx) => (
-                      <button key={pal.name} onClick={() => applyBrandPalette(pal, idx)} style={{ height: "24px", borderRadius: "6px", background: pal.bg, border: idx === activePaletteIdx ? "2px solid #f5c842" : "1px solid rgba(255,255,255,0.15)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "2px" }}>
+                      <button key={pal.name} onClick={() => applyBrandPalette(pal, idx)} style={{ height: "24px", borderRadius: "6px", background: pal.bg, border: idx === activePaletteIdx ? "2px solid #ec4899" : "1px solid rgba(255,255,255,0.15)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "2px" }}>
                         <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: pal.primary }} />
                         <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: pal.secondary }} />
                       </button>
@@ -829,13 +829,13 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                   </div>
                 </div>
 
-                <div style={{ height: "1px", background: "rgba(212,165,116,0.08)" }} />
+                <div style={{ height: "1px", background: "rgba(225,73,109,0.08)" }} />
 
                 {/* Element properties */}
                 {activeElement && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "10px", color: "#f5c842", fontWeight: 700 }}>EDIT NODE: {activeElement.id}</span>
+                      <span style={{ fontSize: "10px", color: "#ec4899", fontWeight: 700 }}>EDIT NODE: {activeElement.id}</span>
                       <button onClick={() => deleteElement(activeElement.id)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "12px" }}>Delete Node</button>
                     </div>
 
@@ -843,12 +843,12 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                       <>
                         <div>
                           <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Text Value</label>
-                          <input type="text" value={activeElement.text} onChange={e => updateElementProp("text", e.target.value)} style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px 10px", fontSize: "12px" }} />
+                          <input type="text" value={activeElement.text} onChange={e => updateElementProp("text", e.target.value)} style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px 10px", fontSize: "12px" }} />
                         </div>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                           <div>
                             <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Font Family</label>
-                            <select value={activeElement.font || "Poppins"} onChange={e => updateElementProp("font", e.target.value)} style={{ width: "100%", background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}>
+                            <select value={activeElement.font || "Poppins"} onChange={e => updateElementProp("font", e.target.value)} style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}>
                               <option value="Syne">Syne</option>
                               <option value="Outfit">Outfit</option>
                               <option value="Poppins">Poppins</option>
@@ -859,7 +859,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                           </div>
                           <div>
                             <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Letter Spacing</label>
-                            <input type="number" min="0" max="15" value={activeElement.letterSpacing ?? 0} onChange={e => updateElementProp("letterSpacing", parseInt(e.target.value) || 0)} style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }} />
+                            <input type="number" min="0" max="15" value={activeElement.letterSpacing ?? 0} onChange={e => updateElementProp("letterSpacing", parseInt(e.target.value) || 0)} style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }} />
                           </div>
                         </div>
                       </>
@@ -868,18 +868,18 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                       <div>
                         <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Position X</label>
-                        <input type="number" value={activeElement.x} onChange={e => updateElementProp("x", parseInt(e.target.value) || 0)} style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }} />
+                        <input type="number" value={activeElement.x} onChange={e => updateElementProp("x", parseInt(e.target.value) || 0)} style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }} />
                       </div>
                       <div>
                         <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Position Y</label>
-                        <input type="number" value={activeElement.y} onChange={e => updateElementProp("y", parseInt(e.target.value) || 0)} style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }} />
+                        <input type="number" value={activeElement.y} onChange={e => updateElementProp("y", parseInt(e.target.value) || 0)} style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }} />
                       </div>
                     </div>
 
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "11px" }}>
                         <span style={{ color: "#8c8780" }}>Element Size</span>
-                        <span style={{ color: "#f5c842" }}>{activeElement.size}px</span>
+                        <span style={{ color: "#ec4899" }}>{activeElement.size}px</span>
                       </div>
                       <input type="range" min="8" max="150" value={activeElement.size} onChange={e => updateElementProp("size", parseInt(e.target.value))} className="filter-slider" />
                     </div>
@@ -887,7 +887,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "11px" }}>
                         <span style={{ color: "#8c8780" }}>Rotation</span>
-                        <span style={{ color: "#f5c842" }}>{activeElement.rotate ?? 0}°</span>
+                        <span style={{ color: "#ec4899" }}>{activeElement.rotate ?? 0}°</span>
                       </div>
                       <input type="range" min="-180" max="180" value={activeElement.rotate ?? 0} onChange={e => updateElementProp("rotate", parseInt(e.target.value))} className="filter-slider" />
                     </div>
@@ -895,7 +895,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                     <div>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "11px" }}>
                         <span style={{ color: "#8c8780" }}>Opacity</span>
-                        <span style={{ color: "#f5c842" }}>{Math.round((activeElement.opacity ?? 1) * 100)}%</span>
+                        <span style={{ color: "#ec4899" }}>{Math.round((activeElement.opacity ?? 1) * 100)}%</span>
                       </div>
                       <input type="range" min="0" max="100" value={Math.round((activeElement.opacity ?? 1) * 100)} onChange={e => updateElementProp("opacity", parseFloat(e.target.value) / 100)} className="filter-slider" />
                     </div>
@@ -903,7 +903,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                       <div>
                         <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Fill Type</label>
-                        <select value={activeElement.fillType || "solid"} onChange={e => updateElementProp("fillType", e.target.value)} style={{ width: "100%", background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}>
+                        <select value={activeElement.fillType || "solid"} onChange={e => updateElementProp("fillType", e.target.value)} style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}>
                           <option value="solid">Solid Fill</option>
                           <option value="none">Outline / None</option>
                         </select>
@@ -917,7 +917,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                       <div>
                         <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Stroke Style</label>
-                        <select value={activeElement.strokeType || "none"} onChange={e => updateElementProp("strokeType", e.target.value)} style={{ width: "100%", background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}>
+                        <select value={activeElement.strokeType || "none"} onChange={e => updateElementProp("strokeType", e.target.value)} style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}>
                           <option value="none">No Border</option>
                           <option value="solid">Solid Border</option>
                           <option value="dashed">Dashed Border</option>
@@ -926,7 +926,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                       {activeElement.strokeType !== "none" && (
                         <div>
                           <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Stroke Width</label>
-                          <input type="number" min="1" max="20" value={activeElement.strokeWidth ?? 2} onChange={e => updateElementProp("strokeWidth", parseInt(e.target.value) || 1)} style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }} />
+                          <input type="number" min="1" max="20" value={activeElement.strokeWidth ?? 2} onChange={e => updateElementProp("strokeWidth", parseInt(e.target.value) || 1)} style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }} />
                         </div>
                       )}
                     </div>
@@ -938,7 +938,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                       </div>
                     )}
 
-                    <div style={{ height: "1px", background: "rgba(212,165,116,0.08)", margin: "4px 0" }} />
+                    <div style={{ height: "1px", background: "rgba(225,73,109,0.08)", margin: "4px 0" }} />
 
                     <div>
                       <span style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "6px", fontWeight: 600 }}>ALIGN ELEMENT</span>
@@ -966,7 +966,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                     {logoElements.map(el => {
                       const isActive = activeElementId === el.id;
                       return (
-                        <div key={el.id} onClick={() => setActiveElementId(el.id)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 10px", borderRadius: "6px", background: isActive ? "rgba(245,200,66,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${isActive ? "#f5c842" : "rgba(255,255,255,0.05)"}`, cursor: "pointer", fontSize: "11px" }}>
+                        <div key={el.id} onClick={() => setActiveElementId(el.id)} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 10px", borderRadius: "6px", background: isActive ? "rgba(245,200,66,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${isActive ? "#ec4899" : "rgba(255,255,255,0.05)"}`, cursor: "pointer", fontSize: "11px" }}>
                           <span>{el.type === "icon" ? "✦" : el.type === "text" ? "T" : "●"}</span>
                           <span style={{ flex: 1 }}>{el.id}</span>
                           <button onClick={(e) => { e.stopPropagation(); deleteElement(el.id); }} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer" }}>✕</button>
@@ -990,8 +990,8 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                   ].map(mock => {
                     const isActive = activeMockup === mock.id;
                     return (
-                      <div key={mock.id} onClick={() => setActiveMockup(mock.id)} style={{ padding: "12px", borderRadius: "10px", background: isActive ? "rgba(245,200,66,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${isActive ? "#f5c842" : "rgba(255,255,255,0.05)"}`, cursor: "pointer", transition: "all 0.2s" }}>
-                        <div style={{ fontSize: "12px", fontWeight: 600, color: isActive ? "#f5c842" : "#fff" }}>{mock.name}</div>
+                      <div key={mock.id} onClick={() => setActiveMockup(mock.id)} style={{ padding: "12px", borderRadius: "10px", background: isActive ? "rgba(245,200,66,0.12)" : "rgba(255,255,255,0.02)", border: `1px solid ${isActive ? "#ec4899" : "rgba(255,255,255,0.05)"}`, cursor: "pointer", transition: "all 0.2s" }}>
+                        <div style={{ fontSize: "12px", fontWeight: 600, color: isActive ? "#ec4899" : "#fff" }}>{mock.name}</div>
                         <div style={{ fontSize: "10px", color: "#666", marginTop: "2px" }}>{mock.desc}</div>
                       </div>
                     );
@@ -1003,13 +1003,13 @@ export default function LogoMaker({ onBack, user, initialProject }) {
         </div>
 
         {/* Center: Vector Canvas OR Mockup preview */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#080604", position: "relative" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#0f070b", position: "relative" }}>
           
           {/* Header toolbar */}
-          <div style={{ height: "48px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(212,165,116,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between" }}>
+          <div style={{ height: "48px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(225,73,109,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <button onClick={() => setShowLeaveModal(true)} className="tool-btn danger" style={{ padding: "5px 12px", fontSize: "11px" }}>Exit</button>
-              <div style={{ width: "1px", height: "16px", background: "rgba(212,165,116,0.15)" }} />
+              <div style={{ width: "1px", height: "16px", background: "rgba(225,73,109,0.15)" }} />
               <span style={{ fontFamily: "Syne", fontSize: "15px", fontWeight: 800 }}>LogoStudio</span>
             </div>
 
@@ -1025,7 +1025,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                       setCanvasBg(lastCanvasColor);
                     }
                   }}
-                  style={{ accentColor: "#f5c842", cursor: "pointer", width: "13px", height: "13px" }}
+                  style={{ accentColor: "#ec4899", cursor: "pointer", width: "13px", height: "13px" }}
                 />
                 Transparent Canvas
               </label>
@@ -1047,15 +1047,15 @@ export default function LogoMaker({ onBack, user, initialProject }) {
 
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               {activeTab === "mockups" ? (
-                <button className="tool-btn primary" onClick={triggerMockupExport} style={{ background: "linear-gradient(135deg,#8b5a2b,#f5c842)", border: "none", color: "#fff", padding: "5px 12px", fontSize: "11px" }}>
+                <button className="tool-btn primary" onClick={triggerMockupExport} style={{ background: "linear-gradient(135deg,#942945,#ec4899)", border: "none", color: "#fff", padding: "5px 12px", fontSize: "11px" }}>
                   Download Mockup PNG
                 </button>
               ) : (
                 <>
-                  <button className="tool-btn" onClick={triggerSVGExport} style={{ border: "1px solid rgba(212,165,116,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "5px 12px", fontSize: "11px" }}>
+                  <button className="tool-btn" onClick={triggerSVGExport} style={{ border: "1px solid rgba(225,73,109,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "5px 12px", fontSize: "11px" }}>
                     Export SVG
                   </button>
-                  <button className="tool-btn primary" onClick={triggerPNGExport} style={{ background: "linear-gradient(135deg,#8b5a2b,#f5c842)", border: "none", color: "#fff", padding: "5px 12px", fontSize: "11px" }}>
+                  <button className="tool-btn primary" onClick={triggerPNGExport} style={{ background: "linear-gradient(135deg,#942945,#ec4899)", border: "none", color: "#fff", padding: "5px 12px", fontSize: "11px" }}>
                     Export PNG
                   </button>
                 </>
@@ -1101,7 +1101,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                 )}
 
                 {/* Live Badge indicator */}
-                <div style={{ position: "absolute", top: "16px", left: "16px", background: "rgba(0,0,0,0.6)", padding: "4px 10px", borderRadius: "20px", fontSize: "10px", border: "1px solid rgba(255,255,255,0.12)", color: "#f5c842", fontWeight: 600 }}>MOCKUP SIMULATION</div>
+                <div style={{ position: "absolute", top: "16px", left: "16px", background: "rgba(0,0,0,0.6)", padding: "4px 10px", borderRadius: "20px", fontSize: "10px", border: "1px solid rgba(255,255,255,0.12)", color: "#ec4899", fontWeight: 600 }}>MOCKUP SIMULATION</div>
               </div>
             ) : (
               /* RENDER STANDARD SVG CANVAS */
@@ -1127,7 +1127,7 @@ export default function LogoMaker({ onBack, user, initialProject }) {
       {/* Exit confirmation modal */}
       {showLeaveModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, backdropFilter: "blur(12px)" }}>
-          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(212,165,116,0.25)", background: "#131110" }}>
+          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(225,73,109,0.25)", background: "#131110" }}>
             <div style={{ fontSize: "40px", marginBottom: "16px" }}>✦</div>
             <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "10px", letterSpacing: "-0.03em" }}>Save brand identity?</h3>
             <p style={{ fontSize: "13.5px", color: "#8c8780", lineHeight: 1.6, marginBottom: "24px", fontWeight: 300 }}>
@@ -1136,12 +1136,12 @@ export default function LogoMaker({ onBack, user, initialProject }) {
             
             {/* Input field for project title */}
             <div style={{ marginBottom: "24px", textAlign: "left" }}>
-              <label style={{ fontSize: "11px", color: "#f5c842", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Brand Identity Name</label>
+              <label style={{ fontSize: "11px", color: "#ec4899", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Brand Identity Name</label>
               <input 
                 type="text" 
                 value={projectTitle} 
                 onChange={e => setProjectTitle(e.target.value)} 
-                style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.18)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none" }}
+                style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.18)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none" }}
                 placeholder="My Brand Name"
               />
             </div>

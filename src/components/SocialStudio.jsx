@@ -16,7 +16,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
   const [bgGradient, setBgGradient] = useState("linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)");
   const [layers, setLayers] = useState([
     { id: "text_main", type: "text", text: "CREATIVITY WITHOUT LIMITS", x: 50, y: 40, size: 24, color: "#ffffff", font: "Syne" },
-    { id: "sticker_badge", type: "sticker", shape: "✦", x: 50, y: 70, size: 40, color: "#f5c842" }
+    { id: "sticker_badge", type: "sticker", shape: "✦", x: 50, y: 70, size: 40, color: "#ec4899" }
   ]);
   const [activeLayerId, setActiveLayerId] = useState("text_main");
   
@@ -179,7 +179,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
 
   const addStickerLayer = (shape) => {
     const id = `sticker_${Date.now()}`;
-    setLayers(prev => [...prev, { id, type: "sticker", shape, x: 50, y: 60, size: 45, color: "#f5c842" }]);
+    setLayers(prev => [...prev, { id, type: "sticker", shape, x: 50, y: 60, size: 45, color: "#ec4899" }]);
     setActiveLayerId(id);
   };
 
@@ -203,8 +203,8 @@ export default function SocialStudio({ onBack, user, initialProject }) {
       category: "Social Post",
       tool: "Social Studio",
       year: new Date().getFullYear().toString(),
-      accent: "#c49a6c",
-      gradient: "linear-gradient(135deg, #1c150e 0%, #3a2818 50%, #0c0a09 100%)",
+      accent: "#dd728b",
+      gradient: "linear-gradient(135deg, #1c150e 0%, #3a2818 50%, #1a0f14 100%)",
       image: "",
       icon: "📱",
       tags: ["Stories · Reels", `${layers.length} Layers`, "Multi-Ratio"],
@@ -276,7 +276,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                 top: lY,
                 transform: "translate(-50%, -50%)",
                 cursor: "grab",
-                border: isActive ? "1px dashed #f5c842" : "1px dashed transparent",
+                border: isActive ? "1px dashed #ec4899" : "1px dashed transparent",
                 padding: "4px",
                 borderRadius: "4px",
                 transition: "border 0.2s",
@@ -311,14 +311,14 @@ export default function SocialStudio({ onBack, user, initialProject }) {
   };
 
   return (
-    <div style={{ background: "#0c0a09", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ background: "#1a0f14", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
 
       {/* Header Toolbar */}
-      <div style={{ height: "54px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(212,165,116,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between", zIndex: 10 }}>
+      <div style={{ height: "54px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(225,73,109,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between", zIndex: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button onClick={() => setShowLeaveModal(true)} className="tool-btn danger" style={{ padding: "6px 14px", fontSize: "11px" }}>Exit</button>
-          <div style={{ width: "1px", height: "18px", background: "rgba(212,165,116,0.15)" }} />
+          <div style={{ width: "1px", height: "18px", background: "rgba(225,73,109,0.15)" }} />
           <span style={{ fontFamily: "Syne", fontSize: "16px", fontWeight: 800 }}>SocialStudio</span>
         </div>
 
@@ -327,12 +327,12 @@ export default function SocialStudio({ onBack, user, initialProject }) {
             type="text" 
             value={projectTitle} 
             onChange={e => setProjectTitle(e.target.value)} 
-            style={{ background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "8px", color: "#fff", padding: "6px 12px", fontSize: "12px", outline: "none", width: "180px" }}
+            style={{ background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#fff", padding: "6px 12px", fontSize: "12px", outline: "none", width: "180px" }}
             placeholder="Campaign Name"
           />
         </div>
 
-        <button onClick={handleSaveAndExit} className="tool-btn primary" style={{ background: "linear-gradient(135deg,#c49a6c,#8b5a2b)", border: "none", color: "#fff", padding: "6px 16px", fontSize: "12px" }}>
+        <button onClick={handleSaveAndExit} className="tool-btn primary" style={{ background: "linear-gradient(135deg,#dd728b,#942945)", border: "none", color: "#fff", padding: "6px 16px", fontSize: "12px" }}>
           Save Campaign
         </button>
       </div>
@@ -341,26 +341,26 @@ export default function SocialStudio({ onBack, user, initialProject }) {
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         
         {/* Left Sidebar: Controls */}
-        <div style={{ width: "320px", minWidth: "320px", borderRight: "1px solid rgba(212,165,116,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", overflowY: "auto", padding: "20px", gap: "20px" }}>
+        <div style={{ width: "320px", minWidth: "320px", borderRight: "1px solid rgba(225,73,109,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", overflowY: "auto", padding: "20px", gap: "20px" }}>
           
           {/* Caption editor */}
           <div>
-            <span style={{ fontSize: "10px", color: "#c49a6c", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>CAMPAIGN CAPTION</span>
+            <span style={{ fontSize: "10px", color: "#dd728b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>CAMPAIGN CAPTION</span>
             <textarea
               value={caption}
               onChange={e => setCaption(e.target.value)}
-              style={{ width: "100%", height: "80px", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "8px", color: "#fff", padding: "8px 12px", fontSize: "11.5px", resize: "none", outline: "none", lineHeight: 1.5 }}
+              style={{ width: "100%", height: "80px", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#fff", padding: "8px 12px", fontSize: "11.5px", resize: "none", outline: "none", lineHeight: 1.5 }}
               placeholder="Write post hashtags and description..."
             />
           </div>
 
           {/* Canvas styling */}
           <div>
-            <span style={{ fontSize: "10px", color: "#c49a6c", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>CANVAS BACKDROP</span>
+            <span style={{ fontSize: "10px", color: "#dd728b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>CANVAS BACKDROP</span>
             <select
               value={bgGradient}
               onChange={e => setBgGradient(e.target.value)}
-              style={{ width: "100%", background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "8px", fontSize: "12px", padding: "8px" }}
+              style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", fontSize: "12px", padding: "8px" }}
             >
               <option value="linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)">Sunset Purple</option>
               <option value="linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)">Ocean Blue</option>
@@ -372,7 +372,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
 
           {/* Insert Overlays */}
           <div>
-            <span style={{ fontSize: "10px", color: "#c49a6c", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>INSERT GRAPHICS</span>
+            <span style={{ fontSize: "10px", color: "#dd728b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>INSERT GRAPHICS</span>
             <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
               <button onClick={addTextLayer} className="tool-btn" style={{ flex: 1, padding: "6px", fontSize: "11px", justifyContent: "center" }}>+ Text Layer</button>
             </div>
@@ -390,25 +390,25 @@ export default function SocialStudio({ onBack, user, initialProject }) {
             </div>
           </div>
 
-          <div style={{ height: "1px", background: "rgba(212,165,116,0.08)" }} />
+          <div style={{ height: "1px", background: "rgba(225,73,109,0.08)" }} />
 
           {/* Publisher Scheduler */}
           <div>
-            <span style={{ fontSize: "10px", color: "#c49a6c", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>CAMPAIGN SCHEDULER</span>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(212,165,116,0.08)", borderRadius: "10px", padding: "10px" }}>
+            <span style={{ fontSize: "10px", color: "#dd728b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>CAMPAIGN SCHEDULER</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", background: "rgba(255,255,255,0.01)", border: "1px solid rgba(225,73,109,0.08)", borderRadius: "10px", padding: "10px" }}>
               <label style={{ fontSize: "10px", color: "#8c8780" }}>Publish Date</label>
               <input
                 type="date"
                 value={scheduleDate}
                 onChange={e => setScheduleDate(e.target.value)}
-                style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11.5px" }}
+                style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11.5px" }}
               />
               <label style={{ fontSize: "10px", color: "#8c8780" }}>Publish Time</label>
               <input
                 type="time"
                 value={scheduleTime}
                 onChange={e => setScheduleTime(e.target.value)}
-                style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11.5px" }}
+                style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11.5px" }}
               />
               <button
                 onClick={() => setIsScheduled(!isScheduled)}
@@ -418,8 +418,8 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                   justifyContent: "center",
                   padding: "8px",
                   fontSize: "11px",
-                  background: isScheduled ? "linear-gradient(135deg,#c49a6c,#8b5a2b)" : "rgba(255,255,255,0.02)",
-                  border: isScheduled ? "none" : "1px solid rgba(212,165,116,0.15)"
+                  background: isScheduled ? "linear-gradient(135deg,#dd728b,#942945)" : "rgba(255,255,255,0.02)",
+                  border: isScheduled ? "none" : "1px solid rgba(225,73,109,0.15)"
                 }}
               >
                 {isScheduled ? "✓ Scheduled to Queue" : "⚡ Queue campaign publishing"}
@@ -429,7 +429,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
         </div>
 
         {/* Center: Multi-Ratio Workspace Grid */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#080604", overflowY: "auto", padding: "40px", alignItems: "center" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#0f070b", overflowY: "auto", padding: "40px", alignItems: "center" }}>
           
           <div style={{ width: "100%", maxWidth: "1000px", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
             <div>
@@ -448,7 +448,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                   onClick={() => setPreviewPlatform(key)}
                   style={{
                     background: "rgba(10,8,7,0.5)",
-                    border: "1px solid rgba(212,165,116,0.1)",
+                    border: "1px solid rgba(225,73,109,0.1)",
                     borderRadius: "16px",
                     padding: "20px",
                     display: "flex",
@@ -458,8 +458,8 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                     transition: "all 0.3s",
                     position: "relative"
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(212,165,116,0.3)"}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(212,165,116,0.1)"}
+                  onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(225,73,109,0.3)"}
+                  onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(225,73,109,0.1)"}
                 >
                   <div style={{ width: "100%", display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "11px", color: "#8c8780" }}>
                     <span style={{ fontWeight: 600, color: "#fff" }}>{platform.name}</span>
@@ -486,7 +486,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                       style={{
                         padding: "4px 10px",
                         fontSize: "10px",
-                        background: "linear-gradient(135deg,#c49a6c,#8b5a2b)",
+                        background: "linear-gradient(135deg,#dd728b,#942945)",
                         border: "none",
                         color: "#fff"
                       }}
@@ -502,8 +502,8 @@ export default function SocialStudio({ onBack, user, initialProject }) {
         </div>
 
         {/* Right Sidebar: Active Layer Inspector */}
-        <div style={{ width: "280px", minWidth: "280px", borderLeft: "1px solid rgba(212,165,116,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", padding: "20px", gap: "16px" }}>
-          <span style={{ fontSize: "10px", color: "#c49a6c", fontWeight: 700, letterSpacing: "0.06em" }}>LAYER PROPERTIES</span>
+        <div style={{ width: "280px", minWidth: "280px", borderLeft: "1px solid rgba(225,73,109,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", padding: "20px", gap: "16px" }}>
+          <span style={{ fontSize: "10px", color: "#dd728b", fontWeight: 700, letterSpacing: "0.06em" }}>LAYER PROPERTIES</span>
 
           {activeLayer ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -519,7 +519,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                     type="text"
                     value={activeLayer.text}
                     onChange={e => updateLayer(activeLayer.id, "text", e.target.value)}
-                    style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                    style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                   />
                 </div>
               )}
@@ -533,7 +533,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                     max="100"
                     value={activeLayer.x}
                     onChange={e => updateLayer(activeLayer.id, "x", parseInt(e.target.value) || 0)}
-                    style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                    style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                   />
                 </div>
                 <div>
@@ -544,7 +544,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                     max="100"
                     value={activeLayer.y}
                     onChange={e => updateLayer(activeLayer.id, "y", parseInt(e.target.value) || 0)}
-                    style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                    style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                   />
                 </div>
               </div>
@@ -552,7 +552,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "10px" }}>
                   <span style={{ color: "#8c8780" }}>Scale Size</span>
-                  <span style={{ color: "#c49a6c" }}>{activeLayer.size}px</span>
+                  <span style={{ color: "#dd728b" }}>{activeLayer.size}px</span>
                 </div>
                 <input
                   type="range"
@@ -581,7 +581,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                   <select
                     value={activeLayer.font || "Poppins"}
                     onChange={e => updateLayer(activeLayer.id, "font", e.target.value)}
-                    style={{ width: "100%", background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
+                    style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
                   >
                     <option value="Poppins">Poppins</option>
                     <option value="Syne">Syne</option>
@@ -595,11 +595,11 @@ export default function SocialStudio({ onBack, user, initialProject }) {
             </div>
           )}
 
-          <div style={{ height: "1px", background: "rgba(212,165,116,0.08)", margin: "8px 0" }} />
+          <div style={{ height: "1px", background: "rgba(225,73,109,0.08)", margin: "8px 0" }} />
 
           {/* Vector Layers Hierarchy */}
           <div>
-            <span style={{ fontSize: "10px", color: "#c49a6c", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>CAMPAIGN LAYERS</span>
+            <span style={{ fontSize: "10px", color: "#dd728b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>CAMPAIGN LAYERS</span>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {layers.map(l => {
                 const isAct = l.id === activeLayerId;
@@ -614,7 +614,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                       padding: "6px 10px",
                       borderRadius: "6px",
                       background: isAct ? "rgba(196,154,108,0.15)" : "rgba(255,255,255,0.02)",
-                      border: `1px solid ${isAct ? "#c49a6c" : "rgba(255,255,255,0.05)"}`,
+                      border: `1px solid ${isAct ? "#dd728b" : "rgba(255,255,255,0.05)"}`,
                       cursor: "pointer",
                       fontSize: "11px"
                     }}
@@ -634,7 +634,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
       {/* Exit confirmation modal */}
       {showLeaveModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, backdropFilter: "blur(12px)" }}>
-          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(212,165,116,0.25)", background: "#131110" }}>
+          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(225,73,109,0.25)", background: "#131110" }}>
             <div style={{ fontSize: "40px", marginBottom: "16px" }}>📱</div>
             <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>Save social campaign?</h3>
             <p style={{ fontSize: "13px", color: "#8c8780", lineHeight: 1.6, marginBottom: "24px" }}>
@@ -687,7 +687,7 @@ export default function SocialStudio({ onBack, user, initialProject }) {
                 {/* Scrollable feed content */}
                 <div style={{ flex: 1, overflowY: "auto" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 16px" }}>
-                    <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "linear-gradient(45deg, #f5c842, #ec4899)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "linear-gradient(45deg, #ec4899, #ec4899)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "#000", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px" }}>👤</div>
                     </div>
                     <div>

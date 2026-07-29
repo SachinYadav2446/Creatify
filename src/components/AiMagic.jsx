@@ -633,41 +633,41 @@ export default function AiMagic({ onBack, user }) {
   const isGeneratingStyle = isGenerating;
 
   return (
-    <div style={{ background: "#0c0a09", color: "#f5f0e8", fontFamily: "'Instrument Sans', sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ background: "#1a0f14", color: "#fdf2f4", fontFamily: "'Instrument Sans', sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Instrument+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
       
       <style>{`
         ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: #0c0a09; }
-        ::-webkit-scrollbar-thumb { background: rgba(212,165,116,0.18); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #d4a574; }
-        .glass-panel { background: rgba(14,12,11,0.85); backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(212,165,116,0.14); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+        ::-webkit-scrollbar-track { background: #1a0f14; }
+        ::-webkit-scrollbar-thumb { background: rgba(225,73,109,0.18); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #e1496d; }
+        .glass-panel { background: rgba(14,12,11,0.85); backdrop-filter: blur(20px) saturate(160%); border: 1px solid rgba(225,73,109,0.14); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
         .sidebar-panel { background: rgba(14,12,11,0.85); backdrop-filter: blur(20px) saturate(160%); }
-        .control-btn { background: rgba(212,165,116,0.05); border: 1px solid rgba(212,165,116,0.15); color: #e5e5e5; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12.5px; font-family: 'Poppins', sans-serif; display: inline-flex; align-items: center; gap: 7px; transition: all 0.18s; white-space: nowrap; }
-        .control-btn:hover { background: rgba(212,165,116,0.12); color: #d4a574; border-color: rgba(212,165,116,0.4); transform: translateY(-1px); }
-        .control-btn.active { background: rgba(212,165,116,0.18); color: #d4a574; border-color: #d4a574; }
-        .control-btn.primary { background: linear-gradient(135deg, #8b5a2b, #d4a574); border: none; color: #fff; box-shadow: 0 2px 10px rgba(139,90,43,0.3); font-weight: 500; }
-        .control-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(139,90,43,0.45); }
+        .control-btn { background: rgba(225,73,109,0.05); border: 1px solid rgba(225,73,109,0.15); color: #e5e5e5; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12.5px; font-family: 'Poppins', sans-serif; display: inline-flex; align-items: center; gap: 7px; transition: all 0.18s; white-space: nowrap; }
+        .control-btn:hover { background: rgba(225,73,109,0.12); color: #e1496d; border-color: rgba(225,73,109,0.4); transform: translateY(-1px); }
+        .control-btn.active { background: rgba(225,73,109,0.18); color: #e1496d; border-color: #e1496d; }
+        .control-btn.primary { background: linear-gradient(135deg, #942945, #e1496d); border: none; color: #fff; box-shadow: 0 2px 10px rgba(148,41,69,0.3); font-weight: 500; }
+        .control-btn.primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(148,41,69,0.45); }
         .control-btn.danger { color: #ef4444; border-color: rgba(239,68,68,0.2); background: rgba(239,68,68,0.04); }
         .control-btn.danger:hover { background: rgba(239,68,68,0.14); border-color: #ef4444; }
-        .style-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(212,165,116,0.1); border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.2s; text-align: left; }
-        .style-card:hover { border-color: #d4a574; background: rgba(212,165,116,0.06); transform: translateY(-1px); }
+        .style-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(225,73,109,0.1); border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .style-card:hover { border-color: #e1496d; background: rgba(225,73,109,0.06); transform: translateY(-1px); }
         .style-card.selected { border-color: #a855f7; background: rgba(168,85,247,0.08); box-shadow: 0 0 12px rgba(168,85,247,0.18); }
-        .ratio-btn { border: 1px solid rgba(212,165,116,0.12); padding: 10px; border-radius: 10px; background: none; color: #e5e5e5; cursor: pointer; flex: 1; transition: all 0.18s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .ratio-btn:hover { border-color: #d4a574; background: rgba(212,165,116,0.04); }
-        .ratio-btn.active { border-color: #d4a574; background: rgba(212,165,116,0.12); color: #d4a574; }
+        .ratio-btn { border: 1px solid rgba(225,73,109,0.12); padding: 10px; border-radius: 10px; background: none; color: #e5e5e5; cursor: pointer; flex: 1; transition: all 0.18s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .ratio-btn:hover { border-color: #e1496d; background: rgba(225,73,109,0.04); }
+        .ratio-btn.active { border-color: #e1496d; background: rgba(225,73,109,0.12); color: #e1496d; }
         .stock-img { width: 68px; height: 68px; border-radius: 8px; cursor: pointer; object-fit: cover; border: 2px solid transparent; transition: all 0.2s; }
-        .stock-img:hover { border-color: rgba(212,165,116,0.5); transform: scale(1.03); }
-        .stock-img.active { border-color: #d4a574; transform: scale(1.05); }
+        .stock-img:hover { border-color: rgba(225,73,109,0.5); transform: scale(1.03); }
+        .stock-img.active { border-color: #e1496d; transform: scale(1.05); }
       `}</style>
 
       {/* ── Top Bar Header ── */}
-      <div style={{ height: "64px", borderBottom: "1px solid rgba(212,165,116,0.14)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", background: "rgba(10,8,7,0.9)", zIndex: 10 }}>
+      <div style={{ height: "64px", borderBottom: "1px solid rgba(225,73,109,0.14)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 24px", background: "rgba(10,8,7,0.9)", zIndex: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <button onClick={onBack} className="control-btn" style={{ padding: "6px 12px", gap: "6px" }} title="Go Back">
             ← Exit Studio
           </button>
-          <div style={{ width: "1px", height: "20px", background: "rgba(212,165,116,0.18)" }} />
+          <div style={{ width: "1px", height: "20px", background: "rgba(225,73,109,0.18)" }} />
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span style={{ fontSize: "20px" }}>✨</span>
             <div style={{ fontFamily: "Syne", fontWeight: 800, fontSize: "16.5px", color: "#fff", letterSpacing: "-0.02em" }}>
@@ -692,11 +692,11 @@ export default function AiMagic({ onBack, user }) {
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         
         {/* Left Side: Image selection & AI styles prompt */}
-        <div className="sidebar-panel" style={{ width: "340px", borderRight: "1px solid rgba(212,165,116,0.1)", display: "flex", flexDirection: "column", height: "100%", overflowY: "auto", padding: "20px", gap: "24px" }}>
+        <div className="sidebar-panel" style={{ width: "340px", borderRight: "1px solid rgba(225,73,109,0.1)", display: "flex", flexDirection: "column", height: "100%", overflowY: "auto", padding: "20px", gap: "24px" }}>
           
           {/* Section 1: Stock/Uploaded assets */}
           <div>
-            <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#d4a574", fontWeight: 700, textTransform: "uppercase", marginBottom: "12px" }}>1. SELECT SOURCE IMAGE</div>
+            <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#e1496d", fontWeight: 700, textTransform: "uppercase", marginBottom: "12px" }}>1. SELECT SOURCE IMAGE</div>
             <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
               {STOCK_IMAGES.map(img => (
                 <img 
@@ -714,11 +714,11 @@ export default function AiMagic({ onBack, user }) {
             </button>
           </div>
 
-          <div style={{ height: "1px", background: "rgba(212,165,116,0.08)" }} />
+          <div style={{ height: "1px", background: "rgba(225,73,109,0.08)" }} />
 
           {/* Section 2: AI Background removal */}
           <div>
-            <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#d4a574", fontWeight: 700, textTransform: "uppercase", marginBottom: "12px" }}>2. BACKDROP MAGIC</div>
+            <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#e1496d", fontWeight: 700, textTransform: "uppercase", marginBottom: "12px" }}>2. BACKDROP MAGIC</div>
             <button 
               className={`control-btn${bgRemoved ? " danger" : " primary"}`} 
               onClick={handleBgRemoval} 
@@ -738,16 +738,16 @@ export default function AiMagic({ onBack, user }) {
             </p>
           </div>
 
-          <div style={{ height: "1px", background: "rgba(212,165,116,0.08)" }} />
+          <div style={{ height: "1px", background: "rgba(225,73,109,0.08)" }} />
 
           {/* Section 3: Generative AI style prompt */}
           <div>
-            <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#d4a574", fontWeight: 700, textTransform: "uppercase", marginBottom: "12px" }}>3. AI GENERATIVE STYLES</div>
+            <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#e1496d", fontWeight: 700, textTransform: "uppercase", marginBottom: "12px" }}>3. AI GENERATIVE STYLES</div>
             <textarea 
               value={promptText}
               onChange={e => setPromptText(e.target.value)}
               placeholder="e.g. detailed cyberpunk warrior with cybernetic visor, glowing lights, anime key art..."
-              style={{ width: "100%", height: "80px", background: "#060505", border: "1px solid rgba(212,165,116,0.18)", borderRadius: "8px", color: "#fff", padding: "10px", fontSize: "12px", resize: "none", outline: "none", fontFamily: "inherit", marginBottom: "12px" }}
+              style={{ width: "100%", height: "80px", background: "#060505", border: "1px solid rgba(225,73,109,0.18)", borderRadius: "8px", color: "#fff", padding: "10px", fontSize: "12px", resize: "none", outline: "none", fontFamily: "inherit", marginBottom: "12px" }}
             />
             
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -771,7 +771,7 @@ export default function AiMagic({ onBack, user }) {
         </div>
 
         {/* Center Canvas area */}
-        <div style={{ flex: 1, background: "#080604", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "32px", overflow: "hidden" }}>
+        <div style={{ flex: 1, background: "#0f070b", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: "32px", overflow: "hidden" }}>
           
           {/* Main viewport frame */}
           <div style={{
@@ -780,11 +780,11 @@ export default function AiMagic({ onBack, user }) {
             height: `${aspectRatio.height}px`,
             maxWidth: "90%",
             maxHeight: "80%",
-            background: "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\"><rect width=\"10\" height=\"10\" fill=\"%23131110\"/><rect x=\"10\" y=\"10\" width=\"10\" height=\"10\" fill=\"%23131110\"/><rect x=\"10\" width=\"10\" height=\"10\" fill=\"%230c0a09\"/><rect y=\"10\" width=\"10\" height=\"10\" fill=\"%230c0a09\"/></svg>') repeat",
+            background: "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\"><rect width=\"10\" height=\"10\" fill=\"%23131110\"/><rect x=\"10\" y=\"10\" width=\"10\" height=\"10\" fill=\"%23131110\"/><rect x=\"10\" width=\"10\" height=\"10\" fill=\"%231a0f14\"/><rect y=\"10\" width=\"10\" height=\"10\" fill=\"%231a0f14\"/></svg>') repeat",
             borderRadius: "12px",
             overflow: "hidden",
             boxShadow: "0 20px 80px rgba(0,0,0,0.8)",
-            border: "1px solid rgba(212,165,116,0.22)",
+            border: "1px solid rgba(225,73,109,0.22)",
             cursor: isRefining ? "crosshair" : "default"
           }}>
             
@@ -824,7 +824,7 @@ export default function AiMagic({ onBack, user }) {
           {/* Active styling label bottom */}
           <div style={{ display: "flex", gap: "8px", marginTop: "20px", alignItems: "center" }}>
             <span style={{ fontSize: "11px", color: "rgba(245,240,232,0.4)" }}>Format bounds:</span>
-            <span style={{ background: "rgba(212,165,116,0.08)", border: "1px solid rgba(212,165,116,0.18)", padding: "3px 10px", borderRadius: "6px", fontSize: "11px", color: "#d4a574", fontWeight: 600 }}>
+            <span style={{ background: "rgba(225,73,109,0.08)", border: "1px solid rgba(225,73,109,0.18)", padding: "3px 10px", borderRadius: "6px", fontSize: "11px", color: "#e1496d", fontWeight: 600 }}>
               {aspectRatio.name}
             </span>
             {activeStyle !== "none" && (
@@ -836,11 +836,11 @@ export default function AiMagic({ onBack, user }) {
         </div>
 
         {/* Right Side: Aspect ratios & Manual brush refinement */}
-        <div className="sidebar-panel" style={{ width: "300px", borderLeft: "1px solid rgba(212,165,116,0.1)", display: "flex", flexDirection: "column", height: "100%", padding: "20px", gap: "24px" }}>
+        <div className="sidebar-panel" style={{ width: "300px", borderLeft: "1px solid rgba(225,73,109,0.1)", display: "flex", flexDirection: "column", height: "100%", padding: "20px", gap: "24px" }}>
           
           {/* Section 4: Aspect Ratio Selector */}
           <div>
-            <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#d4a574", fontWeight: 700, textTransform: "uppercase", marginBottom: "12px" }}>4. ASPECT RATIO</div>
+            <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#e1496d", fontWeight: 700, textTransform: "uppercase", marginBottom: "12px" }}>4. ASPECT RATIO</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               {ASPECT_RATIOS.map(ratio => (
                 <button
@@ -855,12 +855,12 @@ export default function AiMagic({ onBack, user }) {
             </div>
           </div>
 
-          <div style={{ height: "1px", background: "rgba(212,165,116,0.08)" }} />
+          <div style={{ height: "1px", background: "rgba(225,73,109,0.08)" }} />
 
           {/* Section 5: Manual eraser refinement (active only if background is removed) */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-              <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#d4a574", fontWeight: 700, textTransform: "uppercase" }}>5. BRUSH ERASER REFINE</div>
+              <div style={{ fontSize: "10.5px", letterSpacing: "0.08em", color: "#e1496d", fontWeight: 700, textTransform: "uppercase" }}>5. BRUSH ERASER REFINE</div>
               <span style={{ fontSize: "9px", color: bgRemoved ? "#22d3a8" : "rgba(245,240,232,0.3)" }}>● {bgRemoved ? "ACTIVE" : "STANDBY"}</span>
             </div>
             
@@ -896,7 +896,7 @@ export default function AiMagic({ onBack, user }) {
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "11px", marginBottom: "6px", color: "rgba(245,240,232,0.6)" }}>
                   <span>Brush size</span>
-                  <span style={{ color: "#d4a574" }}>{brushSize}px</span>
+                  <span style={{ color: "#e1496d" }}>{brushSize}px</span>
                 </div>
                 <input 
                   type="range" 
@@ -904,11 +904,11 @@ export default function AiMagic({ onBack, user }) {
                   max="100" 
                   value={brushSize} 
                   onChange={e => setBrushSize(parseInt(e.target.value))} 
-                  style={{ width: "100%", accentColor: "#d4a574" }}
+                  style={{ width: "100%", accentColor: "#e1496d" }}
                 />
               </div>
 
-              <div style={{ background: "rgba(212,165,116,0.03)", padding: "10px", borderRadius: "8px", border: "1px solid rgba(212,165,116,0.08)" }}>
+              <div style={{ background: "rgba(225,73,109,0.03)", padding: "10px", borderRadius: "8px", border: "1px solid rgba(225,73,109,0.08)" }}>
                 <p style={{ fontSize: "10.5px", color: "rgba(245,240,232,0.4)", lineHeight: "1.4", margin: 0 }}>
                   💡 <strong>How to use:</strong> Select "Draw Refine Mask" and click/drag on the central photo view to erase excess background blocks or paint back details.
                 </p>
@@ -920,7 +920,7 @@ export default function AiMagic({ onBack, user }) {
 
       {/* Floating Translucent Toast Notification */}
       {toastMessage && (
-        <div style={{ position: "fixed", bottom: "30px", left: "50%", transform: "translateX(-50%)", background: "rgba(10,8,7,0.9)", border: "1px solid #d4a574", padding: "10px 24px", borderRadius: "30px", color: "#fff", zIndex: 9999, boxShadow: "0 8px 30px rgba(0,0,0,0.5)", fontSize: "12px", fontFamily: "Poppins, sans-serif", fontWeight: 500 }}>
+        <div style={{ position: "fixed", bottom: "30px", left: "50%", transform: "translateX(-50%)", background: "rgba(10,8,7,0.9)", border: "1px solid #e1496d", padding: "10px 24px", borderRadius: "30px", color: "#fff", zIndex: 9999, boxShadow: "0 8px 30px rgba(0,0,0,0.5)", fontSize: "12px", fontFamily: "Poppins, sans-serif", fontWeight: 500 }}>
           {toastMessage}
         </div>
       )}

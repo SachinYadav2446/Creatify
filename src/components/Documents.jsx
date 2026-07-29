@@ -147,7 +147,7 @@ export default function Documents({ onBack, user, initialProject }) {
               const y = padding + graphH - (p.val / maxVal) * graphH;
               return (
                 <g key={idx}>
-                  <circle cx={x} cy={y} r="5" fill="#f5c842" stroke="#6366f1" strokeWidth="2" />
+                  <circle cx={x} cy={y} r="5" fill="#ec4899" stroke="#6366f1" strokeWidth="2" />
                   <text x={x} y={y - 10} textAnchor="middle" fontSize="9" fill="#2d3748" fontWeight="bold">{p.val}%</text>
                   <text x={x} y={chartH - 12} textAnchor="middle" fontSize="8.5" fill="#718096">{p.label}</text>
                 </g>
@@ -203,8 +203,8 @@ export default function Documents({ onBack, user, initialProject }) {
       category: "Document",
       tool: "Documents",
       year: new Date().getFullYear().toString(),
-      accent: "#deb887",
-      gradient: "linear-gradient(135deg, #1c1813 0%, #3e3223 50%, #0c0a09 100%)",
+      accent: "#eba5b6",
+      gradient: "linear-gradient(135deg, #1c1813 0%, #3e3223 50%, #1a0f14 100%)",
       image: "",
       icon: "📄",
       tags: ["DOCX · PDF", `${docBlocks.length} Blocks`, "Charts"],
@@ -283,7 +283,7 @@ export default function Documents({ onBack, user, initialProject }) {
       dataPoints.forEach((p, idx) => {
         const x = padding + (idx / Math.max(dataPoints.length - 1, 1)) * graphW;
         const y = padding + graphH - (p.val / maxVal) * graphH;
-        nodes += `<circle cx="${x}" cy="${y}" r="5" fill="#f5c842" stroke="#6366f1" stroke-width="2" />
+        nodes += `<circle cx="${x}" cy="${y}" r="5" fill="#ec4899" stroke="#6366f1" stroke-width="2" />
         <text x="${x}" y="${y - 10}" text-anchor="middle" font-size="9" fill="#2d3748" font-weight="bold">${p.val}%</text>
         <text x="${x}" y="${chartH - 12}" text-anchor="middle" font-size="8.5" fill="#718096">${p.label}</text>`;
       });
@@ -485,7 +485,7 @@ export default function Documents({ onBack, user, initialProject }) {
   const activeBlock = docBlocks.find(b => b.id === activeBlockId);
 
   return (
-    <div style={{ background: "#0c0a09", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ background: "#1a0f14", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           body * {
@@ -514,10 +514,10 @@ export default function Documents({ onBack, user, initialProject }) {
       ` }} />
       
       {/* Header Toolbar */}
-      <div style={{ height: "54px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(212,165,116,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between", zIndex: 10 }}>
+      <div style={{ height: "54px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(225,73,109,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between", zIndex: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button onClick={() => setShowLeaveModal(true)} className="tool-btn danger" style={{ padding: "6px 14px", fontSize: "11px" }}>Exit</button>
-          <div style={{ width: "1px", height: "18px", background: "rgba(212,165,116,0.15)" }} />
+          <div style={{ width: "1px", height: "18px", background: "rgba(225,73,109,0.15)" }} />
           <span style={{ fontFamily: "Syne", fontSize: "16px", fontWeight: 800 }}>DocumentStudio</span>
         </div>
 
@@ -526,19 +526,19 @@ export default function Documents({ onBack, user, initialProject }) {
             type="text" 
             value={projectTitle} 
             onChange={e => setProjectTitle(e.target.value)} 
-            style={{ background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "8px", color: "#fff", padding: "6px 12px", fontSize: "12px", outline: "none", width: "220px" }}
+            style={{ background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#fff", padding: "6px 12px", fontSize: "12px", outline: "none", width: "220px" }}
             placeholder="Document Title"
           />
         </div>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <button onClick={exportAsHTML} className="tool-btn" style={{ border: "1px solid rgba(212,165,116,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "6px 14px", fontSize: "12px" }}>
+          <button onClick={exportAsHTML} className="tool-btn" style={{ border: "1px solid rgba(225,73,109,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "6px 14px", fontSize: "12px" }}>
             Export HTML
           </button>
-          <button onClick={triggerPrint} className="tool-btn" style={{ border: "1px solid rgba(212,165,116,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "6px 14px", fontSize: "12px" }}>
+          <button onClick={triggerPrint} className="tool-btn" style={{ border: "1px solid rgba(225,73,109,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "6px 14px", fontSize: "12px" }}>
             Print / PDF
           </button>
-          <button onClick={handleSaveAndExit} className="tool-btn primary" style={{ background: "linear-gradient(135deg,#deb887,#8b5a2b)", border: "none", color: "#fff", padding: "6px 16px", fontSize: "12px" }}>
+          <button onClick={handleSaveAndExit} className="tool-btn primary" style={{ background: "linear-gradient(135deg,#eba5b6,#942945)", border: "none", color: "#fff", padding: "6px 16px", fontSize: "12px" }}>
             Save Document
           </button>
         </div>
@@ -548,10 +548,10 @@ export default function Documents({ onBack, user, initialProject }) {
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         
         {/* Left Sidebar: Block Inserter */}
-        <div style={{ width: "300px", minWidth: "300px", borderRight: "1px solid rgba(212,165,116,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }}>
+        <div style={{ width: "300px", minWidth: "300px", borderRight: "1px solid rgba(225,73,109,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }}>
           
           <div>
-            <span style={{ fontSize: "10px", color: "#deb887", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>INSERT BLOCKS</span>
+            <span style={{ fontSize: "10px", color: "#eba5b6", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>INSERT BLOCKS</span>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               <button onClick={() => addBlock("h1")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>H1 Title</button>
               <button onClick={() => addBlock("h2")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>H2 Subtitle</button>
@@ -563,13 +563,13 @@ export default function Documents({ onBack, user, initialProject }) {
             </div>
           </div>
 
-          <div style={{ height: "1px", background: "rgba(212,165,116,0.08)" }} />
+          <div style={{ height: "1px", background: "rgba(225,73,109,0.08)" }} />
 
           {/* Active Block Inspector */}
           {activeBlock ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "10px", color: "#deb887", fontWeight: 700 }}>EDITING BLOCK ({activeBlock.type.toUpperCase()})</span>
+                <span style={{ fontSize: "10px", color: "#eba5b6", fontWeight: 700 }}>EDITING BLOCK ({activeBlock.type.toUpperCase()})</span>
                 <button onClick={() => deleteBlock(activeBlock.id)} style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", fontSize: "11px" }}>✕ Delete</button>
               </div>
 
@@ -580,7 +580,7 @@ export default function Documents({ onBack, user, initialProject }) {
                   <textarea
                     value={activeBlock.content}
                     onChange={e => updateBlockContent(activeBlock.id, e.target.value)}
-                    style={{ width: "100%", height: "120px", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "8px", color: "#fff", padding: "8px 12px", fontSize: "11.5px", resize: "none", outline: "none" }}
+                    style={{ width: "100%", height: "120px", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#fff", padding: "8px 12px", fontSize: "11.5px", resize: "none", outline: "none" }}
                   />
                 </div>
               )}
@@ -602,7 +602,7 @@ export default function Documents({ onBack, user, initialProject }) {
                       type="text"
                       value={activeBlock.title || ""}
                       onChange={e => setDocBlocks(prev => prev.map(b => b.id === activeBlock.id ? { ...b, title: e.target.value } : b))}
-                      style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                      style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                     />
                   </div>
                   <div>
@@ -610,7 +610,7 @@ export default function Documents({ onBack, user, initialProject }) {
                     <select
                       value={activeBlock.chartType || "bar"}
                       onChange={e => setDocBlocks(prev => prev.map(b => b.id === activeBlock.id ? { ...b, chartType: e.target.value } : b))}
-                      style={{ width: "100%", background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
+                      style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
                     >
                       <option value="bar">SVG Bar Chart</option>
                       <option value="line">SVG Line Graph</option>
@@ -628,7 +628,7 @@ export default function Documents({ onBack, user, initialProject }) {
                       type="text"
                       value={activeBlock.name}
                       onChange={e => setDocBlocks(prev => prev.map(b => b.id === activeBlock.id ? { ...b, name: e.target.value } : b))}
-                      style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                      style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                     />
                   </div>
                   <div>
@@ -637,7 +637,7 @@ export default function Documents({ onBack, user, initialProject }) {
                       type="text"
                       value={activeBlock.role}
                       onChange={e => setDocBlocks(prev => prev.map(b => b.id === activeBlock.id ? { ...b, role: e.target.value } : b))}
-                      style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                      style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                     />
                   </div>
                 </div>
@@ -653,7 +653,7 @@ export default function Documents({ onBack, user, initialProject }) {
         </div>
 
         {/* Center: A4 styled Workbench sheet */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#080604", overflowY: "auto", padding: "40px 20px", alignItems: "center" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#0f070b", overflowY: "auto", padding: "40px 20px", alignItems: "center" }}>
           
           {/* Paper sheet */}
           <div className="print-sheet" style={{ width: "100%", maxWidth: "600px", minHeight: "842px", background: "#ffffff", color: "#1a202c", padding: "50px", borderRadius: "12px", boxShadow: "0 10px 40px rgba(0,0,0,0.7)", display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -765,7 +765,7 @@ export default function Documents({ onBack, user, initialProject }) {
       {/* Exit confirmation modal */}
       {showLeaveModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, backdropFilter: "blur(12px)" }}>
-          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(212,165,116,0.25)", background: "#131110" }}>
+          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(225,73,109,0.25)", background: "#131110" }}>
             <div style={{ fontSize: "40px", marginBottom: "16px" }}>📄</div>
             <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>Save interactive report?</h3>
             <p style={{ fontSize: "13px", color: "#8c8780", lineHeight: 1.6, marginBottom: "24px" }}>

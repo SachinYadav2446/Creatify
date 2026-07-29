@@ -19,10 +19,10 @@ export default function PrintDesign({ onBack, user, initialProject }) {
   const [cmykPreview, setCmykPreview] = useState(false);
 
   const [layers, setLayers] = useState([
-    { id: "frame_border", type: "shape", shape: "border", x: 50, y: 50, w: 90, h: 90, color: "#8b5a2b" },
+    { id: "frame_border", type: "shape", shape: "border", x: 50, y: 50, w: 90, h: 90, color: "#942945" },
     { id: "text_title", type: "text", text: "ANNUAL SUMMIT", x: 50, y: 25, size: 24, color: "#1e3a8a", font: "Syne" },
-    { id: "text_subtitle", type: "text", text: "Innovating the future of design and technology", x: 50, y: 32, size: 11, color: "#8b5a2b", font: "Poppins" },
-    { id: "sticker_badge", type: "shape", shape: "shield", x: 50, y: 60, w: 20, h: 20, color: "#d4a574" }
+    { id: "text_subtitle", type: "text", text: "Innovating the future of design and technology", x: 50, y: 32, size: 11, color: "#942945", font: "Poppins" },
+    { id: "sticker_badge", type: "shape", shape: "shield", x: 50, y: 60, w: 20, h: 20, color: "#e1496d" }
   ]);
   const [activeLayerId, setActiveLayerId] = useState("text_title");
 
@@ -49,7 +49,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
 
   const addShapeLayer = (shape) => {
     const id = `shape_${Date.now()}`;
-    setLayers(prev => [...prev, { id, type: "shape", shape, x: 50, y: 55, w: 20, h: 20, color: "#8b5a2b" }]);
+    setLayers(prev => [...prev, { id, type: "shape", shape, x: 50, y: 55, w: 20, h: 20, color: "#942945" }]);
     setActiveLayerId(id);
   };
 
@@ -73,8 +73,8 @@ export default function PrintDesign({ onBack, user, initialProject }) {
       category: "Print Layout",
       tool: "Print Design",
       year: new Date().getFullYear().toString(),
-      accent: "#8b5a2b",
-      gradient: "linear-gradient(135deg, #1c0f0f 0%, #3d1a1a 50%, #8b5a2b30 100%)",
+      accent: "#942945",
+      gradient: "linear-gradient(135deg, #1c0f0f 0%, #3a0c19 50%, #94294530 100%)",
       image: "",
       icon: "🖨️",
       tags: ["Print-ready PDF", `${layers.length} Elements`, activeSize.toUpperCase()],
@@ -253,7 +253,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
   const activeLayer = layers.find(l => l.id === activeLayerId);
 
   return (
-    <div style={{ background: "#0c0a09", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ background: "#1a0f14", color: "#e5e5e5", fontFamily: "'Poppins',sans-serif", height: "100vh", width: "100vw", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
           body * {
@@ -280,10 +280,10 @@ export default function PrintDesign({ onBack, user, initialProject }) {
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
 
       {/* Header Toolbar */}
-      <div style={{ height: "54px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(212,165,116,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between", zIndex: 10 }}>
+      <div style={{ height: "54px", background: "rgba(10,8,7,0.95)", borderBottom: "1px solid rgba(225,73,109,0.12)", display: "flex", alignItems: "center", padding: "0 20px", justifyContent: "space-between", zIndex: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button onClick={() => setShowLeaveModal(true)} className="tool-btn danger" style={{ padding: "6px 14px", fontSize: "11px" }}>Exit</button>
-          <div style={{ width: "1px", height: "18px", background: "rgba(212,165,116,0.15)" }} />
+          <div style={{ width: "1px", height: "18px", background: "rgba(225,73,109,0.15)" }} />
           <span style={{ fontFamily: "Syne", fontSize: "16px", fontWeight: 800 }}>PrintStudio</span>
         </div>
 
@@ -292,19 +292,19 @@ export default function PrintDesign({ onBack, user, initialProject }) {
             type="text" 
             value={projectTitle} 
             onChange={e => setProjectTitle(e.target.value)} 
-            style={{ background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "8px", color: "#fff", padding: "6px 12px", fontSize: "12px", outline: "none", width: "220px" }}
+            style={{ background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#fff", padding: "6px 12px", fontSize: "12px", outline: "none", width: "220px" }}
             placeholder="Document Name"
           />
         </div>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <button onClick={exportHighResPNG} className="tool-btn" style={{ border: "1px solid rgba(212,165,116,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "6px 14px", fontSize: "12px" }}>
+          <button onClick={exportHighResPNG} className="tool-btn" style={{ border: "1px solid rgba(225,73,109,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "6px 14px", fontSize: "12px" }}>
             Export High-Res PNG
           </button>
-          <button onClick={triggerPrint} className="tool-btn" style={{ border: "1px solid rgba(212,165,116,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "6px 14px", fontSize: "12px" }}>
+          <button onClick={triggerPrint} className="tool-btn" style={{ border: "1px solid rgba(225,73,109,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "6px 14px", fontSize: "12px" }}>
             Print / PDF
           </button>
-          <button onClick={handleSaveAndExit} className="tool-btn primary" style={{ background: "linear-gradient(135deg,#8b5a2b,#5c4028)", border: "none", color: "#fff", padding: "6px 16px", fontSize: "12px" }}>
+          <button onClick={handleSaveAndExit} className="tool-btn primary" style={{ background: "linear-gradient(135deg,#942945,#5c4028)", border: "none", color: "#fff", padding: "6px 16px", fontSize: "12px" }}>
             Save Layout
           </button>
         </div>
@@ -314,18 +314,18 @@ export default function PrintDesign({ onBack, user, initialProject }) {
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         
         {/* Left Sidebar: Controls */}
-        <div style={{ width: "300px", minWidth: "300px", borderRight: "1px solid rgba(212,165,116,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", overflowY: "auto", padding: "20px", gap: "20px" }}>
+        <div style={{ width: "300px", minWidth: "300px", borderRight: "1px solid rgba(225,73,109,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", overflowY: "auto", padding: "20px", gap: "20px" }}>
           
           {/* Preset size selector */}
           <div>
-            <span style={{ fontSize: "10px", color: "#8b5a2b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>LAYOUT SIZE</span>
+            <span style={{ fontSize: "10px", color: "#942945", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>LAYOUT SIZE</span>
             <select
               value={activeSize}
               onChange={e => {
                 setActiveSize(e.target.value);
                 setActiveLayerId(null);
               }}
-              style={{ width: "100%", background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "8px", fontSize: "12px", padding: "8px" }}
+              style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", fontSize: "12px", padding: "8px" }}
             >
               <option value="a4">A4 Flyer (210 x 297 mm)</option>
               <option value="card_h">Business Card (85 x 55 mm)</option>
@@ -335,14 +335,14 @@ export default function PrintDesign({ onBack, user, initialProject }) {
 
           {/* Guidelines toggles */}
           <div>
-            <span style={{ fontSize: "10px", color: "#8b5a2b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>PRINT GUIDELINES</span>
+            <span style={{ fontSize: "10px", color: "#942945", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>PRINT GUIDELINES</span>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <label style={{ fontSize: "11px", color: "#8c8780", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
-                <input type="checkbox" checked={showBleed} onChange={e => setShowBleed(e.target.checked)} style={{ accentColor: "#8b5a2b" }} />
+                <input type="checkbox" checked={showBleed} onChange={e => setShowBleed(e.target.checked)} style={{ accentColor: "#942945" }} />
                 Show Bleed Line (3mm)
               </label>
               <label style={{ fontSize: "11px", color: "#8c8780", cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}>
-                <input type="checkbox" checked={showMargins} onChange={e => setShowMargins(e.target.checked)} style={{ accentColor: "#8b5a2b" }} />
+                <input type="checkbox" checked={showMargins} onChange={e => setShowMargins(e.target.checked)} style={{ accentColor: "#942945" }} />
                 Show Safe Margins
               </label>
             </div>
@@ -350,7 +350,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
 
           {/* CMYK color space simulator */}
           <div>
-            <span style={{ fontSize: "10px", color: "#8b5a2b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>COLOR SPACE ENGINE</span>
+            <span style={{ fontSize: "10px", color: "#942945", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>COLOR SPACE ENGINE</span>
             <button
               onClick={() => setCmykPreview(!cmykPreview)}
               className={`tool-btn ${cmykPreview ? "primary" : ""}`}
@@ -359,8 +359,8 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                 justifyContent: "center",
                 padding: "10px",
                 fontSize: "11.5px",
-                background: cmykPreview ? "linear-gradient(135deg,#8b5a2b,#5c4028)" : "rgba(255,255,255,0.02)",
-                border: cmykPreview ? "none" : "1px solid rgba(212,165,116,0.15)"
+                background: cmykPreview ? "linear-gradient(135deg,#942945,#5c4028)" : "rgba(255,255,255,0.02)",
+                border: cmykPreview ? "none" : "1px solid rgba(225,73,109,0.15)"
               }}
             >
               {cmykPreview ? "✓ Simulating CMYK Inks" : "📺 RGB Screen Mode (Switch to CMYK)"}
@@ -370,11 +370,11 @@ export default function PrintDesign({ onBack, user, initialProject }) {
             </span>
           </div>
 
-          <div style={{ height: "1px", background: "rgba(212,165,116,0.08)" }} />
+          <div style={{ height: "1px", background: "rgba(225,73,109,0.08)" }} />
 
           {/* Insert graphical overlays */}
           <div>
-            <span style={{ fontSize: "10px", color: "#8b5a2b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>INSERT ASSETS</span>
+            <span style={{ fontSize: "10px", color: "#942945", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>INSERT ASSETS</span>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               <button onClick={addTextLayer} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>+ Text Layer</button>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
@@ -389,7 +389,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
         </div>
 
         {/* Center: Vector Canvas Workspace with Bleed guidelines */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#080604", overflowY: "auto", padding: "40px", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#0f070b", overflowY: "auto", padding: "40px", alignItems: "center", justifyContent: "center" }}>
           
           {/* Main workspace container */}
           <div style={{ position: "relative" }}>
@@ -443,7 +443,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                       top: `${layer.y}%`,
                       transform: "translate(-50%, -50%)",
                       cursor: "grab",
-                      outline: isActive ? "1.5px dashed #8b5a2b" : "none",
+                      outline: isActive ? "1.5px dashed #942945" : "none",
                       padding: "4px"
                     }}
                   >
@@ -512,10 +512,10 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                   left: `${activePreset.margin}px`,
                   right: `${activePreset.margin}px`,
                   bottom: `${activePreset.margin}px`,
-                  border: "1px dashed rgba(139,90,43,0.15)",
+                  border: "1px dashed rgba(148,41,69,0.15)",
                   pointerEvents: "none"
                 }}>
-                  <span style={{ position: "absolute", top: "4px", left: "6px", fontSize: "7px", color: "rgba(139,90,43,0.3)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Safe print margin</span>
+                  <span style={{ position: "absolute", top: "4px", left: "6px", fontSize: "7px", color: "rgba(148,41,69,0.3)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Safe print margin</span>
                 </div>
               )}
 
@@ -524,9 +524,9 @@ export default function PrintDesign({ onBack, user, initialProject }) {
         </div>
 
         {/* Right Sidebar: Active Layer Editor */}
-        <div style={{ width: "280px", minWidth: "280px", borderLeft: "1px solid rgba(212,165,116,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", padding: "20px", gap: "16px" }}>
+        <div style={{ width: "280px", minWidth: "280px", borderLeft: "1px solid rgba(225,73,109,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", padding: "20px", gap: "16px" }}>
           
-          <span style={{ fontSize: "10px", color: "#8b5a2b", fontWeight: 700, letterSpacing: "0.06em" }}>ELEMENT INSPECTOR</span>
+          <span style={{ fontSize: "10px", color: "#942945", fontWeight: 700, letterSpacing: "0.06em" }}>ELEMENT INSPECTOR</span>
 
           {activeLayer ? (
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -542,7 +542,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                     type="text"
                     value={activeLayer.text}
                     onChange={e => updateLayer(activeLayer.id, "text", e.target.value)}
-                    style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                    style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                   />
                 </div>
               )}
@@ -556,7 +556,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                     max="100"
                     value={activeLayer.x}
                     onChange={e => updateLayer(activeLayer.id, "x", parseInt(e.target.value) || 0)}
-                    style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                    style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                   />
                 </div>
                 <div>
@@ -567,7 +567,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                     max="100"
                     value={activeLayer.y}
                     onChange={e => updateLayer(activeLayer.id, "y", parseInt(e.target.value) || 0)}
-                    style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                    style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                   />
                 </div>
               </div>
@@ -576,7 +576,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "10px" }}>
                     <span style={{ color: "#8c8780" }}>Font Size</span>
-                    <span style={{ color: "#8b5a2b" }}>{activeLayer.size}px</span>
+                    <span style={{ color: "#942945" }}>{activeLayer.size}px</span>
                   </div>
                   <input
                     type="range"
@@ -595,7 +595,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                       type="number"
                       value={activeLayer.w}
                       onChange={e => updateLayer(activeLayer.id, "w", parseInt(e.target.value) || 5)}
-                      style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                      style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                     />
                   </div>
                   <div>
@@ -604,7 +604,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                       type="number"
                       value={activeLayer.h}
                       onChange={e => updateLayer(activeLayer.id, "h", parseInt(e.target.value) || 5)}
-                      style={{ width: "100%", background: "#0c0a09", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                      style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
                     />
                   </div>
                 </div>
@@ -626,7 +626,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                   <select
                     value={activeLayer.font || "Poppins"}
                     onChange={e => updateLayer(activeLayer.id, "font", e.target.value)}
-                    style={{ width: "100%", background: "#0c0a09", color: "#fff", border: "1px solid rgba(212,165,116,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
+                    style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
                   >
                     <option value="Poppins">Poppins</option>
                     <option value="Syne">Syne</option>
@@ -640,11 +640,11 @@ export default function PrintDesign({ onBack, user, initialProject }) {
             </div>
           )}
 
-          <div style={{ height: "1px", background: "rgba(212,165,116,0.08)", margin: "8px 0" }} />
+          <div style={{ height: "1px", background: "rgba(225,73,109,0.08)", margin: "8px 0" }} />
 
           {/* Layer Hierarchy */}
           <div>
-            <span style={{ fontSize: "10px", color: "#8b5a2b", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>DOCUMENT LAYERS</span>
+            <span style={{ fontSize: "10px", color: "#942945", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>DOCUMENT LAYERS</span>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {layers.map(l => {
                 const isAct = l.id === activeLayerId;
@@ -658,8 +658,8 @@ export default function PrintDesign({ onBack, user, initialProject }) {
                       gap: "8px",
                       padding: "6px 10px",
                       borderRadius: "6px",
-                      background: isAct ? "rgba(139,90,43,0.15)" : "rgba(255,255,255,0.02)",
-                      border: `1px solid ${isAct ? "#8b5a2b" : "rgba(255,255,255,0.05)"}`,
+                      background: isAct ? "rgba(148,41,69,0.15)" : "rgba(255,255,255,0.02)",
+                      border: `1px solid ${isAct ? "#942945" : "rgba(255,255,255,0.05)"}`,
                       cursor: "pointer",
                       fontSize: "11px"
                     }}
@@ -681,7 +681,7 @@ export default function PrintDesign({ onBack, user, initialProject }) {
       {/* Exit confirmation modal */}
       {showLeaveModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999, backdropFilter: "blur(12px)" }}>
-          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(212,165,116,0.25)", background: "#131110" }}>
+          <div className="glass-panel" style={{ width: "420px", padding: "30px", borderRadius: "24px", textAlign: "center", border: "1px solid rgba(225,73,109,0.25)", background: "#131110" }}>
             <div style={{ fontSize: "40px", marginBottom: "16px" }}>🖨️</div>
             <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "22px", fontWeight: 800, color: "#fff", marginBottom: "10px" }}>Save print layout?</h3>
             <p style={{ fontSize: "13px", color: "#8c8780", lineHeight: 1.6, marginBottom: "24px" }}>

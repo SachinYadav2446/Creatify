@@ -1,4 +1,4 @@
-# 🎨 Creatify — Modern Creative Design Suite
+#  Creatify — Modern Creative Design Suite
 
 <div align="center">
 
@@ -15,22 +15,22 @@
 
 ---
 
-## 🌟 Overview
+##  Overview
 
 Creatify is a comprehensive web-based creative platform that brings professional design tools directly to your browser. No installations, no heavy software—just pure creative power accessible from anywhere.
 
-### ✨ What Makes Creatify Special
+###  What Makes Creatify Special
 
-- **🎯 All-in-One Platform** - 9+ professional tools in one unified workspace
-- **🚀 Browser-Native** - No downloads, works on any device with a browser
-- **💾 Cloud Sync** - Your projects automatically save and sync
-- **🎨 Modern UI** - Beautiful, intuitive interface with dark mode support
-- **🔐 Secure Authentication** - Email/password + Google Sign-In with OTP verification
-- **⚡ High Performance** - Optimized for smooth, responsive editing
+- ** All-in-One Platform** - 9+ professional tools in one unified workspace
+- ** Browser-Native** - No downloads, works on any device with a browser
+- ** Cloud Sync** - Your projects automatically save and sync
+- ** Modern UI** - Beautiful, intuitive interface with dark mode support
+- ** Secure Authentication** - Email/password + Google Sign-In with OTP verification
+- ** High Performance** - Optimized for smooth, responsive editing
 
 ---
 
-## 🎨 Features
+##  Features
 
 ### Creative Tools
 
@@ -42,7 +42,7 @@ Multi-track timeline with advanced editing capabilities
 - Color filters and effects
 - Export to multiple formats
 
-#### 2. 🖼️ **Image Editor**
+#### 2.  **Image Editor**
 Professional image editing with layers
 - Multi-layer canvas workspace
 - Drag-and-drop elements
@@ -50,7 +50,7 @@ Professional image editing with layers
 - Filters and adjustments
 - PNG/JPG export
 
-#### 3. ✏️ **Whiteboard** ⭐ NEW
+#### 3.  **Whiteboard**  NEW
 Advanced collaborative whiteboard
 - 10 drawing tools (pen, highlighter, shapes)
 - Sticky notes and text annotations
@@ -60,7 +60,7 @@ Advanced collaborative whiteboard
 - Real-time collaboration ready
 - [Full Feature List →](docs/WHITEBOARD_FEATURES.md)
 
-#### 4. 📐 **Logo Maker**
+#### 4.  **Logo Maker**
 Vector-based logo design studio
 - SVG vector graphics
 - Preset shapes and templates
@@ -68,7 +68,7 @@ Vector-based logo design studio
 - Export as SVG or high-res PNG
 - Transparent backgrounds
 
-#### 5. 📱 **Social Studio**
+#### 5.  **Social Studio**
 Multi-platform social media content
 - Preview in multiple aspect ratios
 - Instagram, Stories, YouTube formats
@@ -76,7 +76,7 @@ Multi-platform social media content
 - Campaign scheduler
 - Export for all platforms
 
-#### 6. 📝 **Documents**
+#### 6.  **Documents**
 Rich document editor with collaboration
 - Block-based editing (Notion-style)
 - Tables and data visualization
@@ -84,7 +84,7 @@ Rich document editor with collaboration
 - Export to DOCX/PDF
 - Real-time collaboration
 
-#### 7. 🖨️ **Print Design**
+#### 7.  **Print Design**
 Professional print materials
 - Business card templates
 - A4/Letter formats
@@ -92,7 +92,7 @@ Professional print materials
 - Bleed and crop guides
 - Print-ready exports
 
-#### 8. 📊 **Presentations**
+#### 8.  **Presentations**
 Beautiful slide decks
 - Multiple design themes
 - Markdown support
@@ -100,7 +100,7 @@ Beautiful slide decks
 - Smooth transitions
 - Export to PPTX/PDF
 
-#### 9. 🤖 **AI Magic**
+#### 9.  **AI Magic**
 AI-powered design assistance
 - Smart suggestions
 - Auto-layouts
@@ -109,7 +109,7 @@ AI-powered design assistance
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) v18 or higher
@@ -167,7 +167,7 @@ AI-powered design assistance
 
 ---
 
-## 🎯 Usage
+##  Usage
 
 ### Creating Your First Project
 
@@ -191,20 +191,20 @@ AI-powered design assistance
 
 ---
 
-## 📚 Documentation
+##  Documentation
 
 Comprehensive guides for setup, features, and deployment:
 
-- **📖 [Documentation Index](docs/README.md)** - Complete documentation hub
-- **✏️ [Whiteboard Features](docs/WHITEBOARD_FEATURES.md)** - Whiteboard tool guide
-- **🔐 [Authentication Setup](docs/QUICK_GOOGLE_SETUP.md)** - Google Sign-In configuration
-- **📧 [SMTP Setup](docs/SMTP_QUICK_REFERENCE.md)** - Email configuration guide
-- **🚢 [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Production deployment steps
-- **✅ [Features List](docs/FEATURES_COMPLETED.md)** - All implemented features
+- ** [Documentation Index](docs/README.md)** - Complete documentation hub
+- ** [Whiteboard Features](docs/WHITEBOARD_FEATURES.md)** - Whiteboard tool guide
+- ** [Authentication Setup](docs/QUICK_GOOGLE_SETUP.md)** - Google Sign-In configuration
+- ** [SMTP Setup](docs/SMTP_QUICK_REFERENCE.md)** - Email configuration guide
+- ** [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Production deployment steps
+- ** [Features List](docs/FEATURES_COMPLETED.md)** - All implemented features
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 ### Frontend
 - **Framework**: React 18 with Hooks
@@ -230,70 +230,10 @@ Comprehensive guides for setup, features, and deployment:
 
 ---
 
-## 🚢 Deployment
-
-### Deploy to Render (Recommended)
-
-1. **Fork this repository**
-
-2. **Connect to Render**
-   - Go to [Render Dashboard](https://dashboard.render.com)
-   - Click "New" → "Blueprint"
-   - Connect your GitHub repository
-   - Click "Apply"
-
-3. **Configure Environment Variables**
-   - Add your DATABASE_URL, JWT_SECRET, SMTP credentials
-   - Set FRONTEND_URL to your Render frontend URL
-
-4. **Deploy!**
-   - Render will automatically build and deploy
-   - Frontend: Static Site
-   - Backend: Web Service
-
-Detailed deployment instructions: [Deployment Guide](docs/DEPLOYMENT_GUIDE.md)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- Built with ❤️ using modern web technologies
-- Icons by [Lucide](https://lucide.dev)
-- Fonts from Google Fonts
-- Inspired by professional design tools
-
----
-
-## 📞 Contact & Support
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/creatify/issues)
-- **Email**: support@creatify.com
-- **Documentation**: [docs/](docs/)
-
----
-
 <div align="center">
 
 **[⬆ Back to Top](#-creatify--modern-creative-design-suite)**
 
-Made with 💖 by the Creatify Team
+By Sachin Yadav
 
 </div>

@@ -11,6 +11,7 @@ import Documents from "./components/Documents";
 import PrintDesign from "./components/PrintDesign";
 import AiMagic from "./components/AiMagic";
 import ProjectsDetail from "./components/ProjectsDetail";
+import Whiteboard from "./components/Whiteboard";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -24,6 +25,7 @@ export default function App() {
   const [activeSocialProject, setActiveSocialProject] = useState(null);
   const [activeDocProject, setActiveDocProject] = useState(null);
   const [activePrintProject, setActivePrintProject] = useState(null);
+  const [activeWhiteboardProject, setActiveWhiteboardProject] = useState(null);
 
   // Sync theme setting to body/root styles for seamless app-wide integration
   useEffect(() => {
@@ -131,6 +133,12 @@ export default function App() {
     } else if (page === "print_design") {
       setActivePrintProject(null);
       setCurrentPage("print_design");
+    } else if (page === "whiteboard_load") {
+      setActiveWhiteboardProject(data);
+      setCurrentPage("whiteboard");
+    } else if (page === "whiteboard") {
+      setActiveWhiteboardProject(null);
+      setCurrentPage("whiteboard");
     } else {
       setCurrentPage(page);
     }
@@ -244,6 +252,16 @@ export default function App() {
         onBack={() => setCurrentPage("home")}
         onNavigate={navigate}
         user={user}
+      />
+    );
+  }
+
+  if (currentPage === "whiteboard") {
+    return (
+      <Whiteboard
+        onBack={() => setCurrentPage("home")}
+        user={user}
+        initialProject={activeWhiteboardProject}
       />
     );
   }

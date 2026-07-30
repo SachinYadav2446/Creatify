@@ -4,6 +4,11 @@ dist/
 .vscode/
 .idea/
 
+# Documentation (maintain locally or in separate branch)
+docs/
+*.md
+!README.md
+
 # Environment variables
 .env
 .env.local

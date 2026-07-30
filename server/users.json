@@ -1,4 +1,18 @@
 {
-  "users": [],
-  "nextId": 1
+  "users": [
+    {
+      "id": 1,
+      "name": "Nothing",
+      "email": "yadavsachin123411@gmail.com",
+      "password": "$2a$12$.mUdvO7Fg0gAV9s0cNw9Wen5ZuQxafzj6DU3XptUhgNWk839LKW.i",
+      "provider": "email",
+      "google_id": null,
+      "avatar": null,
+      "created_at": "2026-07-29T15:13:09.007Z",
+      "otp": "371764",
+      "otp_expires_at": "2026-07-29T15:23:09.026Z"
+    }
+  ],
+  "projects": [],
+  "nextId": 2
 }

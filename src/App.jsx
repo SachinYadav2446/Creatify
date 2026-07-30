@@ -10,6 +10,7 @@ import SocialStudio from "./components/SocialStudio";
 import Documents from "./components/Documents";
 import PrintDesign from "./components/PrintDesign";
 import AiMagic from "./components/AiMagic";
+import ProjectsDetail from "./components/ProjectsDetail";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -232,6 +233,16 @@ export default function App() {
     return (
       <AiMagic
         onBack={() => setCurrentPage("home")}
+        user={user}
+      />
+    );
+  }
+
+  if (currentPage === "projects") {
+    return (
+      <ProjectsDetail
+        onBack={() => setCurrentPage("home")}
+        onNavigate={navigate}
         user={user}
       />
     );

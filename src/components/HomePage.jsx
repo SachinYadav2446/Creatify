@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import THEME from "../theme";
+import ProjectsDetail from "./ProjectsDetail";
 
 // Import generated preview images
 import videoPrev  from "../assets/images/video_preview.png";
@@ -17,6 +18,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [activeNav, setActiveNav]             = useState("home");
   const [navScrolled, setNavScrolled]         = useState(false);
+  const [heroSettled, setHeroSettled]         = useState(false);
+  const [heroCreateHover, setHeroCreateHover] = useState(false);
 
   // Dynamic Past Works state
   const [pastWorks, setPastWorks] = useState(() => {
@@ -38,11 +41,11 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         category: "Video Edit",
         tool: "Video Editor",
         year: "2026",
-        accent: "#942945",
-        gradient: "linear-gradient(135deg, #23141b 0%, #3a0c19 50%, #1a0f14 100%)",
+        accent: "#b13453",
+        gradient: "linear-gradient(135deg, #1a0f14 0%, #3a0c19 45%, #581c87 100%)",
         image: videoPrev,
         tags: ["4K UHD", "LUTs", "15s"],
-        desc: "Cinematic intro sequence with warm amber color LUTs and smooth title transitions.",
+        desc: "Cinematic intro sequence with wine-toned color LUTs and silk-smooth title transitions.",
         data: {
           tracks: [
             { id: "track_v1", type: "video", name: "Video Track 1", clips: [
@@ -61,11 +64,11 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         category: "Presentation",
         tool: "Slide Studio",
         year: "2026",
-        accent: "#7c233c",
-        gradient: "linear-gradient(135deg, #111827 0%, #1f2937 50%, #030712 100%)",
+        accent: "#7e22ce",
+        gradient: "linear-gradient(135deg, #180825 0%, #3a0e5b 45%, #1a0f14 100%)",
         image: pptPrev,
         tags: ["10 Slides", "Vector", "Pitch"],
-        desc: "Modern corporate pitch deck layout with minimalist vector grid alignment.",
+        desc: "Modern corporate pitch deck with plum accents and razor-sharp vector grid alignment.",
         data: {
           themeIdx: 0,
           slides: [
@@ -282,36 +285,6 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
     return () => obs.disconnect();
   }, []);
 
-  // Stats counter
-  useEffect(() => {
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !animatedStats.has("stats")) {
-          setAnimatedStats(s => new Set([...s, "stats"]));
-          const nums = entry.target.querySelectorAll(".stat-num");
-          [[12000000,"+"],[3800000,""],[500000,"+"],[180,"+"]].forEach(([t,s],i) => animateCount(nums[i],t,s));
-        }
-      });
-    }, { threshold: 0.3 });
-    const el = document.querySelector(".stats-inner");
-    if (el) obs.observe(el);
-    return () => obs.disconnect();
-  }, [animatedStats]);
-
-  const animateCount = (el, target, suffix) => {
-    if (!el) return;
-    const dur = 1800, start = performance.now();
-    const isM = target >= 1e6, isK = target >= 1000 && !isM;
-    const disp = isM ? target / 1e6 : isK ? target / 1000 : target;
-    const step = ts => {
-      const p = Math.min((ts - start) / dur, 1), ease = 1 - Math.pow(1 - p, 3);
-      el.textContent = (disp * ease).toFixed(1) + (isM ? "M" : isK ? "K" : "") + suffix;
-      if (p < 1) requestAnimationFrame(step);
-      else el.textContent = disp.toFixed(1) + (isM ? "M" : isK ? "K" : "") + suffix;
-    };
-    requestAnimationFrame(step);
-  };
-
   // Three.js background (Plexus Particle Network)
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -520,16 +493,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
   }, []);
 
   // ── Tool definitions (ordered for Bento layout) ──────────────────────────
-  // Grid: 4 columns. Video=2×2, Image=1×1, Logo=1×1, PPT=2×1, Social=2×2, Doc=2×1, Print=2×1
+  // Grid: 3 columns × 2 rows. All tools equally sized to fit in one studio without gaps
   const tools = [
-    { id:"video",  name:"Video Editor",    desc:"Full multi-track timeline with WebGL color grading, audio mixing & in-browser rendering. No uploads needed.", icon:"🎬", color:"#942945",  tag:"WebGL · WASM",       colSpan:2, rowSpan:2, image: videoPrev  },
-    { id:"image",  name:"Image Editor",    desc:"Layers, masks, filters, blend modes. Pro-grade photo editing in your browser.",                               icon:"🖼️", color:"#e1496d",  tag:"Canvas API",          colSpan:1, rowSpan:1, image: imagePrev  },
-    { id:"logo",   name:"Logo Maker",      desc:"Vector-based logo studio. AI suggestions, custom icons, SVG export.",                                         icon:"✦",  color:"#ec4899",  tag:"SVG · AI-assisted",   colSpan:1, rowSpan:1, image: null       },
-    { id:"ai",     name:"AI Magic Studio", desc:"AI-powered background removal, prompt-based generative artwork styles, and smart resizing tools.",            icon:"✨",  color:"#a855f7",  tag:"AI · Canvas API",     colSpan:2, rowSpan:1, image: aiPrev      },
-    { id:"ppt",    name:"Presentations",   desc:"Slides that animate. Real-time collaboration, 500+ templates, one-click export.",                             icon:"📊", color:"#7c233c",  tag:"PPTX · PDF · HTML5",  colSpan:2, rowSpan:1, image: pptPrev    },
-    { id:"social", name:"Social Studio",   desc:"All platform sizes at once. Schedule and auto-publish when you're done.",                                     icon:"📱", color:"#dd728b",  tag:"Stories · Reels",     colSpan:2, rowSpan:2, image: socialPrev },
-    { id:"doc",    name:"Documents",       desc:"Rich docs with embedded media, tables, charts. Beautiful by default.",                                        icon:"📄", color:"#eba5b6",  tag:"DOCX · PDF",          colSpan:2, rowSpan:1, image: null       },
-    { id:"print",  name:"Print Design",    desc:"Flyers, posters, business cards. CMYK-ready, bleed lines included.",                                          icon:"🖨️", color:"#942945",  tag:"Print-ready PDF",     colSpan:4, rowSpan:1, image: null       },
+    { id:"video",  name:"Video Editor",    desc:"Full multi-track timeline with WebGL color grading, audio mixing & in-browser rendering. No uploads needed.", icon:"🎬", color:"#942945",  tag:"WebGL · WASM",        colSpan:1, rowSpan:1, image: videoPrev  },
+    { id:"image",  name:"Image Editor",    desc:"Layers, masks, filters, blend modes. Pro-grade photo editing in your browser.",                                icon:"🖼️", color:"#e1496d",  tag:"Canvas API",           colSpan:1, rowSpan:1, image: imagePrev  },
+    { id:"logo",   name:"Logo Maker",      desc:"Vector-based logo studio. AI suggestions, custom icons, SVG export.",                                          icon:"✦",  color:"#ec4899",  tag:"SVG · AI-assisted",    colSpan:1, rowSpan:1, image: null       },
+    { id:"ppt",    name:"Presentations",   desc:"Slides that animate. Real-time collaboration, 500+ templates, one-click export.",                              icon:"📊", color:"#7c233c",  tag:"PPTX · PDF · HTML5",   colSpan:1, rowSpan:1, image: pptPrev    },
+    { id:"white",  name:"Whiteboard",      desc:"Freehand canvas with sticky notes, arrows, shapes, laser pointer & live multiplayer cursors.",                  icon:"✏️",  color:"#be185d",  tag:"Canvas · Real-time",    colSpan:1, rowSpan:1, image: null       },
+    { id:"doc",    name:"Documents",       desc:"Rich docs with embedded media, tables, charts. Beautiful by default.",                                         icon:"📄", color:"#eba5b6",  tag:"DOCX · PDF",           colSpan:1, rowSpan:1, image: null       },
   ];
 
   const pricing = [
@@ -541,9 +512,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
   // ── Gradient fallbacks for cards without images ──────────────────────────
   const cardGradients = {
     logo:  "linear-gradient(135deg, #1a0f14 0%, #3a0c19 40%, #ec489920 100%)",
-    ai:    "linear-gradient(135deg, #180825 0%, #3a0e5b 50%, #a855f720 100%)",
     doc:   "linear-gradient(135deg, #170b11 0%, #23141b 50%, #eba5b620 100%)",
-    print: "linear-gradient(135deg, #1a0f14 0%, #3a0c19 50%, #94294530 100%)",
+    white: "linear-gradient(135deg, #140a0f 0%, #2a0d1b 45%, #be185d25 100%)",
   };
 
   const colors = {
@@ -660,6 +630,358 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
     );
   };
 
+  const AnimatedCreateRow = ({ onNavigate, user, isDark, THEME, heroCreateHover, setHeroCreateHover }) => {
+    const ANIM_STORAGE_KEY = "creatify_hero_create_animated";
+
+    const hasPlayedSession = (() => {
+      try { return sessionStorage.getItem(ANIM_STORAGE_KEY) === "1"; }
+      catch (e) { return false; }
+    })();
+
+    const [phase, setPhase] = useState(hasPlayedSession ? 2 : 0);
+    const [animOnce, setAnimOnce] = useState(!hasPlayedSession);
+    const btnRef = useRef(null);
+
+    useEffect(() => {
+      if (!animOnce) return;
+      const t1 = setTimeout(() => setPhase(1), 650);
+      const t2 = setTimeout(() => {
+        setPhase(2);
+        try { sessionStorage.setItem(ANIM_STORAGE_KEY, "1"); } catch (e) {}
+        setAnimOnce(false);
+      }, 1600);
+      return () => { clearTimeout(t1); clearTimeout(t2); };
+    }, [animOnce]);
+
+    const rowCenterBig = {
+      position: "relative",
+      width: "100%",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: "44px 0 64px",
+    };
+
+    const rowSettled = {
+      position: "relative",
+      width: "100%",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "36px 12px 52px",
+      gap: "40px",
+    };
+
+    const showBig = phase === 0 && animOnce;
+    const detailsVisible = phase === 2;
+    const showShimmer = phase === 0 && animOnce;
+
+    const bigBtn = { w: 440, h: 88, radius: 999, icon: 28, text: 20 };
+    const smallBtn = { w: 248, h: 60, radius: 16, icon: 20, text: 15 };
+    const dims = showBig ? bigBtn : smallBtn;
+
+    return (
+      <div style={showBig ? rowCenterBig : rowSettled}>
+        <style>{`
+          @keyframes heroRectPop {
+            0% { transform: scale(0.6); opacity: 0; filter: blur(14px); }
+            55% { transform: scale(1.04); opacity: 1; filter: blur(0); }
+            78% { transform: scale(0.985); }
+            100% { transform: scale(1); opacity: 1; }
+          }
+          @keyframes heroRectShine {
+            0% { transform: translateX(-130%) skewX(-18deg); }
+            100% { transform: translateX(230%) skewX(-18deg); }
+          }
+          @keyframes heroBorderPulse {
+            0%, 100% { opacity: 0.65; }
+            50% { opacity: 1; }
+          }
+          @keyframes heroIconDraw {
+            0% { stroke-dashoffset: 80; }
+            100% { stroke-dashoffset: 0; }
+          }
+          @keyframes heroGlowPulse {
+            0%, 100% { opacity: 0.55; transform: translate(-50%,-50%) scale(1); }
+            50% { opacity: 0.95; transform: translate(-50%,-50%) scale(1.06); }
+          }
+        `}</style>
+
+        {/* LEFT: Editor-style details (no Start Creating chip) */}
+        <div style={{
+          flex: 1,
+          maxWidth: 520,
+          opacity: detailsVisible ? 1 : (animOnce ? 0 : 1),
+          transform: detailsVisible ? "translateX(0)" : (animOnce ? "translateX(-60px)" : "translateX(0)"),
+          transition: animOnce
+            ? "opacity 0.7s cubic-bezier(0.16,1,0.3,1) 0.05s, transform 0.7s cubic-bezier(0.16,1,0.3,1) 0.05s"
+            : "none",
+          pointerEvents: detailsVisible || !animOnce ? "auto" : "none",
+        }}>
+          <h3 style={{
+            fontFamily: "Syne,sans-serif", fontWeight: 700,
+            fontSize: "clamp(26px, 3vw, 38px)",
+            letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px",
+            color: isDark ? "#fff" : THEME.text,
+          }}>
+            Bring your ideas to life
+            <br />
+            <span style={{
+              background: `linear-gradient(135deg, ${THEME.wine} 0%, ${THEME.roseGold} 100%)`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}>in seconds.</span>
+          </h3>
+          <p style={{
+            fontSize: 14.5, lineHeight: 1.65, margin: 0,
+            color: isDark ? "rgba(255,255,255,0.7)" : THEME.textMuted,
+            fontFamily: "'Instrument Sans',sans-serif", fontWeight: 400,
+            maxWidth: 460,
+          }}>
+            Pick from thousands of templates or start from scratch. Video, social, presentations, logos — all in one place.
+          </p>
+          <div style={{ display: "flex", gap: "14px", marginTop: "22px", alignItems: "center", flexWrap: "wrap" }}>
+            {[
+              { icon: "⚡", label: "Templates" },
+              { icon: "🎬", label: "Video" },
+              { icon: "🎨", label: "Designs" },
+              { icon: "✨", label: "AI Tools" },
+            ].map(chip => (
+              <div key={chip.label} style={{
+                display: "flex", alignItems: "center", gap: "7px",
+                padding: "7px 13px", borderRadius: 10,
+                background: isDark ? "rgba(255,255,255,0.05)" : "#fff",
+                border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : THEME.borderSoft}`,
+                boxShadow: THEME.shadow.sm,
+              }}>
+                <span style={{ fontSize: 14 }}>{chip.icon}</span>
+                <span style={{
+                  fontSize: 12, fontWeight: 500,
+                  color: isDark ? "rgba(255,255,255,0.82)" : THEME.text,
+                  fontFamily: "'Poppins',sans-serif",
+                }}>{chip.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ═══════ RECTANGULAR PILL CREATE BUTTON ═══════ */}
+        <div
+          ref={btnRef}
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            width: dims.w + 60,
+            height: dims.h + 60,
+            cursor: "pointer",
+          }}
+          onMouseEnter={() => setHeroCreateHover(true)}
+          onMouseLeave={() => setHeroCreateHover(false)}
+          onClick={() => onNavigate(user ? "editor" : "auth", "signup")}
+        >
+          {/* Outer glow halo */}
+          <div style={{
+            position: "absolute",
+            left: "50%", top: "50%",
+            width: dims.w + 50, height: dims.h + 50,
+            borderRadius: dims.radius,
+            background: `radial-gradient(ellipse at center, ${THEME.hexA(THEME.roseGold, 0.28)} 0%, ${THEME.hexA(THEME.wine, 0.12)} 50%, transparent 80%)`,
+            filter: "blur(12px)",
+            transform: "translate(-50%,-50%)",
+            opacity: heroCreateHover ? 1 : 0.6,
+            transition: "opacity 0.35s",
+            pointerEvents: "none",
+            animation: !showBig ? "heroGlowPulse 4s ease-in-out infinite" : "heroGlowPulse 4s ease-in-out 0.4s infinite",
+          }} />
+
+          {/* Animated gradient border */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            margin: "auto",
+            width: dims.w + 4, height: dims.h + 4,
+            borderRadius: dims.radius,
+            padding: 2,
+            background: `linear-gradient(135deg, ${THEME.roseGoldLight} 0%, ${THEME.wineLight} 35%, ${THEME.plumLight} 65%, ${THEME.wineMid} 100%)`,
+            backgroundSize: "200% 200%",
+            animation: "heroGradientShift 6s ease-in-out infinite",
+            opacity: heroCreateHover ? 0.95 : 0.65,
+            transition: "opacity 0.3s",
+            WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+            WebkitMaskComposite: "xor",
+            maskComposite: "exclude",
+            pointerEvents: "none",
+          }} />
+
+          {/* MAIN RECTANGLE BUTTON */}
+          <button
+            onClick={(e) => { e.stopPropagation(); onNavigate(user ? "editor" : "auth", "signup"); }}
+            onMouseEnter={() => setHeroCreateHover(true)}
+            onMouseLeave={() => setHeroCreateHover(false)}
+            style={{
+              position: "relative",
+              width: dims.w,
+              height: dims.h,
+              borderRadius: dims.radius,
+              background: `linear-gradient(135deg, #e1496d 0%, #b13453 32%, #942945 68%, #7c233c 100%)`,
+              backgroundSize: "200% 200%",
+              animation: (showBig
+                ? "heroRectPop 0.75s cubic-bezier(0.16,1.3,0.3,1) 0.15s forwards, heroGradientShift 5s ease-in-out 0.9s infinite"
+                : "heroGradientShift 5s ease-in-out infinite"),
+              border: `1px solid ${THEME.hexA("#ffffff", 0.22)}`,
+              color: "#fff",
+              cursor: "pointer",
+              padding: `0 ${showBig ? 34 : 18}px`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: showBig ? 14 : 10,
+              boxShadow: heroCreateHover
+                ? `0 18px 48px ${THEME.hexA(THEME.wine, 0.45)}, 0 2px 0 ${THEME.hexA("#ffffff", 0.28)} inset, 0 -4px 14px ${THEME.hexA(THEME.wineDarker, 0.55)} inset`
+                : `0 10px 30px ${THEME.hexA(THEME.wine, 0.3)}, 0 2px 0 ${THEME.hexA("#ffffff", 0.22)} inset, 0 -3px 10px ${THEME.hexA(THEME.wineDarker, 0.45)} inset`,
+              outline: "none",
+              transform: `translateY(${heroCreateHover ? -3 : 0}px) scale(${heroCreateHover ? 1.03 : 1})`,
+              transition: showBig
+                ? "box-shadow 0.35s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1)"
+                : "all 0.7s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease, transform 0.25s cubic-bezier(0.16,1,0.3,1)",
+              overflow: "hidden",
+              flexShrink: 0,
+            }}
+          >
+            {/* Top rim highlight */}
+            <div style={{
+              position: "absolute",
+              top: 1, left: 10, right: 10,
+              height: dims.h * 0.42,
+              borderRadius: dims.radius,
+              background: `linear-gradient(180deg, ${THEME.hexA("#ffffff", 0.28)} 0%, transparent 80%)`,
+              pointerEvents: "none",
+            }} />
+            {/* Bottom vignette */}
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: dims.radius,
+              background: `linear-gradient(180deg, transparent 40%, ${THEME.hexA(THEME.wineDarker, 0.35)} 100%)`,
+              pointerEvents: "none",
+            }} />
+            {/* Shimmer sweep */}
+            <div style={{
+              position: "absolute", inset: 0, borderRadius: dims.radius, pointerEvents: "none",
+              background: "linear-gradient(105deg, transparent 22%, rgba(255,255,255,0.38) 50%, transparent 78%)",
+              animation: showShimmer
+                ? "heroRectShine 1.8s ease-in-out 0.35s 2"
+                : heroCreateHover
+                ? "heroRectShine 1.4s ease-in-out infinite"
+                : "none",
+            }} />
+
+            {/* PLUS SQUARE icon (editor-style: filled badge + plus line art) */}
+            <span style={{
+              position: "relative",
+              zIndex: 2,
+              flexShrink: 0,
+              width: showBig ? 44 : 32,
+              height: showBig ? 44 : 32,
+              borderRadius: showBig ? 12 : 9,
+              background: `linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.05))`,
+              border: `1px solid ${THEME.hexA("#ffffff", 0.3)}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transform: heroCreateHover ? "rotate(-90deg) scale(1.08)" : "rotate(0deg) scale(1)",
+              transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1)",
+              boxShadow: `0 2px 8px ${THEME.hexA(THEME.wineDarker, 0.4)}, inset 0 1px 0 rgba(255,255,255,0.25)`,
+            }}>
+              <svg
+                width={dims.icon}
+                height={dims.icon}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                style={{
+                  filter: `drop-shadow(0 1px 2px ${THEME.hexA(THEME.wineDarker, 0.6)})`,
+                }}
+              >
+                <line x1="12" y1="5" x2="12" y2="19" style={{
+                  strokeDasharray: 18,
+                  strokeDashoffset: showBig ? 18 : 0,
+                  animation: showBig ? "heroIconDraw 0.55s cubic-bezier(0.16,1,0.3,1) 0.5s forwards" : "none",
+                }} />
+                <line x1="5" y1="12" x2="19" y2="12" style={{
+                  strokeDasharray: 18,
+                  strokeDashoffset: showBig ? 18 : 0,
+                  animation: showBig ? "heroIconDraw 0.55s cubic-bezier(0.16,1,0.3,1) 0.6s forwards" : "none",
+                }} />
+              </svg>
+            </span>
+
+            {/* Label + subline */}
+            <span style={{
+              position: "relative", zIndex: 2,
+              display: "flex", flexDirection: "column",
+              alignItems: showBig ? "flex-start" : "center",
+              gap: showBig ? 2 : 0,
+            }}>
+              <span style={{
+                fontSize: dims.text,
+                fontWeight: 700,
+                fontFamily: "'Poppins',sans-serif",
+                letterSpacing: showBig ? "-0.01em" : "0.01em",
+                lineHeight: 1,
+                color: "#fff",
+                textShadow: `0 1px 2px ${THEME.hexA(THEME.wineDarker, 0.7)}`,
+              }}>
+                {showBig ? "Create a new design" : "New design"}
+              </span>
+              {showBig && (
+                <span style={{
+                  fontSize: 12,
+                  fontWeight: 400,
+                  fontFamily: "'Instrument Sans',sans-serif",
+                  letterSpacing: "0",
+                  color: THEME.hexA("#ffffff", 0.82),
+                }}>
+                  Start from scratch or with a template
+                </span>
+              )}
+            </span>
+
+            {/* Arrow on right when settled */}
+            {!showBig && (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{
+                  position: "relative", zIndex: 2,
+                  marginLeft: 2,
+                  opacity: 0.88,
+                  transform: heroCreateHover ? "translateX(4px)" : "translateX(0)",
+                  transition: "transform 0.3s cubic-bezier(0.16,1,0.3,1)",
+                }}
+              >
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={{
       margin: 0, padding: 0, width: "100%",
@@ -672,90 +994,19 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
       {/* ═══════════════ CANVA-STYLE VERTICAL SIDEBAR ═══════════════ */}
       <aside style={{
-        position: "fixed", top: 0, left: 0, bottom: 0, width: sidebarW,
+        position: "fixed", top: 20, left: 12, bottom: 20, width: sidebarW,
         background: THEME.grad.sidebar,
         borderRight: `1px solid ${THEME.borderSoft}`,
+        border: `1px solid ${THEME.borderSoft}`,
         zIndex: 200,
         display: "flex", flexDirection: "column", alignItems: "center",
         padding: "14px 0 12px",
-        boxShadow: "2px 0 20px rgba(148,41,69,0.05)",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+        borderRadius: "20px",
+        backdropFilter: "blur(10px)",
       }}>
-        {/* Logo icon (top) */}
-        <div
-          style={{ cursor: "pointer", marginBottom: 10 }}
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          title="Creatify Home"
-        >
-          <div style={{
-            width: 32, height: 32, borderRadius: 8,
-            background: THEME.grad.primary,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: THEME.shadow.sm,
-          }}>
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-              <path d="M3 8 L8 2 L13 8 L8 14 Z" fill="white" opacity="0.95"/>
-              <circle cx="8" cy="8" r="2" fill="white"/>
-            </svg>
-          </div>
-        </div>
-
-        {/* Create button (big +) */}
-        <div style={{ position: "relative", width: "100%", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 12 }}>
-          <button
-            title="Create a new design"
-            onClick={() => onNavigate(user ? "editor" : "auth", "signup")}
-            style={{
-              width: 48, height: 48, borderRadius: 16,
-              background: THEME.grad.primary,
-              border: "none", color: "#fff", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 22, fontWeight: 300, outline: "none",
-              boxShadow: "0 4px 14px rgba(148,41,69,0.35)",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px) scale(1.04)"; e.currentTarget.style.filter = "brightness(1.06)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.filter = "none"; }}
-          >＋</button>
-          <span style={{
-            fontSize: 10, marginTop: 4, color: THEME.wine,
-            fontFamily: "'Poppins',sans-serif", fontWeight: 600, letterSpacing: "-0.01em",
-          }}>Create</span>
-        </div>
-
-        <div style={{ width: "70%", height: 1, background: THEME.hexA(THEME.wine, 0.12), margin: "4px 0 10px" }} />
-
-        {/* Nav stack */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, width: "100%" }}>
-          <SidebarIcon active={activeNav === "home"} label="Home" onClick={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 7v11h-6v-7H9v7H3V10z"/></svg>} />
-          <SidebarIcon active={activeNav === "projects"} label="Projects" onClick={() => { setActiveNav("projects"); scrollTo("past-work-section", "projects"); }}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>} />
-          <SidebarIcon active={activeNav === "templates"} label="Templates" onClick={() => { setActiveNav("templates"); scrollTo("tools-section", "templates"); }}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>} />
-          <SidebarIcon active={activeNav === "brand"} label="Brand" crownBadge onClick={() => setActiveNav("brand")}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>} />
-          <SidebarIcon active={activeNav === "ai"} label="Canva AI" onClick={() => { setActiveNav("ai"); onNavigate(user ? "ai_magic" : "auth", "signup"); }}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>} />
-          <SidebarIcon active={activeNav === "more"} label="More" onClick={() => setActiveNav("more")}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>} />
-        </div>
-
-        {/* Bottom icons: notifications, avatar */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%" }}>
-          <button
-            onClick={() => onNavigate("profile")}
-            title="Profile & settings"
-            style={{
-              width: 44, height: 44, borderRadius: 12,
-              background: THEME.wineTint,
-              border: `1px solid ${THEME.hexA(THEME.wine, 0.2)}`,
-              color: THEME.wine, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all 0.2s", outline: "none", fontSize: 18,
-            }}
-          >🔔</button>
-
-          {/* Avatar (bottom) */}
+        {/* Avatar at Top */}
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 12 }}>
           {user ? (
             <div style={{ position: "relative" }}>
               <AvatarCircle size={40} onClick={() => onNavigate("profile")} showBorder />
@@ -778,14 +1029,41 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             >U</button>
           )}
         </div>
+
+        <div style={{ width: "70%", height: 1, background: THEME.hexA(THEME.wine, 0.12), margin: "4px 0 10px" }} />
+
+        {/* Nav stack */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, width: "100%" }}>
+          <SidebarIcon active={activeNav === "home"} label="Home" onClick={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 7v11h-6v-7H9v7H3V10z"/></svg>} />
+          <SidebarIcon active={activeNav === "projects"} label="Projects" onClick={() => { setActiveNav("projects"); }}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>} />
+          <SidebarIcon active={activeNav === "templates"} label="Templates" onClick={() => { setActiveNav("templates"); scrollTo("tools-section", "templates"); }}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>} />
+          <SidebarIcon active={activeNav === "more"} label="More" onClick={() => setActiveNav("more")}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>} />
+        </div>
+
+        {/* Empty space at bottom */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%" }} />
       </aside>
 
-      {/* ═══════════════ MAIN CONTENT (right of sidebar) ═══════════════ */}
-      <main style={{ marginLeft: sidebarW, width: `calc(100% - ${sidebarW}px)`, position: "relative", overflow: "hidden" }}>
+      {/* ═══════════════ MAIN CONTENT (full width with sidebar padding) ═══════════════ */}
+      <main style={{ width: "100%", position: "relative", overflow: "hidden", paddingLeft: "100px" }}>
+
+        {/* Conditional rendering based on activeNav */}
+        {activeNav === "projects" ? (
+          <ProjectsDetail
+            onBack={() => setActiveNav("home")}
+            onNavigate={onNavigate}
+            user={user}
+          />
+        ) : (
+          <>
 
         {/* ═══════════════ PLAIN HERO SECTION WITH HEADING ═══════════════ */}
         <section style={{
-          position: "relative", padding: "80px 48px 60px",
+          position: "relative", padding: "80px 48px 40px",
           background: THEME.grad.hero,
         }}>
           <div style={{ maxWidth: pageMax, margin: "0 auto" }}>
@@ -799,17 +1077,27 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
               }}>
-                What will you design today?
+                Bring your ideas to life in seconds.
               </h1>
             </div>
+
+            {/* ═══════ ANIMATED CREATE BUTTON + DETAILS ROW ═══════ */}
+            <AnimatedCreateRow
+              onNavigate={onNavigate}
+              user={user}
+              isDark={isDark}
+              THEME={THEME}
+              heroCreateHover={heroCreateHover}
+              setHeroCreateHover={setHeroCreateHover}
+            />
           </div>
         </section>
 
       {/* Marquee */}
       <div style={{ padding:"28px 0", borderTop:`1px solid ${colors.border}`, borderBottom:`1px solid ${colors.border}`, overflow:"hidden", background:colors.marqueeBg, transition:"background 0.3s, border-color 0.3s" }}>
         <div style={{ display:"flex", whiteSpace:"nowrap", animation:"marquee 25s linear infinite" }}>
-          {[...Array(2)].flatMap(() => ["Video Editor","Logo Maker","Presentations","Social Media","Brand Kit","Print Design","Documents","Mockups","Infographics"].map((item,i) => (
-            <span key={item+i} style={{ display:"inline-flex", alignItems:"center", gap:"12px", padding:"0 40px", fontSize:"12px", color:colors.textMuted, letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:500 }}>
+          {[...Array(2)].flatMap((_, outerIdx) => ["Video Editor","Logo Maker","Presentations","Social Media","Brand Kit","Print Design","Documents","Mockups","Infographics"].map((item,i) => (
+            <span key={`${outerIdx}-${item}-${i}`} style={{ display:"inline-flex", alignItems:"center", gap:"12px", padding:"0 40px", fontSize:"12px", color:colors.textMuted, letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:500 }}>
               <span style={{ width:"4px", height:"4px", background:"#942945", borderRadius:"50%", flexShrink:0 }} />{item}
             </span>
           )))}
@@ -818,41 +1106,130 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
       {/* ── PAST WORK — Horizontal Scrollable Showcase ── */}
       <section className="reveal" id="past-work-section" style={{
-        padding: "96px 0 80px",
-        background: isDark ? "#1a0f14" : "#f7f4f7",
+        padding: "96px 0 96px",
+        background: isDark
+          ? "linear-gradient(180deg, #1a0f14 0%, #23141b 50%, #1a0f14 100%)"
+          : "linear-gradient(180deg, #f7f4f7 0%, #fdf2f4 45%, #faf5ff 100%)",
         opacity: revealedSections.has("past-work-section") ? 1 : 0,
         transform: revealedSections.has("past-work-section") ? "translateY(0)" : "translateY(40px)",
         transition: "opacity 0.7s, transform 0.7s",
         overflow: "hidden",
+        position: "relative",
       }}>
+        {/* Section ambient gradient blobs */}
+        <div aria-hidden style={{
+          position: "absolute", top: 80, left: -80,
+          width: 360, height: 360, borderRadius: "50%",
+          background: `radial-gradient(circle, ${THEME.hexA(THEME.wine, isDark ? 0.18 : 0.12)} 0%, transparent 70%)`,
+          pointerEvents: "none",
+        }} />
+        <div aria-hidden style={{
+          position: "absolute", bottom: 40, right: -60,
+          width: 320, height: 320, borderRadius: "50%",
+          background: `radial-gradient(circle, ${THEME.hexA(THEME.plum, isDark ? 0.16 : 0.1)} 0%, transparent 70%)`,
+          pointerEvents: "none",
+        }} />
 
         {/* Header */}
-        <div style={{ padding: "0 48px", marginBottom: "40px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "20px" }}>
+        <div style={{ padding: "0 48px", marginBottom: "44px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "20px", position: "relative", zIndex: 1 }}>
           <div>
-            <div style={{ fontSize: "11px", letterSpacing: "0.16em", color: "#942945", textTransform: "uppercase", marginBottom: "12px", fontWeight: 600 }}>Made with Creatify</div>
-            <h2 style={{ fontFamily: "Syne,sans-serif", fontSize: "clamp(32px,4vw,52px)", fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1, color: colors.text, margin: 0 }}>
-              Past Work.
+            <h2 style={{
+              fontFamily: "Syne,sans-serif", fontSize: "clamp(32px,4vw,56px)",
+              fontWeight: 800, letterSpacing: "-0.045em", lineHeight: 0.95,
+              color: colors.text, margin: 0,
+            }}>
+              Past Work<span style={{ color: THEME.wine, marginLeft: 2 }}>.</span>
             </h2>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <p style={{ fontSize: "14px", color: colors.textMuted, maxWidth: "320px", lineHeight: 1.6, fontWeight: 300, margin: 0 }}>
+            <p style={{ fontSize: "14px", color: colors.textMuted, maxWidth: "340px", lineHeight: 1.6, fontWeight: 400, margin: 0, fontFamily: "'Instrument Sans',sans-serif" }}>
               Projects crafted across every tool in the suite.
             </p>
-            <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-              {[{ dir: -1, icon: "←" }, { dir: 1, icon: "→" }].map(({ dir, icon }) => (
+            <div style={{ display: "flex", gap: "10px", flexShrink: 0 }}>
+              {[
+                { dir: -1, rotate: "-2deg" },
+                { dir: 1, rotate: "2deg" },
+              ].map(({ dir, rotate }) => (
                 <button key={dir}
                   onClick={() => pastWorkScrollRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" })}
                   style={{
-                    width: "38px", height: "38px", borderRadius: "50%",
-                    background: "transparent",
-                    border: `1px solid ${colors.border}`,
-                    color: colors.textMuted, fontSize: "16px", cursor: "pointer",
+                    position: "relative",
+                    width: "48px", height: "48px", borderRadius: "14px",
+                    background: isDark
+                      ? "linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))"
+                      : "linear-gradient(145deg, #ffffff, #f8f2f5)",
+                    border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : THEME.borderSoft}`,
+                    color: colors.textMuted,
+                    cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    transition: "all 0.2s", outline: "none",
+                    transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
+                    outline: "none",
+                    boxShadow: isDark
+                      ? "0 1px 0 rgba(255,255,255,0.06) inset, 0 8px 24px rgba(0,0,0,0.35)"
+                      : `0 1px 0 #fff inset, 0 8px 24px ${THEME.hexA(THEME.wine, 0.09)}`,
+                    overflow: "hidden",
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#942945"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#942945"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = colors.textMuted; e.currentTarget.style.borderColor = colors.border; }}
-                >{icon}</button>
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = `linear-gradient(145deg, ${THEME.roseGoldLight}, ${THEME.wine} 55%, ${THEME.plum})`;
+                    e.currentTarget.style.color = "#fff";
+                    e.currentTarget.style.borderColor = "transparent";
+                    e.currentTarget.style.transform = `translateY(-2px) rotate(${rotate}) scale(1.06)`;
+                    e.currentTarget.style.boxShadow = `0 14px 34px ${THEME.hexA(THEME.wine, 0.42)}, 0 1px 0 ${THEME.hexA("#ffffff", 0.22)} inset, 0 0 0 3px ${THEME.hexA(THEME.roseGoldLight, 0.18)}`;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = isDark
+                      ? "linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))"
+                      : "linear-gradient(145deg, #ffffff, #f8f2f5)";
+                    e.currentTarget.style.color = colors.textMuted;
+                    e.currentTarget.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : THEME.borderSoft;
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = isDark
+                      ? "0 1px 0 rgba(255,255,255,0.06) inset, 0 8px 24px rgba(0,0,0,0.35)"
+                      : `0 1px 0 #fff inset, 0 8px 24px ${THEME.hexA(THEME.wine, 0.09)}`;
+                  }}
+                >
+                  {/* Glow sheen sweep — slides across on hover */}
+                  <div aria-hidden style={{
+                    position: "absolute", top: 0, left: "-120%",
+                    width: "120%", height: "100%",
+                    background: "linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.32) 50%, transparent 70%)",
+                    pointerEvents: "none",
+                    transition: "left 0.7s cubic-bezier(0.16,1,0.3,1)",
+                  }}
+                    ref={el => {
+                      // schedule once via mouseenter listener hook
+                      const btn = el?.parentElement;
+                      if (!btn || btn.dataset.sheenAttached === "1") return;
+                      btn.dataset.sheenAttached = "1";
+                      btn.addEventListener("mouseenter", () => { if (el) el.style.left = "120%"; });
+                      btn.addEventListener("mouseleave", () => { if (el) setTimeout(() => { el.style.left = "-120%"; }, 120); });
+                    }}
+                  />
+
+                  {/* Chevron arrow SVG, rotated by direction */}
+                  <svg
+                    width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2.6"
+                    strokeLinecap="round" strokeLinejoin="round"
+                    style={{
+                      transform: dir === -1 ? "rotate(0deg)" : "rotate(0deg)",
+                      transition: "transform 0.3s",
+                      filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.12))",
+                    }}
+                  >
+                    {dir === -1 ? (
+                      <>
+                        <line x1="19" y1="12" x2="5" y2="12" />
+                        <polyline points="12 19 5 12 12 5" />
+                      </>
+                    ) : (
+                      <>
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </>
+                    )}
+                  </svg>
+                </button>
               ))}
             </div>
           </div>
@@ -863,40 +1240,33 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           ref={pastWorkScrollRef}
           style={{
             display: "flex",
-            gap: "16px",
+            gap: "20px",
             overflowX: "auto",
             scrollSnapType: "x mandatory",
             scrollbarWidth: "none",
             msOverflowStyle: "none",
-            padding: "4px 48px 24px",
+            padding: "8px 48px 28px",
             cursor: "grab",
+            position: "relative",
+            zIndex: 1,
           }}
           onMouseDown={e => { e.currentTarget.dataset.down = "1"; e.currentTarget.dataset.startX = e.pageX; e.currentTarget.dataset.scrollLeft = e.currentTarget.scrollLeft; e.currentTarget.style.cursor = "grabbing"; }}
           onMouseMove={e => { if (!e.currentTarget.dataset.down || e.currentTarget.dataset.down !== "1") return; e.currentTarget.scrollLeft = parseInt(e.currentTarget.dataset.scrollLeft) - (e.pageX - parseInt(e.currentTarget.dataset.startX)); }}
           onMouseUp={e => { e.currentTarget.dataset.down = "0"; e.currentTarget.style.cursor = "grab"; }}
           onMouseLeave={e => { e.currentTarget.dataset.down = "0"; e.currentTarget.style.cursor = "grab"; }}
         >
-          {/* ──────────────────────────────────────────────────────────────────────
-            ADD YOUR WORK HERE.
-            Each item in this array becomes one card. Fill in:
-              title    — project name
-              category — short label shown top-left (e.g. "Video Edit")
-              tool     — which Creatify tool was used
-              year     — "2024"
-              accent   — hex colour for glow / badge
-              gradient — card background (CSS gradient string)
-              image    — optional image URL; if empty, icon is shown instead
-              icon     — emoji fallback when no image
-              tags     — array of short feature strings
-              desc     — one-sentence description (shown on hover)
-          ────────────────────────────────────────────────────────────────────── */}
           {pastWorks.map((work, i) => {
             const isHov = hoveredWork === i;
+            const accent = work.accent || THEME.wine;
+            const accentSoft = THEME.hexA(accent, 0.18);
+            const accentGlow = THEME.hexA(accent, 0.32);
+
             return (
               <div key={work.id || i}
                 onMouseEnter={() => setHoveredWork(i)}
                 onMouseLeave={() => setHoveredWork(null)}
                 onClick={() => {
+                  if (!user) return onNavigate("auth", "signup");
                   if (work.category === "Video Edit") {
                     onNavigate("editor_load", work);
                   } else if (work.category === "Presentation") {
@@ -915,129 +1285,363 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 }}
                 style={{
                   flexShrink: 0,
-                  width: "240px",
-                  height: "300px",
-                  borderRadius: "16px",
+                  width: "264px",
+                  height: "340px",
+                  borderRadius: "20px",
                   scrollSnapAlign: "start",
                   position: "relative",
                   overflow: "hidden",
                   background: work.gradient || "linear-gradient(135deg,#170b11,#1a0f14)",
-                  border: isHov ? `1px solid ${work.accent || "#942945"}55` : `1px solid ${colors.border}`,
                   cursor: "pointer",
-                  transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1), box-shadow 0.4s",
-                  transform: isHov ? "translateY(-4px) scale(1.01)" : "none",
-                  boxShadow: isHov ? `0 16px 40px ${(work.accent||"#942945")}20` : "0 4px 15px rgba(0,0,0,0.15)",
+                  transition: "transform 0.45s cubic-bezier(0.16,1,0.3,1), box-shadow 0.45s cubic-bezier(0.16,1,0.3,1), border-color 0.3s",
+                  transform: isHov
+                    ? "translateY(-6px) scale(1.02)"
+                    : "translateY(0) scale(1)",
+                  boxShadow: isHov
+                    ? `0 24px 56px ${accentGlow}, 0 2px 0 ${THEME.hexA("#ffffff", 0.08)} inset`
+                    : `0 10px 30px ${isDark ? "rgba(0,0,0,0.35)" : THEME.hexA(THEME.wine, 0.08)}`,
                   userSelect: "none",
+                  border: `1px solid ${isHov ? THEME.hexA(accent, 0.55) : (isDark ? "rgba(255,255,255,0.06)" : THEME.borderSoft)}`,
                 }}
               >
+                {/* Animated gradient border halo — visible on hover */}
+                <div aria-hidden style={{
+                  position: "absolute", inset: isHov ? -2 : 0,
+                  borderRadius: "inherit",
+                  padding: 1,
+                  background: isHov
+                    ? `linear-gradient(135deg, ${accent}, ${THEME.roseGoldLight}, ${THEME.plumLight}, ${accent})`
+                    : "transparent",
+                  WebkitMask: "linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)",
+                  WebkitMaskComposite: "xor",
+                  maskComposite: "exclude",
+                  opacity: isHov ? 1 : 0,
+                  transition: "opacity 0.4s, inset 0.4s",
+                  pointerEvents: "none",
+                }} />
+
                 {/* Delete button */}
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeletePastWork(work.id);
                   }}
                   style={{
                     position: "absolute",
-                    top: "10px",
-                    right: "10px",
-                    width: "24px",
-                    height: "24px",
-                    borderRadius: "50%",
-                    background: "rgba(0,0,0,0.6)",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    color: "rgba(255,255,255,0.6)",
+                    top: "12px",
+                    right: "12px",
+                    width: "26px",
+                    height: "26px",
+                    borderRadius: "8px",
+                    background: isHov ? THEME.hexA("#000000", 0.72) : THEME.hexA("#000000", 0.45),
+                    backdropFilter: "blur(6px)",
+                    WebkitBackdropFilter: "blur(6px)",
+                    border: `1px solid ${isHov ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.1)"}`,
+                    color: "rgba(255,255,255,0.7)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     cursor: "pointer",
                     zIndex: 15,
-                    fontSize: "11px",
-                    transition: "all 0.2s"
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    transition: "all 0.22s cubic-bezier(0.16,1,0.3,1)",
+                    opacity: isHov ? 1 : 0,
+                    transform: isHov ? "translateY(0) scale(1)" : "translateY(-4px) scale(0.92)",
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.color = "#ef4444";
-                    e.currentTarget.style.borderColor = "#ef4444";
-                    e.currentTarget.style.background = "rgba(239,68,68,0.1)";
+                    e.currentTarget.style.borderColor = THEME.hexA("#ef4444", 0.5);
+                    e.currentTarget.style.background = THEME.hexA("#ef4444", 0.12);
                   }}
                   onMouseLeave={e => {
-                    e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
-                    e.currentTarget.style.background = "rgba(0,0,0,0.6)";
+                    e.currentTarget.style.color = "rgba(255,255,255,0.7)";
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.22)";
+                    e.currentTarget.style.background = THEME.hexA("#000000", 0.72);
                   }}
                   title="Delete Project"
                 >
                   ✕
                 </button>
 
-                {/* Accent orb */}
-                <div style={{ position:"absolute", width:"120px", height:"120px", borderRadius:"50%", filter:"blur(40px)", background:(work.accent||"#942945")+"2a", top:"-30px", right:"-30px", opacity: isHov ? 1 : 0.5, transition:"opacity 0.4s", pointerEvents:"none" }} />
+                {/* Dual accent orbs */}
+                <div aria-hidden style={{
+                  position: "absolute", width: "160px", height: "160px", borderRadius: "50%",
+                  filter: "blur(42px)",
+                  background: accentSoft,
+                  top: "-50px", right: "-40px",
+                  opacity: isHov ? 1 : 0.55,
+                  transition: "opacity 0.5s, transform 0.5s",
+                  transform: isHov ? "scale(1.15)" : "scale(1)",
+                  pointerEvents: "none",
+                }} />
+                <div aria-hidden style={{
+                  position: "absolute", width: "140px", height: "140px", borderRadius: "50%",
+                  filter: "blur(38px)",
+                  background: THEME.hexA(THEME.plumLight, 0.22),
+                  bottom: "-40px", left: "-30px",
+                  opacity: isHov ? 0.95 : 0.4,
+                  transition: "opacity 0.5s, transform 0.5s",
+                  transform: isHov ? "scale(1.1)" : "scale(1)",
+                  pointerEvents: "none",
+                }} />
 
-                {/* Image or icon */}
+                {/* Grain overlay for texture */}
+                <div aria-hidden style={{
+                  position: "absolute", inset: 0,
+                  background: isDark
+                    ? "radial-gradient(ellipse at top, rgba(255,255,255,0.08), transparent 55%)"
+                    : "radial-gradient(ellipse at top, rgba(255,255,255,0.18), transparent 55%)",
+                  pointerEvents: "none",
+                }} />
+
+                {/* Image or icon + zoom on hover */}
                 {work.image ? (
-                  <img src={work.image} alt={work.title} style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", opacity: isHov ? 0.5 : 0.3, transition:"opacity 0.4s" }} />
+                  <img src={work.image} alt={work.title} style={{
+                    position: "absolute", inset: 0,
+                    width: "100%", height: "100%",
+                    objectFit: "cover",
+                    opacity: isHov ? 0.55 : 0.32,
+                    transform: isHov ? "scale(1.12)" : "scale(1)",
+                    transition: "opacity 0.5s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1)",
+                  }} />
                 ) : (
-                  <div style={{ position:"absolute", top:"50%", left:"50%", transform:`translate(-50%,-50%) scale(${isHov?0.8:1})`, fontSize:"44px", opacity: isHov ? 0.07 : 0.13, transition:"all 0.4s", pointerEvents:"none", userSelect:"none" }}>{work.icon || "🎬"}</div>
+                  <div style={{
+                    position: "absolute", top: "50%", left: "50%",
+                    transform: `translate(-50%,-50%) scale(${isHov ? 0.85 : 1})`,
+                    fontSize: "62px",
+                    opacity: isHov ? 0.1 : 0.18,
+                    transition: "all 0.5s",
+                    pointerEvents: "none", userSelect: "none",
+                  }}>{work.icon || "🎬"}</div>
                 )}
 
-                {/* Top bar */}
-                <div style={{ position:"absolute", top:"14px", left:"14px", right:"14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                  <div style={{ fontSize:"9px", color: work.accent||"#e1496d", fontWeight:600, letterSpacing:"0.06em", textTransform:"uppercase", background:(work.accent||"#942945")+"1a", border:`1px solid ${(work.accent||"#942945")}33`, borderRadius:"30px", padding:"2px 8px" }}>
+                {/* Wine-tinted image overlay */}
+                <div aria-hidden style={{
+                  position: "absolute", inset: 0,
+                  background: `linear-gradient(180deg, ${THEME.hexA(THEME.wineDarker, isHov ? 0.15 : 0.35)} 0%, ${THEME.hexA(THEME.wineDarker, isHov ? 0.65 : 0.92)} 100%)`,
+                  pointerEvents: "none",
+                  transition: "background 0.5s",
+                }} />
+
+                {/* Top bar — glassy category pill + year */}
+                <div style={{
+                  position: "absolute", top: "14px", left: "14px", right: "14px",
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  zIndex: 2,
+                }}>
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", gap: "6px",
+                    fontSize: "9.5px", color: "#fff",
+                    fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase",
+                    background: isHov ? THEME.hexA(accent, 0.92) : THEME.hexA(accent, 0.78),
+                    border: `1px solid ${THEME.hexA("#ffffff", 0.22)}`,
+                    borderRadius: "999px",
+                    padding: "4px 10px",
+                    fontFamily: "'Poppins',sans-serif",
+                    boxShadow: `0 2px 8px ${accentGlow}`,
+                    backdropFilter: "blur(4px)",
+                    WebkitBackdropFilter: "blur(4px)",
+                    transform: isHov ? "translateY(0) scale(1)" : "translateY(0) scale(0.98)",
+                    transition: "all 0.35s",
+                  }}>
+                    <span style={{
+                      width: 5, height: 5, borderRadius: "50%",
+                      background: "#fff",
+                      boxShadow: `0 0 0 2px ${THEME.hexA("#ffffff", 0.25)}`,
+                    }} />
                     {work.category || "Project"}
                   </div>
-                  <div style={{ fontSize:"9px", color:"rgba(255,255,255,0.25)", fontWeight:400 }}>{work.year || ""}</div>
+                  <div style={{
+                    fontSize: "10px",
+                    color: "rgba(255,255,255,0.72)",
+                    fontWeight: 500,
+                    fontFamily: "'Poppins',sans-serif",
+                    padding: "3px 8px",
+                    borderRadius: "8px",
+                    background: THEME.hexA("#000000", 0.3),
+                    border: `1px solid ${THEME.hexA("#ffffff", 0.08)}`,
+                    backdropFilter: "blur(4px)",
+                    WebkitBackdropFilter: "blur(4px)",
+                  }}>{work.year || ""}</div>
                 </div>
 
-                {/* Bottom panel */}
-                <div style={{ position:"absolute", bottom:0, left:0, right:0, padding:"16px 14px", background:"linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 70%, transparent 100%)", transform: isHov ? "none" : "translateY(2px)", opacity: isHov ? 1 : 0.95, transition:"all 0.4s" }}>
+                {/* Bottom glass panel */}
+                <div style={{
+                  position: "absolute", bottom: 0, left: 0, right: 0,
+                  margin: "12px",
+                  padding: "16px 14px 14px",
+                  borderRadius: "14px",
+                  background: `linear-gradient(180deg, ${THEME.hexA(isDark ? "#23141b" : "#000000", isHov ? 0.78 : 0.68)} 0%, ${THEME.hexA(isDark ? "#1a0f14" : "#000000", isHov ? 0.92 : 0.85)} 100%)`,
+                  border: `1px solid ${isHov ? THEME.hexA(accent, 0.35) : THEME.hexA("#ffffff", 0.09)}`,
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                  transform: isHov ? "translateY(0)" : "translateY(3px)",
+                  boxShadow: isHov ? `0 10px 30px ${THEME.hexA("#000", 0.5)}` : "none",
+                  opacity: isHov ? 1 : 0.97,
+                  transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
+                  zIndex: 2,
+                }}>
+                  {/* Tool / accent label */}
                   {work.tool && (
-                    <div style={{ fontSize:"8px", fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color: work.accent||"#e1496d", marginBottom:"4px", opacity:0.8 }}>{work.tool}</div>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: "6px",
+                      fontSize: "9.5px", fontWeight: 700,
+                      letterSpacing: "0.1em", textTransform: "uppercase",
+                      color: accent,
+                      marginBottom: "6px",
+                      fontFamily: "'Poppins',sans-serif",
+                    }}>
+                      <span style={{ width: 5, height: 5, borderRadius: "50%", background: accent, boxShadow: `0 0 6px ${accent}` }} />
+                      {work.tool}
+                    </div>
                   )}
-                  <div style={{ fontFamily:"Syne,sans-serif", fontSize:"14px", fontWeight:800, color:"#fff", letterSpacing:"-0.02em", lineHeight:1.2, marginBottom: isHov && work.desc ? "6px" : 0 }}>
+                  <div style={{
+                    fontFamily: "Syne,sans-serif",
+                    fontSize: "16px",
+                    fontWeight: 700,
+                    color: "#fff",
+                    letterSpacing: "-0.025em",
+                    lineHeight: 1.18,
+                    marginBottom: isHov && work.desc ? "8px" : 0,
+                  }}>
                     {work.title || "Untitled Project"}
                   </div>
                   {work.desc && (
-                    <div style={{ fontSize:"11px", color:"rgba(255,255,255,0.45)", lineHeight:1.45, fontWeight:300, maxHeight: isHov ? "42px" : "0px", overflow:"hidden", transition:"max-height 0.4s" }}>
+                    <div style={{
+                      fontSize: "11.5px",
+                      color: "rgba(255,255,255,0.58)",
+                      lineHeight: 1.5,
+                      fontWeight: 400,
+                      fontFamily: "'Instrument Sans',sans-serif",
+                      maxHeight: isHov ? "52px" : "0px",
+                      opacity: isHov ? 1 : 0,
+                      overflow: "hidden",
+                      transition: "max-height 0.45s cubic-bezier(0.16,1,0.3,1), opacity 0.4s",
+                    }}>
                       {work.desc}
                     </div>
                   )}
                   {work.tags && work.tags.length > 0 && (
-                    <div style={{ display:"flex", gap:"4px", flexWrap:"wrap", marginTop: isHov ? "8px" : 0, maxHeight: isHov ? "36px" : 0, overflow:"hidden", transition:"max-height 0.4s" }}>
+                    <div style={{
+                      display: "flex", gap: "5px", flexWrap: "wrap",
+                      marginTop: isHov ? "10px" : 0,
+                      maxHeight: isHov ? "40px" : 0,
+                      opacity: isHov ? 1 : 0,
+                      overflow: "hidden",
+                      transition: "max-height 0.45s cubic-bezier(0.16,1,0.3,1), opacity 0.4s, margin 0.4s",
+                    }}>
                       {work.tags.map(t => (
-                        <span key={t} style={{ fontSize:"8px", color:"rgba(255,255,255,0.35)", background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.1)", borderRadius:"3px", padding:"1px 5px", letterSpacing:"0.04em" }}>{t}</span>
+                        <span key={t} style={{
+                          fontSize: "8.5px",
+                          color: "rgba(255,255,255,0.7)",
+                          background: THEME.hexA(accent, 0.22),
+                          border: `1px solid ${THEME.hexA(accent, 0.35)}`,
+                          borderRadius: "6px",
+                          padding: "2px 7px",
+                          letterSpacing: "0.04em",
+                          fontFamily: "'Poppins',sans-serif",
+                          fontWeight: 500,
+                        }}>{t}</span>
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Hover CTA arrow — bottom right floating */}
+                <div aria-hidden style={{
+                  position: "absolute",
+                  right: "20px", top: "50%",
+                  transform: isHov ? "translate(0, -50%) scale(1)" : "translate(12px, -50%) scale(0.9)",
+                  opacity: isHov ? 1 : 0,
+                  transition: "all 0.45s cubic-bezier(0.16,1,0.3,1)",
+                  width: "38px", height: "38px",
+                  borderRadius: "50%",
+                  background: "#fff",
+                  color: accent,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: `0 8px 22px ${THEME.hexA("#000", 0.35)}, 0 0 0 4px ${accentSoft}`,
+                  zIndex: 3,
+                  pointerEvents: "none",
+                }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
                 </div>
               </div>
             );
           })}
 
-          {/* Always-visible empty slot as a visual guide when no work added yet */}
+          {/* Empty slot cards as visual guide — styled to match */}
           {pastWorks.length < 3 && ( [
             "Your project here","Add a work","Coming soon"
           ].slice(0, 3 - pastWorks.length) ).map((label, i) => (
             <div key={`empty-${i}`} style={{
-              flexShrink: 0, width: "240px", height: "300px", borderRadius: "16px",
+              flexShrink: 0, width: "264px", height: "340px", borderRadius: "20px",
               scrollSnapAlign: "start",
-              background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.025)",
+              background: isDark
+                ? "linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(148,41,69,0.04) 100%)"
+                : "linear-gradient(135deg, #fff 0%, #fdf2f4 100%)",
               border: `1.5px dashed ${colors.border}`,
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              gap: "10px",
-            }}>
-              <div style={{ width:"32px", height:"32px", borderRadius:"50%", border:`1.5px dashed ${colors.border}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                  <path d="M7 1v12M1 7h12" stroke={isDark?"rgba(225,73,109,0.25)":"rgba(148,41,69,0.2)"} strokeWidth="1.5" strokeLinecap="round"/>
+              gap: "12px",
+              cursor: "pointer",
+              transition: "all 0.3s",
+              boxShadow: isDark ? "none" : THEME.shadow.sm,
+            }}
+              onMouseEnter={e => {
+                e.currentTarget.style.borderColor = THEME.wine;
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.borderColor = colors.border;
+                e.currentTarget.style.transform = "none";
+              }}
+              onClick={() => onNavigate(user ? "editor" : "auth", "signup")}
+            >
+              <div style={{
+                width: "52px", height: "52px", borderRadius: "16px",
+                background: `linear-gradient(135deg, ${THEME.wineTint} 0%, ${THEME.hexA(THEME.plum, 0.08)} 100%)`,
+                border: `1.5px dashed ${THEME.hexA(THEME.wine, 0.35)}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v14M5 12h14" stroke={THEME.wine} strokeWidth="2.2" strokeLinecap="round"/>
                 </svg>
               </div>
-              <div style={{ fontSize:"11px", color: isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.2)", fontWeight:400, letterSpacing:"0.04em" }}>{label}</div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{
+                  fontSize: "12.5px", color: isDark ? "#eba5b6" : THEME.wine,
+                  fontWeight: 600, letterSpacing: "-0.01em", fontFamily: "'Poppins',sans-serif",
+                  marginBottom: 2,
+                }}>{label}</div>
+                <div style={{
+                  fontSize: "10.5px",
+                  color: colors.textMuted,
+                  fontWeight: 400,
+                  fontFamily: "'Instrument Sans',sans-serif",
+                }}>Click to start</div>
+              </div>
             </div>
           ))}
         </div>
 
         {/* Scroll indicator line */}
-        <div style={{ padding:"0 48px", marginTop:"8px" }}>
-          <div style={{ height:"1px", background: isDark ? "rgba(225,73,109,0.08)" : "rgba(148,41,69,0.07)", borderRadius:"1px", position:"relative" }}>
-            <div style={{ position:"absolute", left:0, top:0, height:"100%", width:"18%", background: "linear-gradient(90deg,#942945,#e1496d)", borderRadius:"1px" }} />
+        <div style={{ padding:"0 48px", marginTop:"8px", position:"relative", zIndex:1 }}>
+          <div style={{
+            height:"2px",
+            background: isDark ? "rgba(225,73,109,0.08)" : "rgba(148,41,69,0.07)",
+            borderRadius:"2px",
+            position:"relative",
+            overflow: "hidden",
+          }}>
+            <div style={{
+              position:"absolute", left:0, top:0, height:"100%", width:"22%",
+              background: `linear-gradient(90deg, ${THEME.wine}, ${THEME.roseGold}, ${THEME.plum})`,
+              borderRadius:"2px",
+              boxShadow: `0 0 12px ${THEME.hexA(THEME.roseGold, 0.5)}`,
+            }} />
           </div>
         </div>
       </section>
@@ -1053,16 +1657,15 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           {/* Section header */}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:"56px", flexWrap:"wrap", gap:"16px" }}>
             <div>
-              <div style={{ fontSize:"11px", letterSpacing:"0.14em", color:"#942945", textTransform:"uppercase", marginBottom:"14px", fontWeight:500 }}>Everything you need</div>
-              <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, color:colors.text }}>One studio.<br/>All formats.</h2>
+              <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, color:colors.text }}>One studio.<br/>All formats<span style={{ color: THEME.wine }}>.</span></h2>
             </div>
-            <p style={{ fontSize:"16px", color:colors.textMuted, maxWidth:"440px", lineHeight:1.65, fontWeight:300 }}>
-              From a quick social post to a full brand identity — Creatify handles every format your ideas demand.
+            <p style={{ fontSize:"16px", color:colors.textMuted, maxWidth:"440px", lineHeight:1.65, fontWeight:400, fontFamily:"'Instrument Sans',sans-serif" }}>
+              From a cinematic edit to a full brand deck — Creatify handles every format your ideas demand.
             </p>
           </div>
 
           {/* Bento Grid */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gridTemplateRows:"repeat(5, 200px)", gap:"16px" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gridTemplateRows:"repeat(2, 200px)", gap:"14px" }}>
             {tools.map(tool => {
               const isHovered = hoveredCard === tool.id;
               return (
@@ -1071,24 +1674,23 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                   onMouseEnter={() => { setHoveredCard(tool.id); setCursorHovered(true); }}
                   onMouseLeave={() => { setHoveredCard(null); setCursorHovered(false); }}
                   onClick={() => {
+                    if (!user) return onNavigate("auth", "signup");
                     if (tool.id === "video") onNavigate("editor");
                     else if (tool.id === "ppt") onNavigate("presentation");
                     else if (tool.id === "image") onNavigate("image_editor");
                     else if (tool.id === "logo") onNavigate("logo_maker");
-                    else if (tool.id === "social") onNavigate("social_studio");
                     else if (tool.id === "doc") onNavigate("documents");
-                    else if (tool.id === "print") onNavigate("print_design");
-                    else if (tool.id === "ai") onNavigate("ai_magic");
+                    else if (tool.id === "white") onNavigate("whiteboard");
                     else onNavigate("auth", "signup");
                   }}
                   style={{
                     gridColumn: `span ${tool.colSpan}`,
                     gridRow:    `span ${tool.rowSpan}`,
-                    position:"relative", borderRadius:"24px", overflow:"hidden",
+                    position:"relative", borderRadius:"20px", overflow:"hidden",
                     cursor:"pointer", transition:"all 0.4s cubic-bezier(0.16,1,0.3,1)",
-                    transform: isHovered ? "translateY(-4px) scale(1.01)" : "none",
-                    boxShadow: isHovered ? `0 28px 70px ${tool.color}30` : "0 4px 20px rgba(148,41,69,0.08)",
-                    border: `1px solid ${isHovered ? tool.color + "60" : "rgba(148,41,69,0.15)"}`,
+                    transform: isHovered ? "translateY(-3px) scale(1.01)" : "none",
+                    boxShadow: isHovered ? `0 22px 52px ${tool.color}30` : "0 3px 14px rgba(148,41,69,0.07)",
+                    border: `1px solid ${isHovered ? tool.color + "60" : "rgba(148,41,69,0.14)"}`,
                   }}
                 >
                   {/* Background: image or gradient */}
@@ -1096,12 +1698,12 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                     <div style={{ position:"absolute", inset:0 }}>
                       <img src={tool.image} alt={tool.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top", display:"block" }} />
                       {/* Dark overlay that lightens on hover */}
-                      <div style={{ position:"absolute", inset:0, background: isHovered ? "rgba(0,0,0,0.45)" : "rgba(0,0,0,0.62)", transition:"background 0.4s" }} />
+                      <div style={{ position:"absolute", inset:0, background: isHovered ? "rgba(0,0,0,0.42)" : "rgba(0,0,0,0.62)", transition:"background 0.4s" }} />
                     </div>
                   ) : (
                     <div style={{ position:"absolute", inset:0, background: cardGradients[tool.id] || `linear-gradient(135deg, #111318, ${tool.color}20)` }}>
                       {/* Subtle pattern for no-image cards */}
-                      <div style={{ position:"absolute", inset:0, opacity:0.06, backgroundImage:`radial-gradient(${tool.color} 1px, transparent 1px)`, backgroundSize:"28px 28px" }} />
+                      <div style={{ position:"absolute", inset:0, opacity:0.06, backgroundImage:`radial-gradient(${tool.color} 1px, transparent 1px)`, backgroundSize:"24px 24px" }} />
                     </div>
                   )}
 
@@ -1109,9 +1711,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                   <div style={{ position:"absolute", inset:0, background:`radial-gradient(circle at 30% 20%, ${tool.color}25, transparent 60%)`, opacity: isHovered ? 1 : 0, transition:"opacity 0.4s", pointerEvents:"none" }} />
 
                   {/* Content */}
-                  <div style={{ position:"relative", zIndex:2, padding:"28px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
+                  <div style={{ position:"relative", zIndex:2, padding:"20px 22px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
                     {/* Tag chip */}
-                    <div style={{ alignSelf:"flex-start", background:"rgba(255,255,255,0.12)", backdropFilter:"blur(8px)", border:"1px solid rgba(255,255,255,0.18)", borderRadius:"20px", padding:"3px 12px", fontSize:"10px", color:"rgba(255,255,255,0.8)", letterSpacing:"0.04em", marginBottom:"auto", marginTop:"0" }}>
+                    <div style={{ alignSelf:"flex-start", background:"rgba(255,255,255,0.1)", backdropFilter:"blur(7px)", border:"1px solid rgba(255,255,255,0.16)", borderRadius:"18px", padding:"2px 10px", fontSize:"9px", color:"rgba(255,255,255,0.8)", letterSpacing:"0.04em", marginBottom:"auto", marginTop:"0" }}>
                       {tool.tag}
                     </div>
 
@@ -1119,8 +1721,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                     <div>
                       {/* Interactive micro-animation for logo card (no image) */}
                       {tool.id === "logo" && (
-                        <div style={{ marginBottom:"14px" }}>
-                          <svg width="44" height="44" viewBox="0 0 100 100" style={{ transform:`rotate(${logoAngle}deg)`, transition:"transform 0.05s linear", display:"block" }}>
+                        <div style={{ marginBottom:"10px" }}>
+                          <svg width="36" height="36" viewBox="0 0 100 100" style={{ transform:`rotate(${logoAngle}deg)`, transition:"transform 0.05s linear", display:"block" }}>
                             <circle cx="50" cy="50" r="35" fill="none" stroke="#ec4899" strokeWidth="2.5" strokeDasharray="15,10"/>
                             <polygon points="50,18 78,66 22,66" fill="none" stroke="#ec4899" strokeWidth="3" strokeLinejoin="round"/>
                             <circle cx="50" cy="50" r="8" fill="#ec4899"/>
@@ -1128,36 +1730,47 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                         </div>
                       )}
 
-
-
                       {/* Doc card decoration */}
                       {tool.id === "doc" && (
-                        <div style={{ marginBottom:"14px", display:"flex", flexDirection:"column", gap:"4px" }}>
-                          <div style={{ width:"50%", height:"5px", background:tool.color, borderRadius:"2px", opacity:0.9 }} />
-                          <div style={{ width:"80%", height:"3px", background:"rgba(255,255,255,0.2)", borderRadius:"2px" }} />
-                          <div style={{ width:"70%", height:"3px", background:"rgba(255,255,255,0.15)", borderRadius:"2px" }} />
+                        <div style={{ marginBottom:"10px", display:"flex", flexDirection:"column", gap:"3px" }}>
+                          <div style={{ width:"46%", height:"4px", background:tool.color, borderRadius:"2px", opacity:0.9 }} />
+                          <div style={{ width:"78%", height:"2.5px", background:"rgba(255,255,255,0.2)", borderRadius:"2px" }} />
+                          <div style={{ width:"66%", height:"2.5px", background:"rgba(255,255,255,0.14)", borderRadius:"2px" }} />
                         </div>
                       )}
 
-                      {/* Print card decoration */}
-                      {tool.id === "print" && (
-                        <div style={{ marginBottom:"14px" }}>
-                          <div style={{ width:"56px", height:"38px", border:`1.5px dashed ${tool.color}`, borderRadius:"4px", background:"rgba(255,255,255,0.04)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                            <span style={{ fontSize:"7px", color:tool.color, fontWeight:700, letterSpacing:"0.06em" }}>CMYK</span>
-                          </div>
+                      {/* Whiteboard card decoration — sticky notes + marker lines */}
+                      {tool.id === "white" && (
+                        <div style={{ marginBottom:"10px", position:"relative", height:"34px" }}>
+                          {/* Soft whiteboard grid bg shape */}
+                          <div style={{ position:"absolute", inset:0, borderRadius:"6px", background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" }} />
+                          {/* Sticky note pink */}
+                          <div style={{ position:"absolute", left:"6px", top:"5px", width:"14px", height:"14px", borderRadius:"2px",
+                                        background:"linear-gradient(135deg,#ec4899,#be185d)", transform:"rotate(-6deg)",
+                                        boxShadow:"0 2px 6px rgba(190,24,93,0.45)" }} />
+                          {/* Sticky note plum */}
+                          <div style={{ position:"absolute", left:"24px", top:"8px", width:"12px", height:"12px", borderRadius:"2px",
+                                        background:"linear-gradient(135deg,#c084fc,#7e22ce)", transform:"rotate(5deg)",
+                                        boxShadow:"0 2px 6px rgba(126,34,206,0.4)" }} />
+                          {/* Arrow marker right */}
+                          <svg style={{ position:"absolute", right:"6px", top:"12px", width:"30px", height:"14px", color:"#fda4af" }}
+                               viewBox="0 0 40 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="4" y1="8" x2="30" y2="8" />
+                            <polyline points="24 3 32 8 24 13" />
+                          </svg>
                         </div>
                       )}
 
-                      <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"6px" }}>
-                        <span style={{ fontSize:"22px" }}>{tool.icon}</span>
-                        <span style={{ fontFamily:"Syne,sans-serif", fontSize: tool.colSpan >= 2 ? "22px" : "16px", fontWeight:800, color:"#fff", letterSpacing:"-0.03em" }}>{tool.name}</span>
+                      <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"4px" }}>
+                        <span style={{ fontSize:"18px" }}>{tool.icon}</span>
+                        <span style={{ fontFamily:"Syne,sans-serif", fontSize: tool.colSpan >= 2 ? "19px" : "15px", fontWeight:800, color:"#fff", letterSpacing:"-0.03em" }}>{tool.name}</span>
                       </div>
-                      <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.7)", lineHeight:1.55, fontWeight:300, margin:0, maxWidth: tool.colSpan >= 2 ? "340px" : "none" }}>
+                      <p style={{ fontSize:"11.5px", color:"rgba(255,255,255,0.72)", lineHeight:1.5, fontWeight:300, margin:0, maxWidth: tool.colSpan >= 2 ? "300px" : "none" }}>
                         {tool.desc}
                       </p>
 
                       {/* CTA arrow */}
-                      <div style={{ marginTop:"14px", display:"flex", alignItems:"center", gap:"6px", fontSize:"12px", color:tool.color, fontFamily:"'Poppins',sans-serif", fontWeight:400, opacity: isHovered ? 1 : 0, transform: isHovered ? "translateX(0)" : "translateX(-8px)", transition:"all 0.3s" }}>
+                      <div style={{ marginTop:"10px", display:"flex", alignItems:"center", gap:"6px", fontSize:"11px", color:tool.color, fontFamily:"'Poppins',sans-serif", fontWeight:400, opacity: isHovered ? 1 : 0, transform: isHovered ? "translateX(0)" : "translateX(-6px)", transition:"all 0.3s" }}>
                         <span>Open {tool.name}</span>
                       </div>
                     </div>
@@ -1165,12 +1778,12 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
                   {/* Video playhead overlay */}
                   {tool.id === "video" && isHovered && (
-                    <div style={{ position:"absolute", bottom:"100px", left:"28px", right:"28px", zIndex:3 }}>
-                      <div style={{ background:"rgba(0,0,0,0.7)", backdropFilter:"blur(8px)", borderRadius:"10px", padding:"10px", border:"1px solid rgba(148,41,69,0.3)" }}>
-                        <div style={{ fontSize:"8px", color:"#22d3a8", fontWeight:700, marginBottom:"6px" }}>● LIVE PLAYBACK</div>
-                        <div style={{ position:"relative", height:"6px", background:"rgba(255,255,255,0.1)", borderRadius:"3px" }}>
-                          <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${timelinePlayhead}%`, background:`linear-gradient(90deg, #942945, #e1496d)`, borderRadius:"3px", transition:"width 0.05s" }} />
-                          <div style={{ position:"absolute", top:"-3px", width:"12px", height:"12px", borderRadius:"50%", background:"#ef4444", boxShadow:"0 0 8px #ef4444", transition:"left 0.05s", left:`calc(${timelinePlayhead}% - 6px)` }} />
+                    <div style={{ position:"absolute", bottom:"76px", left:"22px", right:"22px", zIndex:3 }}>
+                      <div style={{ background:"rgba(0,0,0,0.7)", backdropFilter:"blur(8px)", borderRadius:"8px", padding:"8px", border:"1px solid rgba(148,41,69,0.3)" }}>
+                        <div style={{ fontSize:"7.5px", color:"#22d3a8", fontWeight:700, marginBottom:"5px" }}>● LIVE PLAYBACK</div>
+                        <div style={{ position:"relative", height:"5px", background:"rgba(255,255,255,0.1)", borderRadius:"2.5px" }}>
+                          <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${timelinePlayhead}%`, background:`linear-gradient(90deg, #942945, #e1496d)`, borderRadius:"2.5px", transition:"width 0.05s" }} />
+                          <div style={{ position:"absolute", top:"-2.5px", width:"10px", height:"10px", borderRadius:"50%", background:"#ef4444", boxShadow:"0 0 6px #ef4444", transition:"left 0.05s", left:`calc(${timelinePlayhead}% - 5px)` }} />
                         </div>
                       </div>
                     </div>
@@ -1178,14 +1791,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
                   {/* PPT slides overlay */}
                   {tool.id === "ppt" && isHovered && (
-                    <div style={{ position:"absolute", top:"24px", right:"24px", zIndex:3, display:"flex", gap:"6px" }}>
+                    <div style={{ position:"absolute", top:"18px", right:"18px", zIndex:3, display:"flex", gap:"5px" }}>
                       {[0,1,2].map(idx => {
                         const off = (idx - activeSlide + 3) % 3;
                         return (
-                          <div key={idx} style={{ width:"48px", height:"32px", borderRadius:"4px", background:"rgba(255,255,255,0.15)", backdropFilter:"blur(6px)", border:`1.5px solid rgba(255,255,255,${0.6 - off*0.2})`, opacity: 1 - off*0.3, transform:`translateY(${off*-4}px) scale(${1-off*0.06})`, transition:"all 0.4s" }}>
-                            <div style={{ width:"40%", height:"3px", background:"#7c233c", borderRadius:"1px", margin:"5px 4px 3px" }} />
-                            <div style={{ display:"flex", gap:"2px", alignItems:"flex-end", padding:"0 4px 4px", height:"12px" }}>
-                              {[8,13,6,10].map((h,i) => <div key={i} style={{ flex:1, height:`${h}px`, background:"rgba(124,35,60,0.6)", borderRadius:"1px" }} />)}
+                          <div key={idx} style={{ width:"40px", height:"26px", borderRadius:"3px", background:"rgba(255,255,255,0.14)", backdropFilter:"blur(6px)", border:`1.5px solid rgba(255,255,255,${0.6 - off*0.2})`, opacity: 1 - off*0.3, transform:`translateY(${off*-3}px) scale(${1-off*0.06})`, transition:"all 0.4s" }}>
+                            <div style={{ width:"38%", height:"2.5px", background:"#7c233c", borderRadius:"1px", margin:"4px 3px 2px" }} />
+                            <div style={{ display:"flex", gap:"1.5px", alignItems:"flex-end", padding:"0 3px 3px", height:"10px" }}>
+                              {[7,11,5,8].map((h,i) => <div key={i} style={{ flex:1, height:`${h}px`, background:"rgba(124,35,60,0.6)", borderRadius:"1px" }} />)}
                             </div>
                           </div>
                         );
@@ -1199,22 +1812,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{ background:colors.marqueeBg, borderTop:`1px solid ${colors.border}`, borderBottom:`1px solid ${colors.border}`, padding:"64px 48px", transition:"background 0.3s, border-color 0.3s" }}>
-        <div className="stats-inner reveal" id="stats-section" style={{ maxWidth:"1400px", margin:"0 auto", display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"32px", opacity: revealedSections.has("stats-section") ? 1 : 0, transform: revealedSections.has("stats-section") ? "translateY(0)" : "translateY(40px)", transition:"opacity 0.7s, transform 0.7s" }}>
-          {[
-            { value:"12M+", label:"Designs created daily",    color:"#942945" },
-            { value:"3.8M", label:"Active creators",          color:"#e1496d" },
-            { value:"500K+",label:"Templates available",      color:"#22d3a8" },
-            { value:"180+", label:"Countries represented",    color:"#dd728b" },
-          ].map((s,i) => (
-            <div key={i} style={{ textAlign:"center" }}>
-              <div className="stat-num" style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,4vw,56px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, color:s.color }}>{s.value}</div>
-              <div style={{ fontSize:"14px", color:colors.textMuted, marginTop:"6px", fontWeight:300 }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+
 
       {/* Features showcase */}
       <section className="reveal" id="features-section" style={{ background:colors.marqueeBg, borderBottom:`1px solid ${colors.border}`, opacity: revealedSections.has("features-section") ? 1 : 0, transform: revealedSections.has("features-section") ? "translateY(0)" : "translateY(40px)", transition:"opacity 0.7s, transform 0.7s, background 0.3s, border-color 0.3s" }}>
@@ -1387,18 +1985,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
 
       {/* Footer CTA */}
-      <section style={{ background:"linear-gradient(135deg,#1a0f0a,#2d1a0f)", padding:"100px 48px", textAlign:"center", width:"100%", position:"relative", overflow:"hidden" }}>
+      <section style={{ background: isDark ? "linear-gradient(135deg,#0f0809,#1a0f14)" : "linear-gradient(135deg,#fdf2f4,#f7f4f7)", padding:"100px 48px", textAlign:"center", width:"100%", position:"relative", overflow:"hidden" }}>
         {/* Glowing orb background */}
-        <div style={{ position:"absolute", width:"600px", height:"600px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(148,41,69,0.15)", top:"50%", left:"50%", transform:"translate(-50%,-50%)", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", width:"600px", height:"600px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(148,41,69,0.12)", top:"50%", left:"50%", transform:"translate(-50%,-50%)", pointerEvents:"none" }} />
         <div style={{ position:"relative", zIndex:1 }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:"8px", background:"rgba(225,73,109,0.12)", border:"1px solid rgba(225,73,109,0.2)", borderRadius:"40px", padding:"6px 16px", fontSize:"12px", color:"#e1496d", marginBottom:"28px", letterSpacing:"0.02em" }}>
-            <span style={{ width:"5px", height:"5px", background:"#22d3a8", borderRadius:"50%", display:"inline-block", animation:"pulse 2s infinite" }} />
-            3.8M creators and counting
-          </div>
-          <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(40px,6vw,72px)", fontWeight:800, letterSpacing:"-0.04em", color:"#fff", marginBottom:"20px", lineHeight:0.95 }}>
-            Ready to create<br/><em style={{ fontFamily:"Instrument Serif,serif", color:"#e1496d", fontWeight:400 }}>something great?</em>
+          <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(40px,6vw,72px)", fontWeight:800, letterSpacing:"-0.04em", color: isDark ? "#fff" : "#2d2d2d", marginBottom:"20px", lineHeight:0.95 }}>
+            Ready to create<br/><em style={{ fontFamily:"Instrument Serif,serif", color:"#942945", fontWeight:400 }}>something great?</em>
           </h2>
-          <p style={{ fontSize:"16px", color:"rgba(255,255,255,0.45)", marginBottom:"44px", fontWeight:300, maxWidth:"420px", margin:"0 auto 44px", lineHeight:1.6 }}>Join millions of creators. Free forever, no credit card required.</p>
+          <p style={{ fontSize:"16px", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(45,45,45,0.65)", marginBottom:"44px", fontWeight:300, maxWidth:"420px", margin:"0 auto 44px", lineHeight:1.6 }}>Join millions of creators. Free forever, no credit card required.</p>
           <div style={{ display:"flex", gap:"14px", justifyContent:"center", flexWrap:"wrap" }}>
             <button style={{ background:"linear-gradient(135deg,#942945,#e1496d)", color:"#fff", border:"none", padding:"18px 48px", borderRadius:"50px", fontSize:"17px", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer", transition:"all 0.3s", boxShadow:"0 8px 40px rgba(148,41,69,0.5)", letterSpacing:"-0.02em" }}
               onMouseEnter={e => { e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 16px 60px rgba(148,41,69,0.6)"; }}
@@ -1429,12 +2023,16 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         </div>
       </footer>
 
-        </main>
+          </>
+        )}
+      </main>
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=Poppins:wght@300;400;500;600&display=swap');
         * { box-sizing: border-box; }
         @keyframes fadeUp     { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
         @keyframes fadeIn     { from { opacity:0; } to { opacity:1; } }
+        @keyframes slideInFromRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes pulse      { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
         @keyframes marquee    { from { transform:translateX(0); } to { transform:translateX(-50%); } }
         @keyframes scrollAnim { 0% { transform:scaleY(0); transform-origin:top; } 50% { transform:scaleY(1); transform-origin:top; } 51% { transform:scaleY(1); transform-origin:bottom; } 100% { transform:scaleY(0); transform-origin:bottom; } }

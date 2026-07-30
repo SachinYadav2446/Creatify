@@ -13,6 +13,816 @@
       "otp_expires_at": "2026-07-29T15:23:09.026Z"
     }
   ],
-  "projects": [],
+  "projects": [
+    {
+      "id": "logo_1779892127508",
+      "user_id": 1,
+      "title": "My Brand Identity",
+      "category": "Logo Design",
+      "tool": "Logo Maker",
+      "year": "2026",
+      "accent": "#f5c842",
+      "gradient": "linear-gradient(135deg, #1a1608 0%, #3d2e07 40%, #0c0a09 100%)",
+      "image": null,
+      "icon": "✦",
+      "tags": [
+        "SVG Vector",
+        "3 Shapes",
+        "Mockups"
+      ],
+      "description": null,
+      "project_data": {
+        "canvasBg": "#0c0a09",
+        "brandName": "CineCut",
+        "tagline": "Create without limiTS",
+        "elements": [
+          {
+            "id": "el_icon",
+            "type": "icon",
+            "shape": "rocket",
+            "x": 150,
+            "y": 110,
+            "size": 70,
+            "color": "#d4a574",
+            "opacity": 1,
+            "rotate": 0
+          },
+          {
+            "id": "el_brand",
+            "type": "text",
+            "text": "CINECUT",
+            "x": 150,
+            "y": 220,
+            "size": 32,
+            "font": "Syne",
+            "color": "#f5f0e8",
+            "letterSpacing": 3,
+            "rotate": 0
+          },
+          {
+            "id": "el_tag",
+            "type": "text",
+            "text": "Create without limits",
+            "x": 150,
+            "y": 260,
+            "size": 12,
+            "font": "Poppins",
+            "color": "#8c8780",
+            "letterSpacing": 1,
+            "rotate": 0
+          }
+        ]
+      },
+      "updated_at": "2026-07-30T03:23:47.402Z",
+      "created_at": "2026-07-30T03:23:47.402Z"
+    },
+    {
+      "id": "logo_1779892637845",
+      "user_id": 1,
+      "title": "My Brand Identity",
+      "category": "Logo Design",
+      "tool": "Logo Maker",
+      "year": "2026",
+      "accent": "#f5c842",
+      "gradient": "linear-gradient(135deg, #1a1608 0%, #3d2e07 40%, #0c0a09 100%)",
+      "image": null,
+      "icon": "✦",
+      "tags": [
+        "SVG Vector",
+        "3 Shapes",
+        "Mockups"
+      ],
+      "description": null,
+      "project_data": {
+        "canvasBg": "#0c0a09",
+        "brandName": "CineCut",
+        "tagline": "Create without limits",
+        "elements": [
+          {
+            "id": "el_icon",
+            "type": "icon",
+            "shape": "rocket",
+            "x": 150,
+            "y": 110,
+            "size": 70,
+            "color": "#d4a574",
+            "opacity": 1,
+            "rotate": 0
+          },
+          {
+            "id": "el_brand",
+            "type": "text",
+            "text": "CINECUT",
+            "x": 150,
+            "y": 220,
+            "size": 32,
+            "font": "Syne",
+            "color": "#f5f0e8",
+            "letterSpacing": 3,
+            "rotate": 0
+          },
+          {
+            "id": "el_tag",
+            "type": "text",
+            "text": "Create without limits",
+            "x": 150,
+            "y": 260,
+            "size": 12,
+            "font": "Poppins",
+            "color": "#8c8780",
+            "letterSpacing": 1,
+            "rotate": 0
+          }
+        ]
+      },
+      "updated_at": "2026-07-30T03:23:47.324Z",
+      "created_at": "2026-07-30T03:23:47.324Z"
+    },
+    {
+      "id": "ppt_1779891870468",
+      "user_id": 1,
+      "title": "Next Gen Platform",
+      "category": "Presentation",
+      "tool": "Slide Studio",
+      "year": "2026",
+      "accent": "#a0522d",
+      "gradient": "linear-gradient(135deg, #111827 0%, #1f2937 50%, #030712 100%)",
+      "image": null,
+      "icon": null,
+      "tags": [
+        "2 Slides",
+        "Vector",
+        "Pitch"
+      ],
+      "description": null,
+      "project_data": {
+        "id": "ppt_1779891870468",
+        "name": "Next Gen Platform",
+        "slides": [
+          {
+            "id": "s1",
+            "layout": "title",
+            "title": "Next Gen Platform",
+            "subtitle": "Building the future of creation",
+            "bulletPoints": [
+              "Empowering millions of creators",
+              "Zero friction deployment",
+              "Fully decentralized platform"
+            ],
+            "elements": []
+          },
+          {
+            "id": "s2",
+            "layout": "split",
+            "title": "Market Growth",
+            "subtitle": "Traction and projections",
+            "bulletPoints": [
+              "300% YoY growth",
+              "High user retention",
+              "Profitable from day one"
+            ],
+            "elements": []
+          }
+        ],
+        "themeIdx": 0
+      },
+      "updated_at": "2026-07-30T03:23:47.095Z",
+      "created_at": "2026-07-30T03:23:47.095Z"
+    },
+    {
+      "id": "ppt_1779894481150",
+      "user_id": 1,
+      "title": "Creatify Studio Presentation",
+      "category": "Presentation",
+      "tool": "Slide Studio",
+      "year": "2026",
+      "accent": "#a0522d",
+      "gradient": "linear-gradient(135deg, #111827 0%, #1f2937 50%, #030712 100%)",
+      "image": null,
+      "icon": null,
+      "tags": [
+        "4 Slides",
+        "Vector",
+        "Pitch"
+      ],
+      "description": null,
+      "project_data": {
+        "id": "ppt_1779894481150",
+        "name": "Creatify Studio Presentation",
+        "slides": [
+          {
+            "id": "slide_1",
+            "layout": "title",
+            "title": "Creatify Studio Presentation",
+            "subtitle": "Design without limits · Beautiful slides in one click",
+            "bulletPoints": [
+              "Seamless browser-based generation",
+              "GPU-accelerated vector rendering",
+              "30 premium designer themes"
+            ],
+            "quote": "Simplifying creation so you can focus on building beautiful brands.",
+            "author": "Alex Chen, Creative Director",
+            "image": "https://picsum.photos/id/180/800/500",
+            "elements": []
+          },
+          {
+            "id": "slide_1779894484728",
+            "layout": "blank",
+            "title": "",
+            "subtitle": "",
+            "bulletPoints": [],
+            "quote": "",
+            "author": "",
+            "image": "",
+            "elements": []
+          },
+          {
+            "id": "slide_2",
+            "layout": "content",
+            "title": "Core System Capabilities",
+            "subtitle": "Engineered for designers and innovators alike",
+            "bulletPoints": [
+              "Interactive bento layout with micro-animations",
+              "WASM image & video composition directly in client",
+              "Zero-latency typography matching and preset LUTs",
+              "One-click PDF, PPTX, and high-fidelity video exports"
+            ],
+            "quote": "A tool that matches the speed of thought.",
+            "author": "",
+            "image": "https://picsum.photos/id/200/800/500",
+            "elements": []
+          },
+          {
+            "id": "slide_3",
+            "layout": "quote",
+            "title": "",
+            "subtitle": "",
+            "bulletPoints": [],
+            "quote": "Design is not just what it looks like and feels like. Design is how it works.",
+            "author": "Steve Jobs",
+            "image": "",
+            "elements": []
+          }
+        ],
+        "themeIdx": 17
+      },
+      "updated_at": "2026-07-30T03:23:47.018Z",
+      "created_at": "2026-07-30T03:23:47.018Z"
+    },
+    {
+      "id": "social_1779973129661",
+      "user_id": 1,
+      "title": "New Social Campaign",
+      "category": "Social Post",
+      "tool": "Social Studio",
+      "year": "2026",
+      "accent": "#c49a6c",
+      "gradient": "linear-gradient(135deg, #1c150e 0%, #3a2818 50%, #0c0a09 100%)",
+      "image": null,
+      "icon": "📱",
+      "tags": [
+        "Stories · Reels",
+        "2 Layers",
+        "Multi-Ratio"
+      ],
+      "description": null,
+      "project_data": {
+        "caption": "Unleashing creative possibilities with Creatify! 🚀✨ #design #marketing #creativity",
+        "bgGradient": "linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)",
+        "layers": [
+          {
+            "id": "text_main",
+            "type": "text",
+            "text": "CREATIVITY WITHOUT LIMITS",
+            "x": 50,
+            "y": 40,
+            "size": 24,
+            "color": "#ffffff",
+            "font": "Syne"
+          },
+          {
+            "id": "sticker_badge",
+            "type": "sticker",
+            "shape": "✦",
+            "x": 50,
+            "y": 70,
+            "size": 40,
+            "color": "#f5c842"
+          }
+        ],
+        "scheduleDate": "2026-05-28",
+        "scheduleTime": "12:00",
+        "isScheduled": false
+      },
+      "updated_at": "2026-07-30T03:23:47.555Z",
+      "created_at": "2026-07-30T03:23:46.936Z"
+    },
+    {
+      "id": "logo_1779972960490",
+      "user_id": 1,
+      "title": "My Brand Identity",
+      "category": "Logo Design",
+      "tool": "Logo Maker",
+      "year": "2026",
+      "accent": "#f5c842",
+      "gradient": "linear-gradient(135deg, #1a1608 0%, #3d2e07 40%, #0c0a09 100%)",
+      "image": null,
+      "icon": "✦",
+      "tags": [
+        "SVG Vector",
+        "5 Shapes",
+        "Mockups"
+      ],
+      "description": null,
+      "project_data": {
+        "canvasBg": "#030712",
+        "brandName": "CineCut",
+        "tagline": "Create without limits",
+        "elements": [
+          {
+            "id": "el_icon",
+            "type": "icon",
+            "shape": "rocket",
+            "x": 150,
+            "y": 110,
+            "size": 70,
+            "color": "#22d3a8",
+            "opacity": 1,
+            "rotate": 0,
+            "fillType": "solid",
+            "strokeColor": "#d4a574",
+            "strokeWidth": 0,
+            "strokeType": "none"
+          },
+          {
+            "id": "el_brand",
+            "type": "text",
+            "text": "CINECUT",
+            "x": 150,
+            "y": 220,
+            "size": 32,
+            "font": "Syne",
+            "color": "#f3f4f6",
+            "letterSpacing": 3,
+            "rotate": 0,
+            "fillType": "solid",
+            "strokeColor": "#d4a574",
+            "strokeWidth": 0,
+            "strokeType": "none",
+            "opacity": 1
+          },
+          {
+            "id": "el_tag",
+            "type": "text",
+            "text": "Create without limits",
+            "x": 150,
+            "y": 260,
+            "size": 12,
+            "font": "Poppins",
+            "color": "#3b82f6",
+            "letterSpacing": 1,
+            "rotate": 0,
+            "fillType": "solid",
+            "strokeColor": "#d4a574",
+            "strokeWidth": 0,
+            "strokeType": "none",
+            "opacity": 1
+          },
+          {
+            "id": "shape_1779972954824",
+            "type": "shape",
+            "shapeType": "ring",
+            "x": 150,
+            "y": 150,
+            "size": 60,
+            "color": "#d4a574",
+            "opacity": 1,
+            "rotate": 0,
+            "fillType": "solid",
+            "strokeColor": "#d4a574",
+            "strokeWidth": 0,
+            "strokeType": "none"
+          },
+          {
+            "id": "shape_1779972955479",
+            "type": "shape",
+            "shapeType": "badge",
+            "x": 150,
+            "y": 150,
+            "size": 60,
+            "color": "#d4a574",
+            "opacity": 1,
+            "rotate": 0,
+            "fillType": "solid",
+            "strokeColor": "#d4a574",
+            "strokeWidth": 0,
+            "strokeType": "none"
+          }
+        ]
+      },
+      "updated_at": "2026-07-30T03:23:46.903Z",
+      "created_at": "2026-07-30T03:23:46.903Z"
+    },
+    {
+      "id": "print_1779972966348",
+      "user_id": 1,
+      "title": "Corporate Flyer Design",
+      "category": "Print Layout",
+      "tool": "Print Design",
+      "year": "2026",
+      "accent": "#8b5a2b",
+      "gradient": "linear-gradient(135deg, #1c0f0f 0%, #3d1a1a 50%, #8b5a2b30 100%)",
+      "image": null,
+      "icon": "🖨️",
+      "tags": [
+        "Print-ready PDF",
+        "4 Elements",
+        "A4"
+      ],
+      "description": null,
+      "project_data": {
+        "activeSize": "a4",
+        "layers": [
+          {
+            "id": "frame_border",
+            "type": "shape",
+            "shape": "border",
+            "x": 50,
+            "y": 50,
+            "w": 90,
+            "h": 90,
+            "color": "#8b5a2b"
+          },
+          {
+            "id": "text_title",
+            "type": "text",
+            "text": "ANNUAL SUMMIT",
+            "x": 50,
+            "y": 25,
+            "size": 24,
+            "color": "#1e3a8a",
+            "font": "Syne"
+          },
+          {
+            "id": "text_subtitle",
+            "type": "text",
+            "text": "Innovating the future of design and technology",
+            "x": 50,
+            "y": 32,
+            "size": 11,
+            "color": "#8b5a2b",
+            "font": "Poppins"
+          },
+          {
+            "id": "sticker_badge",
+            "type": "shape",
+            "shape": "shield",
+            "x": 50,
+            "y": 60,
+            "w": 20,
+            "h": 20,
+            "color": "#d4a574"
+          }
+        ],
+        "showBleed": true,
+        "showMargins": true,
+        "cmykPreview": false
+      },
+      "updated_at": "2026-07-30T03:23:46.833Z",
+      "created_at": "2026-07-30T03:23:46.833Z"
+    },
+    {
+      "id": "ai_1779972979812",
+      "user_id": 1,
+      "title": "AI Generative Campaign",
+      "category": "AI Design",
+      "tool": "AI Magic",
+      "year": "2026",
+      "accent": "#22d3a8",
+      "gradient": "linear-gradient(135deg, #071714 0%, #153c34 50%, #0c0a09 100%)",
+      "image": null,
+      "icon": "⚡",
+      "tags": [
+        "Generative AI",
+        "CYBERPUNK",
+        "Layer Cutout"
+      ],
+      "description": null,
+      "project_data": {
+        "prompt": "Cyberpunk tech capsule, floating in an abstract spatial grid, high-resolution octane render, neon gold accents.",
+        "selectedStyle": "cyberpunk",
+        "generatedResult": {
+          "style": "cyberpunk",
+          "prompt": "Cyberpunk tech capsule, floating in an abstract spatial grid, high-resolution octane render, neon gold accents.",
+          "bg": "#0c0714",
+          "accent": "#22d3a8",
+          "layers": [
+            {
+              "type": "sparkle",
+              "glyph": "⚡",
+              "x": 50,
+              "y": 35,
+              "size": 80,
+              "col": "#22d3a8"
+            },
+            {
+              "type": "text",
+              "text": "AI GENERATED CAPSULE",
+              "x": 50,
+              "y": 70,
+              "size": 22,
+              "col": "#ffffff"
+            }
+          ]
+        },
+        "bgRemoveImage": "rocket",
+        "bgRemoved": false,
+        "maskTolerance": 12,
+        "resizeLayoutMode": "banner"
+      },
+      "updated_at": "2026-07-30T03:23:47.759Z",
+      "created_at": "2026-07-30T03:23:46.705Z"
+    },
+    {
+      "id": "ppt_1779973399018",
+      "user_id": 1,
+      "title": "Creatify Studio Presentation",
+      "category": "Presentation",
+      "tool": "Slide Studio",
+      "year": "2026",
+      "accent": "#a0522d",
+      "gradient": "linear-gradient(135deg, #111827 0%, #1f2937 50%, #030712 100%)",
+      "image": null,
+      "icon": null,
+      "tags": [
+        "3 Slides",
+        "Vector",
+        "Pitch"
+      ],
+      "description": null,
+      "project_data": {
+        "id": "ppt_1779973399018",
+        "name": "Creatify Studio Presentation",
+        "slides": [
+          {
+            "id": "slide_1",
+            "layout": "title",
+            "title": "Creatify Studio Presentation",
+            "subtitle": "Design without limits · Beautiful slides in one click",
+            "bulletPoints": [
+              "Seamless browser-based generation",
+              "GPU-accelerated vector rendering",
+              "30 premium designer themes"
+            ],
+            "quote": "Simplifying creation so you can focus on building beautiful brands.",
+            "author": "Alex Chen, Creative Director",
+            "image": "https://picsum.photos/id/180/800/500",
+            "elements": []
+          },
+          {
+            "id": "slide_2",
+            "layout": "content",
+            "title": "Core System Capabilities",
+            "subtitle": "Engineered for designers and innovators alike",
+            "bulletPoints": [
+              "Interactive bento layout with micro-animations",
+              "WASM image & video composition directly in client",
+              "Zero-latency typography matching and preset LUTs",
+              "One-click PDF, PPTX, and high-fidelity video exports"
+            ],
+            "quote": "A tool that matches the speed of thought.",
+            "author": "",
+            "image": "https://picsum.photos/id/200/800/500",
+            "elements": []
+          },
+          {
+            "id": "slide_3",
+            "layout": "quote",
+            "title": "",
+            "subtitle": "",
+            "bulletPoints": [],
+            "quote": "Design is not just what it looks like and feels like. Design is how it works.",
+            "author": "Steve Jobs",
+            "image": "",
+            "elements": []
+          }
+        ],
+        "themeIdx": 0
+      },
+      "updated_at": "2026-07-30T03:23:47.151Z",
+      "created_at": "2026-07-30T03:23:46.673Z"
+    },
+    {
+      "id": "ppt_1779973040350",
+      "user_id": 1,
+      "title": "Creatify Studio Presentation",
+      "category": "Presentation",
+      "tool": "Slide Studio",
+      "year": "2026",
+      "accent": "#a0522d",
+      "gradient": "linear-gradient(135deg, #111827 0%, #1f2937 50%, #030712 100%)",
+      "image": null,
+      "icon": null,
+      "tags": [
+        "3 Slides",
+        "Vector",
+        "Pitch"
+      ],
+      "description": null,
+      "project_data": {
+        "id": "ppt_1779973040350",
+        "name": "Creatify Studio Presentation",
+        "slides": [
+          {
+            "id": "slide_1",
+            "layout": "title",
+            "title": "Creatify Studio Presentation",
+            "subtitle": "Design without limits · Beautiful slides in one click",
+            "bulletPoints": [
+              "Seamless browser-based generation",
+              "GPU-accelerated vector rendering",
+              "30 premium designer themes"
+            ],
+            "quote": "Simplifying creation so you can focus on building beautiful brands.",
+            "author": "Alex Chen, Creative Director",
+            "image": "https://picsum.photos/id/180/800/500",
+            "elements": []
+          },
+          {
+            "id": "slide_2",
+            "layout": "content",
+            "title": "Core System Capabilities",
+            "subtitle": "Engineered for designers and innovators alike",
+            "bulletPoints": [
+              "Interactive bento layout with micro-animations",
+              "WASM image & video composition directly in client",
+              "Zero-latency typography matching and preset LUTs",
+              "One-click PDF, PPTX, and high-fidelity video exports"
+            ],
+            "quote": "A tool that matches the speed of thought.",
+            "author": "",
+            "image": "https://picsum.photos/id/200/800/500",
+            "elements": []
+          },
+          {
+            "id": "slide_3",
+            "layout": "quote",
+            "title": "",
+            "subtitle": "",
+            "bulletPoints": [],
+            "quote": "Design is not just what it looks like and feels like. Design is how it works.",
+            "author": "Steve Jobs",
+            "image": "",
+            "elements": []
+          }
+        ],
+        "themeIdx": 0
+      },
+      "updated_at": "2026-07-30T03:23:47.182Z",
+      "created_at": "2026-07-30T03:23:46.645Z"
+    },
+    {
+      "id": "social_1779973068948",
+      "user_id": 1,
+      "title": "New Social Campaign",
+      "category": "Social Post",
+      "tool": "Social Studio",
+      "year": "2026",
+      "accent": "#c49a6c",
+      "gradient": "linear-gradient(135deg, #1c150e 0%, #3a2818 50%, #0c0a09 100%)",
+      "image": null,
+      "icon": "📱",
+      "tags": [
+        "Stories · Reels",
+        "4 Layers",
+        "Multi-Ratio"
+      ],
+      "description": null,
+      "project_data": {
+        "caption": "Unleashing creative possibilities with Creatify! 🚀✨ #design #marketing #creativity",
+        "bgGradient": "linear-gradient(135deg, #111827 0%, #374151 100%)",
+        "layers": [
+          {
+            "id": "text_main",
+            "type": "text",
+            "text": "CREATIVITY WITHOUT LIMITS",
+            "x": 50,
+            "y": 40,
+            "size": 22,
+            "color": "#ffffff",
+            "font": "Syne"
+          },
+          {
+            "id": "sticker_badge",
+            "type": "sticker",
+            "shape": "✦",
+            "x": 50,
+            "y": 70,
+            "size": 40,
+            "color": "#f5c842"
+          },
+          {
+            "id": "sticker_1779973064634",
+            "type": "sticker",
+            "shape": "■",
+            "x": 50,
+            "y": 60,
+            "size": 45,
+            "color": "#f5c842"
+          },
+          {
+            "id": "sticker_1779973065736",
+            "type": "sticker",
+            "shape": "⚙",
+            "x": 50,
+            "y": 60,
+            "size": 45,
+            "color": "#f5c842"
+          }
+        ],
+        "scheduleDate": "2026-05-28",
+        "scheduleTime": "12:00",
+        "isScheduled": false
+      },
+      "updated_at": "2026-07-30T03:23:47.639Z",
+      "created_at": "2026-07-30T03:23:46.611Z"
+    },
+    {
+      "id": "logo_1780428901088",
+      "user_id": 1,
+      "title": "My Brand Identity",
+      "category": "Logo Design",
+      "tool": "Logo Maker",
+      "year": "2026",
+      "accent": "#f5c842",
+      "gradient": "linear-gradient(135deg, #1a1608 0%, #3d2e07 40%, #0c0a09 100%)",
+      "image": null,
+      "icon": "✦",
+      "tags": [
+        "SVG Vector",
+        "3 Shapes",
+        "Mockups"
+      ],
+      "description": null,
+      "project_data": {
+        "canvasBg": "#0c0a09",
+        "brandName": "CineCut",
+        "tagline": "Create without limits",
+        "elements": [
+          {
+            "id": "el_icon",
+            "type": "icon",
+            "shape": "rocket",
+            "x": 150,
+            "y": 110,
+            "size": 70,
+            "color": "#d4a574",
+            "opacity": 1,
+            "rotate": 0,
+            "fillType": "solid",
+            "strokeColor": "#d4a574",
+            "strokeWidth": 0,
+            "strokeType": "none"
+          },
+          {
+            "id": "el_brand",
+            "type": "text",
+            "text": "CINECUT",
+            "x": 150,
+            "y": 220,
+            "size": 32,
+            "font": "Syne",
+            "color": "#f5f0e8",
+            "letterSpacing": 3,
+            "rotate": 0,
+            "fillType": "solid",
+            "strokeColor": "#d4a574",
+            "strokeWidth": 0,
+            "strokeType": "none",
+            "opacity": 1
+          },
+          {
+            "id": "el_tag",
+            "type": "text",
+            "text": "Create without limits",
+            "x": 150,
+            "y": 260,
+            "size": 12,
+            "font": "Poppins",
+            "color": "#8c8780",
+            "letterSpacing": 1,
+            "rotate": 0,
+            "fillType": "solid",
+            "strokeColor": "#d4a574",
+            "strokeWidth": 0,
+            "strokeType": "none",
+            "opacity": 1
+          }
+        ]
+      },
+      "updated_at": "2026-07-30T03:23:47.116Z",
+      "created_at": "2026-07-30T03:23:46.567Z"
+    }
+  ],
   "nextId": 2
 }

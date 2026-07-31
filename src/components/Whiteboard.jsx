@@ -1,17 +1,19 @@
-﻿import { useState, useRef, useEffect } from "react";
-import { 
-  Home, FileText, Maximize2, Edit3, Settings, Share2,
-  LayoutTemplate, Shapes, Type, Award, Upload, Wrench, FolderOpen,
+﻿import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  Home, FileText, Settings, Share2, Download, Trash2, X, Layers,
+  LayoutTemplate, Shapes, Type, Upload, Wrench, FolderOpen,
   Square, Circle, Triangle, Star, Pentagon, Hexagon, Heart, Cloud,
   Minus, ArrowRight, ArrowRightLeft, CornerUpRight, Link2,
   BarChart3, TrendingUp, PieChart, Donut,
   Grid3x3, Grid2x2, MoreHorizontal,
   Frame, RectangleHorizontal,
-  MousePointer2, Pen, Highlighter, Eraser,
+  MousePointer2, Pen, Highlighter, Eraser, Hand, Zap,
   Image as ImageIcon, StickyNote,
-  ZoomIn, ZoomOut, HelpCircle, Maximize,
-  FileEdit, Clock
+  ZoomIn, ZoomOut, HelpCircle, Maximize, Maximize2,
+  FileEdit, Clock, Bold, Italic, RotateCcw, RotateCw, ChevronLeft,
+  Lock, Unlock, Eye, EyeOff, Plus, Palette, Copy
 } from "lucide-react";
+import THEME from "../theme";
 
 export default function Whiteboard({ onBack, user, initialProject }) {
   // Canvas refs
@@ -19,6 +21,10 @@ export default function Whiteboard({ onBack, user, initialProject }) {
   const overlayRef = useRef(null);
   const bgRef = useRef(null);
   const fileInputRef = useRef(null);
+  const canvasContainerRef = useRef(null);
+  const previousToolRef = useRef("pen");
+  const imageClickPosRef = useRef(null);
+  const draggingNoteRef = useRef(null);
 
   // Add CSS animations
   useEffect(() => {
@@ -182,12 +188,19 @@ export default function Whiteboard({ onBack, user, initialProject }) {
   const [historyStep, setHistoryStep] = useState(-1);
   
   // UI State
-  const [showLayersPanel, setShowLayersPanel] = useState(false);
-  const [showColorPicker, setShowColorPicker] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [boardNotes, setBoardNotes] = useState("");
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
   const [projectTitle, setProjectTitle] = useState(initialProject?.title || "Untitled Board");
-  const [sidebarTab, setSidebarTab] = useState("tools"); // tools, elements, projects
+  const [sidebarTab, setSidebarTab] = useState("tools");
   const [userProjects, setUserProjects] = useState([]);
+  const [laserPos, setLaserPos] = useState(null);
+  const [stickyNoteColor, setStickyNoteColor] = useState("#fef3c7");
   
   // Colors
   const colorPalette = [
@@ -196,17 +209,32 @@ export default function Whiteboard({ onBack, user, initialProject }) {
     "#dc2626", "#f97316", "#eab308", "#22c55e", "#06b6d4",
     "#3b82f6", "#8b5cf6", "#d946ef", "#f59e0b", "#10b981"
   ];
+
+  const stickyNoteColors = [
+    "#fef3c7", "#fecdd3", "#bbf7d0", "#bfdbfe", "#e9d5ff", "#fed7aa"
+  ];
   
   const fonts = ["Arial", "Helvetica", "Times New Roman", "Georgia", "Courier New", 
                  "Verdana", "Comic Sans MS", "Impact", "Brush Script MT"];
   
   // Tool categories
+  const templates = [
+    { id: "blank", name: "Blank", bg: "#ffffff", grid: true },
+    { id: "brainstorm", name: "Brainstorm", bg: "#fdf2f4", grid: true },
+    { id: "dark", name: "Dark Mode", bg: "#1a0f14", grid: false },
+    { id: "blueprint", name: "Blueprint", bg: "#0f172a", grid: true },
+    { id: "paper", name: "Paper", bg: "#fefce8", grid: false },
+    { id: "grid", name: "Grid Board", bg: "#ffffff", grid: true },
+  ];
+
   const toolGroups = {
     draw: [
       { id: "select", Icon: MousePointer2, name: "Select", key: "V", color: "#3b82f6" },
+      { id: "pan", Icon: Hand, name: "Pan", key: "H", color: "#64748b" },
       { id: "pen", Icon: Pen, name: "Pen", key: "P", color: "#8b5cf6" },
-      { id: "highlighter", Icon: Highlighter, name: "Marker", key: "H", color: "#f59e0b" },
+      { id: "highlighter", Icon: Highlighter, name: "Marker", key: "M", color: "#f59e0b" },
       { id: "eraser", Icon: Eraser, name: "Eraser", key: "E", color: "#ef4444" },
+      { id: "laser", Icon: Zap, name: "Laser", key: "K", color: "#dc2626" },
     ],
     shapes: [
       { id: "line", Icon: Minus, name: "Line", key: "L", color: "#64748b" },
@@ -249,9 +277,9 @@ export default function Whiteboard({ onBack, user, initialProject }) {
       { id: "donut-chart", Icon: Donut, name: "Donut Chart", type: "chart", color: "#ec4899" },
     ],
     tables: [
-      { id: "table-2x2", Icon: Grid2x2, name: "2Ã—2 Table", rows: 2, cols: 2, color: "#6366f1" },
-      { id: "table-3x3", Icon: Grid3x3, name: "3Ã—3 Table", rows: 3, cols: 3, color: "#8b5cf6" },
-      { id: "table-4x4", Icon: MoreHorizontal, name: "4Ã—4 Table", rows: 4, cols: 4, color: "#a855f7" },
+      { id: "table-2x2", Icon: Grid2x2, name: "2x2 Table", rows: 2, cols: 2, color: "#6366f1" },
+      { id: "table-3x3", Icon: Grid3x3, name: "3x3 Table", rows: 3, cols: 3, color: "#8b5cf6" },
+      { id: "table-4x4", Icon: MoreHorizontal, name: "4x4 Table", rows: 4, cols: 4, color: "#a855f7" },
     ],
     grids: [
       { id: "grid-square", Icon: Grid3x3, name: "Square Grid", type: "grid", color: "#64748b" },
@@ -265,36 +293,147 @@ export default function Whiteboard({ onBack, user, initialProject }) {
     ]
   };
 
-  // Initialize canvas
-  useEffect(() => {
+  const initCanvas = useCallback(() => {
     const canvas = canvasRef.current;
     const overlay = overlayRef.current;
     const bg = bgRef.current;
     if (!canvas || !overlay || !bg) return;
 
-    const w = window.innerWidth - 352; // Account for sidebars (72px + 280px)
-    const h = window.innerHeight - 56; // Account for bottom bar only (56px, no header)
+    const w = window.innerWidth - 352 - 260;
+    const h = window.innerHeight - 112;
 
-    canvas.width = overlay.width = bg.width = w;
-    canvas.height = overlay.height = bg.height = h;
+    canvas.width = overlay.width = bg.width = Math.max(w, 400);
+    canvas.height = overlay.height = bg.height = Math.max(h, 300);
 
     const c = canvas.getContext("2d");
     const o = overlay.getContext("2d");
     const b = bg.getContext("2d");
-    
+
     c.lineCap = o.lineCap = "round";
     c.lineJoin = o.lineJoin = "round";
 
     setCtx(c);
     setOverlayCtx(o);
     setBgCtx(b);
+    drawBackground(b, canvas.width, canvas.height);
+  }, [bgColor, showGrid, gridSize]);
 
-    drawBackground(b, w, h);
+  // Initialize canvas
+  useEffect(() => {
+    initCanvas();
     saveHistory();
-    
-    // Load user projects
     loadUserProjects();
+
+    const handleResize = () => initCanvas();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (bgCtx && canvasRef.current) {
+      drawBackground(bgCtx, canvasRef.current.width, canvasRef.current.height);
+    }
+  }, [bgColor, showGrid, gridSize, bgCtx]);
+
+  // Timer
+  useEffect(() => {
+    if (!timerRunning) return;
+    const id = setInterval(() => setTimerSeconds(s => s + 1), 1000);
+    return () => clearInterval(id);
+  }, [timerRunning]);
+
+  // Load saved project
+  useEffect(() => {
+    if (!ctx || !initialProject?.data?.imageData) return;
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      if (initialProject.data.stickyNotes?.length) {
+        setStickyNotes(initialProject.data.stickyNotes);
+      }
+      saveHistory();
+    };
+    img.src = initialProject.data.imageData;
+  }, [ctx, initialProject]);
+
+  // Sticky note drag
+  useEffect(() => {
+    const onMove = (e) => {
+      const drag = draggingNoteRef.current;
+      if (!drag) return;
+      const dx = (e.clientX - drag.startX) / zoom;
+      const dy = (e.clientY - drag.startY) / zoom;
+      setStickyNotes(notes => notes.map(n =>
+        n.id === drag.id ? { ...n, x: drag.noteX + dx, y: drag.noteY + dy } : n
+      ));
+    };
+    const onUp = () => { draggingNoteRef.current = null; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, [zoom]);
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.08 : 0.08;
+    setZoom(z => Math.min(3, Math.max(0.25, +(z + delta).toFixed(2))));
+  };
+
+  const fitToScreen = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const startNoteDrag = (e, noteId) => {
+    e.stopPropagation();
+    const note = stickyNotes.find(n => n.id === noteId);
+    if (!note) return;
+    draggingNoteRef.current = {
+      id: noteId, startX: e.clientX, startY: e.clientY, noteX: note.x, noteY: note.y
+    };
+  };
+
+  const deleteStickyNote = (id) => {
+    setStickyNotes(notes => notes.filter(n => n.id !== id));
+  };
+
+  const duplicateStickyNote = (note) => {
+    setStickyNotes(notes => [...notes, {
+      ...note, id: Date.now(), x: note.x + 20, y: note.y + 20
+    }]);
+  };
+
+  const addLayer = () => {
+    const id = Date.now();
+    setLayers(l => [...l, { id, name: `Layer ${l.length}`, visible: true, locked: false, opacity: 100 }]);
+    setActiveLayer(id);
+  };
+
+  const toggleLayerVisibility = (id) => {
+    setLayers(l => l.map(layer => layer.id === id ? { ...layer, visible: !layer.visible } : layer));
+  };
+
+  const toggleLayerLock = (id) => {
+    setLayers(l => l.map(layer => layer.id === id ? { ...layer, locked: !layer.locked } : layer));
+  };
+
+  const applyTemplate = (template) => {
+    setBgColor(template.bg);
+    setShowGrid(template.grid);
+    if (ctx && canvasRef.current) {
+      drawBackground(bgCtx, canvasRef.current.width, canvasRef.current.height);
+      saveHistory();
+    }
+  };
+
+  const formatTime = (secs) => {
+    const m = Math.floor(secs / 60).toString().padStart(2, "0");
+    const s = (secs % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
 
   const loadUserProjects = async () => {
     if (!user) return;
@@ -332,33 +471,84 @@ export default function Whiteboard({ onBack, user, initialProject }) {
   };
 
   const insertChart = (chartType) => {
-    // Placeholder chart - you can enhance this
-    const x = 100;
-    const y = 100;
-    const w = 300;
-    const h = 200;
-    
+    if (!ctx) return;
+    const x = 120;
+    const y = 120;
+    const w = 320;
+    const h = 220;
+
     ctx.fillStyle = "#f8fafc";
     ctx.fillRect(x, y, w, h);
     ctx.strokeStyle = currentColor;
     ctx.lineWidth = 2;
     ctx.strokeRect(x, y, w, h);
-    
-    // Simple bar chart visualization
+
     if (chartType.id === "bar-chart") {
       const bars = [0.6, 0.8, 0.5, 0.9, 0.7];
       const barWidth = w / (bars.length * 2);
       bars.forEach((height, i) => {
         const barX = x + i * barWidth * 2 + barWidth / 2;
-        const barHeight = height * (h - 40);
+        const barHeight = height * (h - 50);
         ctx.fillStyle = currentColor;
-        ctx.fillRect(barX, y + h - barHeight - 20, barWidth, barHeight);
+        ctx.fillRect(barX, y + h - barHeight - 30, barWidth, barHeight);
+      });
+    } else if (chartType.id === "line-chart") {
+      const points = [0.5, 0.7, 0.4, 0.9, 0.6, 0.8];
+      ctx.strokeStyle = currentColor;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      points.forEach((val, i) => {
+        const px = x + 30 + (i * (w - 60)) / (points.length - 1);
+        const py = y + h - 30 - val * (h - 60);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      });
+      ctx.stroke();
+      points.forEach((val, i) => {
+        const px = x + 30 + (i * (w - 60)) / (points.length - 1);
+        const py = y + h - 30 - val * (h - 60);
+        ctx.fillStyle = currentColor;
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    } else if (chartType.id === "pie-chart") {
+      const cx = x + w / 2;
+      const cy = y + h / 2 + 10;
+      const r = Math.min(w, h) / 3;
+      const slices = [0.35, 0.25, 0.2, 0.2];
+      const colors = [currentColor, "#e1496d", "#8b5cf6", "#f59e0b"];
+      let angle = -Math.PI / 2;
+      slices.forEach((slice, i) => {
+        ctx.fillStyle = colors[i];
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, angle, angle + slice * Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+        angle += slice * Math.PI * 2;
+      });
+    } else if (chartType.id === "donut-chart") {
+      const cx = x + w / 2;
+      const cy = y + h / 2 + 10;
+      const r = Math.min(w, h) / 3;
+      const slices = [0.4, 0.3, 0.3];
+      const colors = [currentColor, "#e1496d", "#8b5cf6"];
+      let angle = -Math.PI / 2;
+      slices.forEach((slice, i) => {
+        ctx.fillStyle = colors[i];
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, angle, angle + slice * Math.PI * 2);
+        ctx.arc(cx, cy, r * 0.55, angle + slice * Math.PI * 2, angle, true);
+        ctx.closePath();
+        ctx.fill();
+        angle += slice * Math.PI * 2;
       });
     }
-    
+
     ctx.fillStyle = "#64748b";
     ctx.font = "14px Arial";
-    ctx.fillText(chartType.name, x + 10, y + 20);
+    ctx.fillText(chartType.name, x + 12, y + 22);
     saveHistory();
   };
 
@@ -549,24 +739,37 @@ export default function Whiteboard({ onBack, user, initialProject }) {
   };
 
   const getPos = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect();
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+    const clientY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
     return {
-      x: (e.clientX || e.touches?.[0]?.clientX) - rect.left,
-      y: (e.clientY || e.touches?.[0]?.clientY) - rect.top
+      x: (clientX - rect.left) * (canvas.width / rect.width),
+      y: (clientY - rect.top) * (canvas.height / rect.height)
     };
   };
 
+  const getScreenPos = (e) => ({
+    x: e.clientX ?? e.touches?.[0]?.clientX ?? 0,
+    y: e.clientY ?? e.touches?.[0]?.clientY ?? 0
+  });
+
   const startDrawing = (e) => {
+    if (e.button === 2) return;
     const pos = getPos(e);
-    
+
     if (currentTool === "pan" || e.button === 1) {
       setIsPanning(true);
-      setPanStart(pos);
+      setPanStart(getScreenPos(e));
+      return;
+    }
+
+    if (currentTool === "laser") {
+      setLaserPos(pos);
       return;
     }
 
     if (currentTool === "select") {
-      // Selection logic
       setSelectionBox({ x: pos.x, y: pos.y, w: 0, h: 0 });
       return;
     }
@@ -582,6 +785,7 @@ export default function Whiteboard({ onBack, user, initialProject }) {
     }
 
     if (currentTool === "image") {
+      imageClickPosRef.current = pos;
       fileInputRef.current?.click();
       return;
     }
@@ -598,15 +802,56 @@ export default function Whiteboard({ onBack, user, initialProject }) {
   const draw = (e) => {
     const pos = getPos(e);
 
-    if (isPanning) {
-      const dx = pos.x - panStart.x;
-      const dy = pos.y - panStart.y;
-      setPan({ x: pan.x + dx, y: pan.y + dy });
-      setPanStart(pos);
+    if (isPanning && panStart) {
+      const screen = getScreenPos(e);
+      setPan(p => ({
+        x: p.x + screen.x - panStart.x,
+        y: p.y + screen.y - panStart.y
+      }));
+      setPanStart(screen);
       return;
     }
 
-    if (!isDrawing) return;
+    if (currentTool === "laser") {
+      setLaserPos(pos);
+      if (overlayCtx && overlayRef.current) {
+        overlayCtx.clearRect(0, 0, overlayRef.current.width, overlayRef.current.height);
+        const grd = overlayCtx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 24);
+        grd.addColorStop(0, "rgba(255,50,50,0.9)");
+        grd.addColorStop(0.4, "rgba(255,50,50,0.3)");
+        grd.addColorStop(1, "rgba(255,50,50,0)");
+        overlayCtx.fillStyle = grd;
+        overlayCtx.beginPath();
+        overlayCtx.arc(pos.x, pos.y, 24, 0, Math.PI * 2);
+        overlayCtx.fill();
+        overlayCtx.fillStyle = "#ff2222";
+        overlayCtx.beginPath();
+        overlayCtx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+        overlayCtx.fill();
+      }
+      return;
+    }
+
+    if (currentTool === "select" && selectionBox) {
+      setSelectionBox({
+        ...selectionBox,
+        w: pos.x - selectionBox.x,
+        h: pos.y - selectionBox.y
+      });
+      if (overlayCtx && overlayRef.current) {
+        overlayCtx.clearRect(0, 0, overlayRef.current.width, overlayRef.current.height);
+        overlayCtx.strokeStyle = THEME.wine;
+        overlayCtx.lineWidth = 1.5;
+        overlayCtx.setLineDash([6, 4]);
+        overlayCtx.fillStyle = "rgba(148,41,69,0.08)";
+        overlayCtx.fillRect(selectionBox.x, selectionBox.y, pos.x - selectionBox.x, pos.y - selectionBox.y);
+        overlayCtx.strokeRect(selectionBox.x, selectionBox.y, pos.x - selectionBox.x, pos.y - selectionBox.y);
+        overlayCtx.setLineDash([]);
+      }
+      return;
+    }
+
+    if (!isDrawing || !startPos) return;
 
     overlayCtx.clearRect(0, 0, overlayRef.current.width, overlayRef.current.height);
 
@@ -665,6 +910,23 @@ export default function Whiteboard({ onBack, user, initialProject }) {
   const stopDrawing = (e) => {
     if (isPanning) {
       setIsPanning(false);
+      setPanStart(null);
+      return;
+    }
+
+    if (currentTool === "laser") {
+      setLaserPos(null);
+      if (overlayCtx && overlayRef.current) {
+        overlayCtx.clearRect(0, 0, overlayRef.current.width, overlayRef.current.height);
+      }
+      return;
+    }
+
+    if (currentTool === "select") {
+      if (overlayCtx && overlayRef.current) {
+        overlayCtx.clearRect(0, 0, overlayRef.current.width, overlayRef.current.height);
+      }
+      setSelectionBox(null);
       return;
     }
 
@@ -965,30 +1227,30 @@ export default function Whiteboard({ onBack, user, initialProject }) {
       x: pos.x,
       y: pos.y,
       text: "Double-click to edit",
-      color: "#fef3c7"
+      color: stickyNoteColor
     }]);
   };
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file || !ctx) return;
+    e.target.value = "";
 
+    const pos = imageClickPosRef.current || { x: 80, y: 80 };
     const reader = new FileReader();
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        const maxW = 400;
-        const maxH = 400;
+        const maxW = 420;
+        const maxH = 420;
         let w = img.width;
         let h = img.height;
-        
         if (w > maxW || h > maxH) {
           const ratio = Math.min(maxW / w, maxH / h);
           w *= ratio;
           h *= ratio;
         }
-        
-        ctx.drawImage(img, 50, 50, w, h);
+        ctx.drawImage(img, pos.x, pos.y, w, h);
         saveHistory();
       };
       img.src = event.target.result;
@@ -1006,9 +1268,28 @@ export default function Whiteboard({ onBack, user, initialProject }) {
   };
 
   const exportImage = (format = "png") => {
+    const canvas = canvasRef.current;
+    const bg = bgRef.current;
+    if (!canvas || !bg) return;
+
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width = canvas.width;
+    exportCanvas.height = canvas.height;
+    const exportCtx = exportCanvas.getContext("2d");
+    exportCtx.drawImage(bg, 0, 0);
+    exportCtx.drawImage(canvas, 0, 0);
+
+    stickyNotes.forEach(note => {
+      exportCtx.fillStyle = note.color;
+      exportCtx.fillRect(note.x, note.y, 180, 100);
+      exportCtx.fillStyle = "#1e293b";
+      exportCtx.font = "13px Comic Sans MS";
+      exportCtx.fillText(note.text.slice(0, 40), note.x + 12, note.y + 30);
+    });
+
     const link = document.createElement("a");
     link.download = `${projectTitle}.${format}`;
-    link.href = canvasRef.current.toDataURL(`image/${format}`);
+    link.href = exportCanvas.toDataURL(`image/${format}`);
     link.click();
     setShowExportMenu(false);
   };
@@ -1046,29 +1327,47 @@ export default function Whiteboard({ onBack, user, initialProject }) {
         body: JSON.stringify(projectData)
       });
 
-      if (res.ok) alert("âœ… Saved!");
-      else alert("âŒ Failed to save");
+      if (res.ok) alert("Saved successfully!");
+      else alert("Failed to save");
     } catch (err) {
-      alert("âŒ Error saving");
+      alert("Error saving project");
     }
   };
+
+  const allTools = Object.values(toolGroups).flat();
+  const toolKeyMap = Object.fromEntries(allTools.map(t => [t.key.toLowerCase(), t.id]));
 
   // Keyboard shortcuts
   useEffect(() => {
     const handleKey = (e) => {
+      if (textInput) return;
+      const key = e.key.toLowerCase();
+
       if (e.ctrlKey || e.metaKey) {
-        if (e.key === "z") { e.preventDefault(); undo(); }
-        if (e.key === "y") { e.preventDefault(); redo(); }
-        if (e.key === "s") { e.preventDefault(); saveProject(); }
+        if (key === "z") { e.preventDefault(); undo(); return; }
+        if (key === "y") { e.preventDefault(); redo(); return; }
+        if (key === "s") { e.preventDefault(); saveProject(); return; }
       }
-      if (e.key === " " && !textInput) {
+
+      if (key === " " && !textInput) {
         e.preventDefault();
-        setCurrentTool("pan");
+        if (currentTool !== "pan") {
+          previousToolRef.current = currentTool;
+          setCurrentTool("pan");
+        }
+        return;
+      }
+
+      if (toolKeyMap[key]) {
+        e.preventDefault();
+        setCurrentTool(toolKeyMap[key]);
       }
     };
 
     const handleKeyUp = (e) => {
-      if (e.key === " " && currentTool === "pan") setCurrentTool("pen");
+      if (e.key === " " && currentTool === "pan") {
+        setCurrentTool(previousToolRef.current || "pen");
+      }
     };
 
     window.addEventListener("keydown", handleKey);
@@ -1188,7 +1487,7 @@ export default function Whiteboard({ onBack, user, initialProject }) {
             <div style={{ width: "40px", height: "1px", background: "#e0e0e0", margin: "4px 0" }} />
             
             {/* Settings Button */}
-            <button title="Settings"
+            <button title="Settings" onClick={() => setShowSettings(true)}
               style={{
                 width: "56px", padding: "12px 8px",
                 background: "transparent", border: "2px solid transparent",
@@ -1269,6 +1568,171 @@ export default function Whiteboard({ onBack, user, initialProject }) {
 
               {/* Panel Content */}
               <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+
+            {/* TEMPLATES TAB */}
+            {sidebarTab === "templates" && (
+              <div>
+                <div style={{
+                  fontSize: "11px", fontWeight: 700, color: "#64748b",
+                  textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px"
+                }}>Board Templates</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
+                  {templates.map(t => (
+                    <button key={t.id} onClick={() => applyTemplate(t)}
+                      style={{
+                        padding: "12px", background: t.bg, border: "2px solid #e2e8f0",
+                        borderRadius: "12px", cursor: "pointer", textAlign: "left",
+                        transition: "all 0.2s", minHeight: "80px", position: "relative", overflow: "hidden"
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = THEME.wine}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = "#e2e8f0"}
+                    >
+                      {t.grid && (
+                        <div style={{
+                          position: "absolute", inset: 0, opacity: 0.15,
+                          backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)",
+                          backgroundSize: "16px 16px"
+                        }} />
+                      )}
+                      <div style={{
+                        fontSize: "12px", fontWeight: 700, color: t.bg === "#1a0f14" || t.bg === "#0f172a" ? "#fff" : "#1e293b",
+                        position: "relative"
+                      }}>{t.name}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TEXT TAB */}
+            {sidebarTab === "text" && (
+              <div>
+                <div style={{
+                  fontSize: "11px", fontWeight: 700, color: "#64748b",
+                  textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px"
+                }}>Font</div>
+                <select value={fontFamily} onChange={e => setFontFamily(e.target.value)}
+                  style={{
+                    width: "100%", padding: "10px", borderRadius: "8px",
+                    border: "1px solid #e2e8f0", fontSize: "13px", marginBottom: "16px", outline: "none"
+                  }}>
+                  {fonts.map(f => <option key={f} value={f}>{f}</option>)}
+                </select>
+
+                <div style={{
+                  fontSize: "11px", fontWeight: 700, color: "#64748b",
+                  textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px"
+                }}>Size: {fontSize}px</div>
+                <input type="range" min="12" max="96" value={fontSize}
+                  onChange={e => setFontSize(Number(e.target.value))}
+                  style={{ width: "100%", marginBottom: "16px" }} />
+
+                <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+                  <button onClick={() => setTextBold(!textBold)}
+                    style={{
+                      flex: 1, padding: "10px", borderRadius: "8px", cursor: "pointer",
+                      background: textBold ? THEME.wine : "#f8fafc",
+                      color: textBold ? "#fff" : "#64748b",
+                      border: textBold ? "none" : "1px solid #e2e8f0",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                      fontWeight: 600, fontSize: "13px"
+                    }}>
+                    <Bold size={16} /> Bold
+                  </button>
+                  <button onClick={() => setTextItalic(!textItalic)}
+                    style={{
+                      flex: 1, padding: "10px", borderRadius: "8px", cursor: "pointer",
+                      background: textItalic ? THEME.wine : "#f8fafc",
+                      color: textItalic ? "#fff" : "#64748b",
+                      border: textItalic ? "none" : "1px solid #e2e8f0",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
+                      fontWeight: 600, fontSize: "13px"
+                    }}>
+                    <Italic size={16} /> Italic
+                  </button>
+                </div>
+
+                <div style={{
+                  fontSize: "11px", fontWeight: 700, color: "#64748b",
+                  textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px"
+                }}>Text Color</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px", marginBottom: "16px" }}>
+                  {colorPalette.slice(0, 15).map(c => (
+                    <button key={c} onClick={() => setCurrentColor(c)}
+                      style={{
+                        width: "100%", aspectRatio: "1", borderRadius: "8px", background: c,
+                        border: currentColor === c ? `3px solid ${THEME.wine}` : "1px solid #e2e8f0",
+                        cursor: "pointer"
+                      }} />
+                  ))}
+                </div>
+
+                <button onClick={() => setCurrentTool("text")}
+                  style={{
+                    width: "100%", padding: "14px", borderRadius: "10px", cursor: "pointer",
+                    background: THEME.btn.primaryBg, color: "#fff", border: "none",
+                    fontWeight: 700, fontSize: "13px", display: "flex", alignItems: "center",
+                    justifyContent: "center", gap: "8px"
+                  }}>
+                  <Type size={18} /> Click Canvas to Add Text
+                </button>
+
+                <div style={{
+                  marginTop: "16px", padding: "20px", background: "#f8fafc", borderRadius: "10px",
+                  border: "1px solid #e2e8f0", textAlign: "center",
+                  fontFamily: fontFamily, fontSize: `${Math.min(fontSize, 28)}px`,
+                  fontWeight: textBold ? "bold" : "normal",
+                  fontStyle: textItalic ? "italic" : "normal",
+                  color: currentColor
+                }}>
+                  Preview Text
+                </div>
+              </div>
+            )}
+
+            {/* UPLOADS TAB */}
+            {sidebarTab === "uploads" && (
+              <div>
+                <button onClick={() => { setCurrentTool("image"); fileInputRef.current?.click(); }}
+                  style={{
+                    width: "100%", padding: "32px 16px", borderRadius: "12px", cursor: "pointer",
+                    background: "#f8fafc", border: "2px dashed #cbd5e1",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: "10px",
+                    transition: "all 0.2s", marginBottom: "20px"
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = THEME.wine; e.currentTarget.style.background = "#fff"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "#cbd5e1"; e.currentTarget.style.background = "#f8fafc"; }}
+                >
+                  <Upload size={32} color={THEME.wine} />
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: "#1e293b" }}>Upload Image</div>
+                  <div style={{ fontSize: "11px", color: "#94a3b8" }}>PNG, JPG, GIF, WebP</div>
+                </button>
+
+                <div style={{
+                  fontSize: "11px", fontWeight: 700, color: "#64748b",
+                  textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px"
+                }}>Quick Insert</div>
+                {elementsLibrary.charts.map(chart => {
+                  const IconComponent = chart.Icon;
+                  return (
+                    <button key={chart.id} onClick={() => insertChart(chart)}
+                      style={{
+                        width: "100%", padding: "12px", marginBottom: "8px",
+                        background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "10px",
+                        cursor: "pointer", display: "flex", alignItems: "center", gap: "12px",
+                        transition: "all 0.2s", textAlign: "left"
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.borderColor = THEME.wine}
+                      onMouseLeave={e => e.currentTarget.style.borderColor = "#e2e8f0"}
+                    >
+                      <IconComponent size={22} color={chart.color} />
+                      <span style={{ fontSize: "13px", fontWeight: 600, color: "#1e293b" }}>{chart.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             {/* ELEMENTS TAB */}
             {sidebarTab === "elements" && (
               <div>
@@ -1527,12 +1991,60 @@ export default function Whiteboard({ onBack, user, initialProject }) {
         </div>
 
         {/* Canvas Area */}
-        <div style={{ flex: 1, position: "relative", overflow: "hidden", background: "#e8eaed" }}>
+        <div style={{ flex: 1, position: "relative", overflow: "hidden", background: "#e8eaed" }}
+          onWheel={handleWheel}>
           <input type="file" ref={fileInputRef} onChange={handleImageUpload}
             accept="image/*" style={{ display: "none" }} />
+
+          {/* Floating Quick Toolbar */}
+          <div style={{
+            position: "absolute", top: "16px", left: "50%", transform: "translateX(-50%)",
+            zIndex: 20, background: "#fff", borderRadius: "14px",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.12)", padding: "6px 8px",
+            display: "flex", alignItems: "center", gap: "4px", border: "1px solid #e2e8f0"
+          }}>
+            {toolGroups.draw.map(tool => {
+              const IconComponent = tool.Icon;
+              const active = currentTool === tool.id;
+              return (
+                <button key={tool.id} onClick={() => setCurrentTool(tool.id)}
+                  title={`${tool.name} (${tool.key})`}
+                  style={{
+                    width: "38px", height: "38px", borderRadius: "10px", border: "none",
+                    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                    background: active ? THEME.wine : "transparent",
+                    transition: "all 0.15s"
+                  }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = "#f1f5f9"; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
+                >
+                  <IconComponent size={18} color={active ? "#fff" : tool.color} strokeWidth={2} />
+                </button>
+              );
+            })}
+            <div style={{ width: "1px", height: "24px", background: "#e2e8f0", margin: "0 4px" }} />
+            {toolGroups.shapes.slice(0, 4).map(tool => {
+              const IconComponent = tool.Icon;
+              const active = currentTool === tool.id;
+              return (
+                <button key={tool.id} onClick={() => setCurrentTool(tool.id)}
+                  title={`${tool.name} (${tool.key})`}
+                  style={{
+                    width: "38px", height: "38px", borderRadius: "10px", border: "none",
+                    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                    background: active ? THEME.wine : "transparent", transition: "all 0.15s"
+                  }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = "#f1f5f9"; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
+                >
+                  <IconComponent size={18} color={active ? "#fff" : tool.color} strokeWidth={2} />
+                </button>
+              );
+            })}
+          </div>
           
           {/* Active Tool Indicator */}
-          {currentTool && currentTool !== "select" && (
+          {currentTool && currentTool !== "select" && currentTool !== "pan" && (
             <div style={{
               position: "absolute", top: "20px", left: "20px", zIndex: 10,
               background: "#fff", padding: "10px 16px", borderRadius: "12px",
@@ -1562,10 +2074,13 @@ export default function Whiteboard({ onBack, user, initialProject }) {
             </div>
           )}
           
-          <div style={{
+          <div ref={canvasContainerRef} style={{
             position: "absolute", inset: 20,
             boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-            borderRadius: "12px", overflow: "hidden"
+            borderRadius: "12px", overflow: "hidden",
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: "center center",
+            transition: isPanning ? "none" : "transform 0.05s ease-out"
           }}>
             <canvas ref={bgRef} style={{ position: "absolute", top: 0, left: 0 }} />
             <canvas ref={canvasRef}
@@ -1578,7 +2093,10 @@ export default function Whiteboard({ onBack, user, initialProject }) {
               onTouchEnd={stopDrawing}
               style={{
                 position: "absolute", top: 0, left: 0,
-                cursor: currentTool === "pan" ? "grab" : "crosshair"
+                cursor: currentTool === "pan" ? (isPanning ? "grabbing" : "grab")
+                  : currentTool === "text" ? "text"
+                  : currentTool === "eraser" ? "cell"
+                  : "crosshair"
               }}
             />
             <canvas ref={overlayRef}
@@ -1588,14 +2106,17 @@ export default function Whiteboard({ onBack, user, initialProject }) {
             {/* Sticky Notes */}
             {stickyNotes.map(note => (
               <div key={note.id}
+                onMouseDown={e => startNoteDrag(e, note.id)}
                 style={{
                   position: "absolute", left: note.x, top: note.y,
-                  background: note.color, padding: "12px", borderRadius: "8px",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)", minWidth: "150px",
-                  maxWidth: "200px", fontSize: "13px", fontFamily: "'Comic Sans MS', cursive",
-                  transform: "rotate(-2deg)", cursor: "move"
+                  background: note.color, padding: "12px 12px 28px", borderRadius: "4px",
+                  boxShadow: "0 3px 12px rgba(0,0,0,0.18)", minWidth: "160px",
+                  maxWidth: "220px", fontSize: "13px", fontFamily: "'Segoe UI', sans-serif",
+                  transform: "rotate(-1deg)", cursor: "move", userSelect: "none",
+                  borderTop: "4px solid rgba(0,0,0,0.08)"
                 }}
-                onDoubleClick={() => {
+                onDoubleClick={e => {
+                  e.stopPropagation();
                   const text = prompt("Edit note:", note.text);
                   if (text !== null) {
                     setStickyNotes(stickyNotes.map(n =>
@@ -1605,6 +2126,25 @@ export default function Whiteboard({ onBack, user, initialProject }) {
                 }}
               >
                 {note.text}
+                <div style={{
+                  position: "absolute", bottom: "6px", right: "6px",
+                  display: "flex", gap: "4px"
+                }}>
+                  <button onClick={e => { e.stopPropagation(); duplicateStickyNote(note); }}
+                    style={{
+                      background: "rgba(0,0,0,0.06)", border: "none", borderRadius: "4px",
+                      padding: "2px 5px", cursor: "pointer", fontSize: "10px"
+                    }} title="Duplicate">
+                    <Copy size={10} />
+                  </button>
+                  <button onClick={e => { e.stopPropagation(); deleteStickyNote(note.id); }}
+                    style={{
+                      background: "rgba(0,0,0,0.06)", border: "none", borderRadius: "4px",
+                      padding: "2px 5px", cursor: "pointer", fontSize: "10px", color: "#dc2626"
+                    }} title="Delete">
+                    <X size={10} />
+                  </button>
+                </div>
               </div>
             ))}
 
@@ -1643,6 +2183,184 @@ export default function Whiteboard({ onBack, user, initialProject }) {
             )}
           </div>
         </div>
+
+        {/* Right Properties Panel */}
+        <div style={{
+          width: "260px", background: "#fff", borderLeft: "1px solid #e0e0e0",
+          display: "flex", flexDirection: "column", overflow: "hidden"
+        }}>
+          <div style={{
+            padding: "16px", borderBottom: "1px solid #e0e0e0",
+            fontSize: "14px", fontWeight: 700, color: "#1a1a1a",
+            display: "flex", alignItems: "center", gap: "8px"
+          }}>
+            <Palette size={18} color={THEME.wine} /> Properties
+          </div>
+
+          <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+            {/* Stroke Color */}
+            <div style={{
+              fontSize: "11px", fontWeight: 700, color: "#64748b",
+              textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px"
+            }}>Stroke Color</div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "6px", marginBottom: "16px" }}>
+              {colorPalette.map(c => (
+                <button key={c} onClick={() => setCurrentColor(c)}
+                  style={{
+                    width: "100%", aspectRatio: "1", borderRadius: "8px", background: c,
+                    border: currentColor === c ? `3px solid ${THEME.wine}` : "1px solid #e2e8f0",
+                    cursor: "pointer", transition: "transform 0.15s"
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.transform = "scale(1.1)"}
+                  onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                />
+              ))}
+            </div>
+
+            {/* Custom color */}
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+              <input type="color" value={currentColor} onChange={e => setCurrentColor(e.target.value)}
+                style={{ width: "36px", height: "36px", border: "none", borderRadius: "8px", cursor: "pointer", padding: 0 }} />
+              <span style={{ fontSize: "12px", color: "#64748b", fontFamily: "monospace" }}>{currentColor}</span>
+            </div>
+
+            {/* Stroke Width */}
+            <div style={{
+              fontSize: "11px", fontWeight: 700, color: "#64748b",
+              textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px"
+            }}>Stroke Width: {lineWidth}px</div>
+            <input type="range" min="1" max="40" value={lineWidth}
+              onChange={e => setLineWidth(Number(e.target.value))}
+              style={{ width: "100%", marginBottom: "16px" }} />
+
+            {/* Opacity */}
+            <div style={{
+              fontSize: "11px", fontWeight: 700, color: "#64748b",
+              textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px"
+            }}>Opacity: {opacity}%</div>
+            <input type="range" min="10" max="100" value={opacity}
+              onChange={e => setOpacity(Number(e.target.value))}
+              style={{ width: "100%", marginBottom: "16px" }} />
+
+            {/* Fill options for shapes */}
+            {["rectangle", "circle", "triangle", "star", "pentagon", "hexagon", "heart", "cloud"].includes(currentTool) && (
+              <>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <span style={{
+                    fontSize: "11px", fontWeight: 700, color: "#64748b",
+                    textTransform: "uppercase", letterSpacing: "0.05em"
+                  }}>Fill Shape</span>
+                  <button onClick={() => setShapeFilled(!shapeFilled)}
+                    style={{
+                      width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer",
+                      background: shapeFilled ? THEME.wine : "#e2e8f0", position: "relative", transition: "background 0.2s"
+                    }}>
+                    <div style={{
+                      width: "18px", height: "18px", borderRadius: "50%", background: "#fff",
+                      position: "absolute", top: "3px", left: shapeFilled ? "23px" : "3px", transition: "left 0.2s",
+                      boxShadow: "0 1px 3px rgba(0,0,0,0.2)"
+                    }} />
+                  </button>
+                </div>
+                {shapeFilled && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+                    <input type="color" value={fillColor} onChange={e => setFillColor(e.target.value)}
+                      style={{ width: "36px", height: "36px", border: "none", borderRadius: "8px", cursor: "pointer", padding: 0 }} />
+                    <span style={{ fontSize: "12px", color: "#64748b" }}>Fill color</span>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Sticky note colors */}
+            {currentTool === "sticky" && (
+              <>
+                <div style={{
+                  fontSize: "11px", fontWeight: 700, color: "#64748b",
+                  textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px"
+                }}>Note Color</div>
+                <div style={{ display: "flex", gap: "6px", marginBottom: "16px", flexWrap: "wrap" }}>
+                  {stickyNoteColors.map(c => (
+                    <button key={c} onClick={() => setStickyNoteColor(c)}
+                      style={{
+                        width: "32px", height: "32px", borderRadius: "6px", background: c,
+                        border: stickyNoteColor === c ? `3px solid ${THEME.wine}` : "2px solid #e2e8f0",
+                        cursor: "pointer"
+                      }} />
+                  ))}
+                </div>
+              </>
+            )}
+
+            <div style={{ height: "1px", background: "#e2e8f0", margin: "8px 0 16px" }} />
+
+            {/* Layers */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px"
+            }}>
+              <span style={{
+                fontSize: "11px", fontWeight: 700, color: "#64748b",
+                textTransform: "uppercase", letterSpacing: "0.05em",
+                display: "flex", alignItems: "center", gap: "6px"
+              }}>
+                <Layers size={14} /> Layers
+              </span>
+              <button onClick={addLayer} title="Add layer"
+                style={{
+                  background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px",
+                  padding: "4px 8px", cursor: "pointer", display: "flex", alignItems: "center"
+                }}>
+                <Plus size={14} color={THEME.wine} />
+              </button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "16px" }}>
+              {[...layers].reverse().map(layer => (
+                <div key={layer.id} onClick={() => setActiveLayer(layer.id)}
+                  style={{
+                    padding: "8px 10px", borderRadius: "8px", cursor: "pointer",
+                    background: activeLayer === layer.id ? "#fdf2f4" : "#f8fafc",
+                    border: activeLayer === layer.id ? `1px solid ${THEME.wine}` : "1px solid #e2e8f0",
+                    display: "flex", alignItems: "center", gap: "8px", transition: "all 0.15s"
+                  }}>
+                  <button onClick={e => { e.stopPropagation(); toggleLayerVisibility(layer.id); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+                    {layer.visible ? <Eye size={14} color="#64748b" /> : <EyeOff size={14} color="#cbd5e1" />}
+                  </button>
+                  <span style={{
+                    flex: 1, fontSize: "12px", fontWeight: activeLayer === layer.id ? 700 : 500,
+                    color: layer.visible ? "#1e293b" : "#94a3b8"
+                  }}>{layer.name}</span>
+                  <button onClick={e => { e.stopPropagation(); toggleLayerLock(layer.id); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+                    {layer.locked ? <Lock size={12} color="#94a3b8" /> : <Unlock size={12} color="#cbd5e1" />}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <button onClick={clearCanvas}
+                style={{
+                  padding: "10px", borderRadius: "8px", cursor: "pointer",
+                  background: "#fef2f2", border: "1px solid #fecaca", color: "#dc2626",
+                  fontWeight: 600, fontSize: "12px", display: "flex", alignItems: "center",
+                  justifyContent: "center", gap: "6px"
+                }}>
+                <Trash2 size={14} /> Clear Canvas
+              </button>
+              <button onClick={() => exportImage("png")}
+                style={{
+                  padding: "10px", borderRadius: "8px", cursor: "pointer",
+                  background: "#f8fafc", border: "1px solid #e2e8f0", color: "#1e293b",
+                  fontWeight: 600, fontSize: "12px", display: "flex", alignItems: "center",
+                  justifyContent: "center", gap: "6px"
+                }}>
+                <Download size={14} /> Export PNG
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Bottom Bar - Enhanced */}
@@ -1677,27 +2395,25 @@ export default function Whiteboard({ onBack, user, initialProject }) {
             />
           </div>
           <div style={{ width: "1px", height: "30px", background: "#e0e0e0" }} />
-          <button style={{
-            background: "none", border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", gap: "6px",
-            color: "#666", fontSize: "13px", fontWeight: 500,
-            padding: "6px 12px", borderRadius: "6px", transition: "all 0.2s"
-          }}
-            onMouseEnter={e => e.target.style.background = "#f5f5f5"}
-            onMouseLeave={e => e.target.style.background = "none"}
+          <button onClick={() => setShowNotes(!showNotes)}
+            style={{
+              background: showNotes ? "#fdf2f4" : "none", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: "6px",
+              color: showNotes ? THEME.wine : "#666", fontSize: "13px", fontWeight: 500,
+              padding: "6px 12px", borderRadius: "6px", transition: "all 0.2s"
+            }}
           >
             <FileEdit size={16} /> Notes
           </button>
-          <button style={{
-            background: "none", border: "none", cursor: "pointer",
-            display: "flex", alignItems: "center", gap: "6px",
-            color: "#666", fontSize: "13px", fontWeight: 500,
-            padding: "6px 12px", borderRadius: "6px", transition: "all 0.2s"
-          }}
-            onMouseEnter={e => e.target.style.background = "#f5f5f5"}
-            onMouseLeave={e => e.target.style.background = "none"}
+          <button onClick={() => setShowTimer(!showTimer)}
+            style={{
+              background: showTimer ? "#fdf2f4" : "none", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", gap: "6px",
+              color: showTimer ? THEME.wine : "#666", fontSize: "13px", fontWeight: 500,
+              padding: "6px 12px", borderRadius: "6px", transition: "all 0.2s"
+            }}
           >
-            <Clock size={16} /> Timer
+            <Clock size={16} /> {timerRunning ? formatTime(timerSeconds) : "Timer"}
           </button>
         </div>
 
@@ -1713,7 +2429,8 @@ export default function Whiteboard({ onBack, user, initialProject }) {
                 padding: "6px 10px", borderRadius: "6px", cursor: historyStep <= 0 ? "not-allowed" : "pointer",
                 fontSize: "13px", color: historyStep <= 0 ? "#cbd5e1" : "#64748b",
                 fontWeight: 600, transition: "all 0.2s",
-                opacity: historyStep <= 0 ? 0.5 : 1
+                opacity: historyStep <= 0 ? 0.5 : 1,
+                display: "flex", alignItems: "center", gap: "4px"
               }}
               onMouseEnter={e => {
                 if (historyStep > 0) e.target.style.background = "#f8fafc";
@@ -1722,7 +2439,7 @@ export default function Whiteboard({ onBack, user, initialProject }) {
                 if (historyStep > 0) e.target.style.background = "#fff";
               }}
             >
-              â†¶ Undo
+              <RotateCcw size={14} /> Undo
             </button>
             <button onClick={redo} disabled={historyStep >= history.length - 1}
               title="Redo (Ctrl+Y)"
@@ -1732,16 +2449,17 @@ export default function Whiteboard({ onBack, user, initialProject }) {
                 padding: "6px 10px", borderRadius: "6px", cursor: historyStep >= history.length - 1 ? "not-allowed" : "pointer",
                 fontSize: "13px", color: historyStep >= history.length - 1 ? "#cbd5e1" : "#64748b",
                 fontWeight: 600, transition: "all 0.2s",
-                opacity: historyStep >= history.length - 1 ? 0.5 : 1
+                opacity: historyStep >= history.length - 1 ? 0.5 : 1,
+                display: "flex", alignItems: "center", gap: "4px"
               }}
               onMouseEnter={e => {
-                if (historyStep < history.length - 1) e.target.style.background = "#f8fafc";
+                if (historyStep < history.length - 1) e.currentTarget.style.background = "#f8fafc";
               }}
               onMouseLeave={e => {
-                if (historyStep < history.length - 1) e.target.style.background = "#fff";
+                if (historyStep < history.length - 1) e.currentTarget.style.background = "#fff";
               }}
             >
-              Redo â†·
+              Redo <RotateCw size={14} />
             </button>
           </div>
 
@@ -1761,7 +2479,7 @@ export default function Whiteboard({ onBack, user, initialProject }) {
             >
               <ZoomOut size={16} color="#64748b" />
             </button>
-          <input type="range" min="10" max="200" value={zoom * 100}
+          <input type="range" min="25" max="300" value={zoom * 100}
             onChange={e => setZoom(Number(e.target.value) / 100)}
             style={{
               width: "100px", cursor: "pointer",
@@ -1809,6 +2527,18 @@ export default function Whiteboard({ onBack, user, initialProject }) {
           >
             <Grid3x3 size={16} color={showGrid ? "#942945" : "#64748b"} />
           </button>
+          <button onClick={fitToScreen} title="Fit to screen"
+            style={{
+              background: "none", border: "1px solid #e0e0e0",
+              padding: "6px", borderRadius: "6px", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              transition: "all 0.2s"
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
+            onMouseLeave={e => e.currentTarget.style.background = "none"}
+          >
+            <Maximize2 size={16} color="#64748b" />
+          </button>
           <button onClick={() => exportImage("png")}
             style={{
               background: "none", border: "none", cursor: "pointer",
@@ -1816,26 +2546,192 @@ export default function Whiteboard({ onBack, user, initialProject }) {
               display: "flex", alignItems: "center", justifyContent: "center",
               borderRadius: "6px", transition: "all 0.2s"
             }}
-            title="Export"
-            onMouseEnter={e => e.target.style.background = "#f5f5f5"}
-            onMouseLeave={e => e.target.style.background = "none"}
+            title="Export PNG"
+            onMouseEnter={e => e.currentTarget.style.background = "#f5f5f5"}
+            onMouseLeave={e => e.currentTarget.style.background = "none"}
           >
-            <Maximize size={16} color="#64748b" />
+            <Download size={16} color="#64748b" />
           </button>
-          <button style={{
-            background: "none", border: "none", cursor: "pointer",
-            padding: "6px", color: "#666",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            borderRadius: "6px", transition: "all 0.2s"
-          }}
-            title="Help"
-            onMouseEnter={e => e.target.style.background = "#f5f5f5"}
-            onMouseLeave={e => e.target.style.background = "none"}
+          <button onClick={() => setShowHelp(true)}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              padding: "6px", color: "#666",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              borderRadius: "6px", transition: "all 0.2s"
+            }}
+            title="Help & Shortcuts"
+            onMouseEnter={e => e.currentTarget.style.background = "#f5f5f5"}
+            onMouseLeave={e => e.currentTarget.style.background = "none"}
           >
             <HelpCircle size={16} color="#64748b" />
           </button>
         </div>
       </div>
     </div>
+
+      {/* Board Notes Panel */}
+      {showNotes && (
+        <div style={{
+          position: "fixed", bottom: "72px", left: "372px", width: "320px",
+          background: "#fff", borderRadius: "12px", boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+          border: "1px solid #e2e8f0", zIndex: 100, overflow: "hidden"
+        }}>
+          <div style={{
+            padding: "12px 16px", borderBottom: "1px solid #e2e8f0",
+            display: "flex", alignItems: "center", justifyContent: "space-between"
+          }}>
+            <span style={{ fontWeight: 700, fontSize: "14px", color: "#1e293b" }}>Board Notes</span>
+            <button onClick={() => setShowNotes(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+              <X size={16} color="#64748b" />
+            </button>
+          </div>
+          <textarea value={boardNotes} onChange={e => setBoardNotes(e.target.value)}
+            placeholder="Jot down ideas, agenda items, or meeting notes..."
+            style={{
+              width: "100%", height: "180px", border: "none", padding: "16px",
+              fontSize: "13px", resize: "none", outline: "none", fontFamily: "inherit",
+              lineHeight: 1.6, boxSizing: "border-box"
+            }} />
+        </div>
+      )}
+
+      {/* Timer Panel */}
+      {showTimer && (
+        <div style={{
+          position: "fixed", bottom: "72px", left: "372px", width: "280px",
+          background: "#fff", borderRadius: "12px", boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+          border: "1px solid #e2e8f0", zIndex: 100, padding: "24px", textAlign: "center"
+        }}>
+          <div style={{
+            fontSize: "48px", fontWeight: 800, color: THEME.wine,
+            fontFamily: "monospace", marginBottom: "16px", letterSpacing: "2px"
+          }}>{formatTime(timerSeconds)}</div>
+          <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+            <button onClick={() => setTimerRunning(!timerRunning)}
+              style={{
+                padding: "10px 24px", borderRadius: "8px", border: "none", cursor: "pointer",
+                background: timerRunning ? "#fef2f2" : THEME.btn.primaryBg,
+                color: timerRunning ? "#dc2626" : "#fff", fontWeight: 700, fontSize: "13px"
+              }}>
+              {timerRunning ? "Pause" : "Start"}
+            </button>
+            <button onClick={() => { setTimerSeconds(0); setTimerRunning(false); }}
+              style={{
+                padding: "10px 16px", borderRadius: "8px", cursor: "pointer",
+                background: "#f8fafc", border: "1px solid #e2e8f0",
+                color: "#64748b", fontWeight: 600, fontSize: "13px"
+              }}>
+              Reset
+            </button>
+            <button onClick={() => setShowTimer(false)}
+              style={{
+                padding: "10px", borderRadius: "8px", cursor: "pointer",
+                background: "#f8fafc", border: "1px solid #e2e8f0"
+              }}>
+              <X size={16} color="#64748b" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200
+        }} onClick={() => setShowSettings(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: "#fff", borderRadius: "16px", width: "400px",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden"
+          }}>
+            <div style={{
+              padding: "20px 24px", borderBottom: "1px solid #e2e8f0",
+              display: "flex", alignItems: "center", justifyContent: "space-between"
+            }}>
+              <span style={{ fontWeight: 700, fontSize: "16px" }}>Board Settings</span>
+              <button onClick={() => setShowSettings(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                <X size={18} color="#64748b" />
+              </button>
+            </div>
+            <div style={{ padding: "24px" }}>
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{ fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>
+                  Background Color
+                </label>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)}
+                    style={{ width: "40px", height: "40px", border: "none", borderRadius: "8px", cursor: "pointer" }} />
+                  <span style={{ fontSize: "13px", color: "#64748b", fontFamily: "monospace" }}>{bgColor}</span>
+                </div>
+              </div>
+              <div style={{ marginBottom: "20px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <label style={{ fontSize: "12px", fontWeight: 700, color: "#64748b", textTransform: "uppercase" }}>Show Grid</label>
+                  <button onClick={() => setShowGrid(!showGrid)}
+                    style={{
+                      width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer",
+                      background: showGrid ? THEME.wine : "#e2e8f0", position: "relative"
+                    }}>
+                    <div style={{
+                      width: "18px", height: "18px", borderRadius: "50%", background: "#fff",
+                      position: "absolute", top: "3px", left: showGrid ? "23px" : "3px", transition: "left 0.2s"
+                    }} />
+                  </button>
+                </div>
+                {showGrid && (
+                  <>
+                    <label style={{ fontSize: "12px", color: "#64748b" }}>Grid size: {gridSize}px</label>
+                    <input type="range" min="10" max="50" value={gridSize}
+                      onChange={e => setGridSize(Number(e.target.value))}
+                      style={{ width: "100%", marginTop: "6px" }} />
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Help Modal */}
+      {showHelp && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200
+        }} onClick={() => setShowHelp(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            background: "#fff", borderRadius: "16px", width: "440px", maxHeight: "80vh",
+            boxShadow: "0 20px 60px rgba(0,0,0,0.2)", overflow: "hidden"
+          }}>
+            <div style={{
+              padding: "20px 24px", borderBottom: "1px solid #e2e8f0",
+              display: "flex", alignItems: "center", justifyContent: "space-between"
+            }}>
+              <span style={{ fontWeight: 700, fontSize: "16px" }}>Keyboard Shortcuts</span>
+              <button onClick={() => setShowHelp(false)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                <X size={18} color="#64748b" />
+              </button>
+            </div>
+            <div style={{ padding: "20px 24px", overflowY: "auto", maxHeight: "60vh" }}>
+              {[
+                ["Ctrl + Z", "Undo"], ["Ctrl + Y", "Redo"], ["Ctrl + S", "Save project"],
+                ["Space (hold)", "Pan canvas"], ["Scroll wheel", "Zoom in/out"],
+                ...allTools.map(t => [t.key, t.name])
+              ].map(([key, action]) => (
+                <div key={key + action} style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "8px 0", borderBottom: "1px solid #f1f5f9"
+                }}>
+                  <span style={{ fontSize: "13px", color: "#1e293b" }}>{action}</span>
+                  <kbd style={{
+                    background: "#f1f5f9", padding: "3px 8px", borderRadius: "6px",
+                    fontSize: "11px", fontWeight: 700, color: "#64748b", fontFamily: "monospace"
+                  }}>{key}</kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+  </div>
   );
 }

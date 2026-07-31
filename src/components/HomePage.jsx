@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import THEME from "../theme";
-import ProjectsDetail from "./ProjectsDetail";
+import { 
+  Home, FolderOpen, Wrench, LayoutGrid, 
+  Settings, MoreHorizontal, Sparkles 
+} from "lucide-react";
 
 // Import generated preview images
 import videoPrev  from "../assets/images/video_preview.png";
@@ -8,6 +11,592 @@ import pptPrev    from "../assets/images/ppt_preview.png";
 import socialPrev from "../assets/images/social_preview.png";
 import imagePrev  from "../assets/images/image_preview.png";
 import aiPrev     from "../assets/images/ai_preview.png";
+
+// ─── ADVANCED MIND MAP GRAPH COMPONENT ───────────────────────────────────────
+function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSwitchTab }) {
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const animRef = useRef(null);
+  const nodesRef = useRef([]);
+  const edgesRef = useRef([]);
+  const particlesRef = useRef([]);
+  const timeRef = useRef(0);
+  const hoveredNodeRef = useRef(null);
+  const mouseRef = useRef({ x: -999, y: -999 });
+  const isDraggingRef = useRef(false);
+  const dragNodeRef = useRef(null);
+  const [hoveredNode, setHoveredNode] = useState(null);
+  const [selectedNode, setSelectedNode] = useState(null);
+  const [tooltip, setTooltip] = useState(null);
+  const [dimensions, setDimensions] = useState({ w: 900, h: 600 });
+  const [stats, setStats] = useState({ nodes: 0, edges: 0, active: 0 });
+
+  // Derive activity nodes ONLY from real project fields — zero hardcoded data
+  const getActivitiesForProject = (proj) => {
+    const acts = [];
+    // From tags (real data on the project)
+    if (proj.tags?.length > 0) {
+      proj.tags.slice(0, 2).forEach((tag, i) => {
+        const tagColors = ["#3b82f6","#10b981","#f59e0b","#ec4899","#8b5cf6","#06b6d4"];
+        acts.push({
+          label: tag,
+          color: tagColors[i % tagColors.length],
+        });
+      });
+    }
+    // From tool name
+    if (proj.tool && acts.length < 3) {
+      const toolColors = {
+        "Video Editor":"#ef4444","Presentations":"#3b82f6","Logo Maker":"#10b981",
+        "Whiteboard":"#a855f7","Image Editor":"#f59e0b","Documents":"#06b6d4",
+        "Social Studio":"#ec4899","AI Magic":"#8b5cf6","Slide Studio":"#3b82f6",
+      };
+      acts.push({
+        label: proj.tool,
+        color: toolColors[proj.tool] || proj.accent || "#94a3b8",
+      });
+    }
+    // From category
+    if (proj.category && acts.length < 3) {
+      acts.push({ label: proj.category, color: proj.accent || THEME.wine });
+    }
+    // From year
+    if (proj.year && acts.length < 3) {
+      acts.push({ label: proj.year, color: "#94a3b8" });
+    }
+    return acts.slice(0, 3);
+  };
+
+  // Build graph from real pastWorks
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const W = container.offsetWidth;
+    const H = container.offsetHeight || 600;
+    setDimensions({ w: W, h: H });
+
+    const cx = W / 2, cy = H / 2;
+    const projects = pastWorks.slice(0, 7);
+    if (projects.length === 0) return;
+
+    const TOOL_COLORS = {
+      "Video Editor": "#ef4444", "Presentations": "#3b82f6",
+      "Logo Maker": "#10b981", "Whiteboard": "#a855f7",
+      "Image Editor": "#f59e0b", "Documents": "#06b6d4",
+      "Social Studio": "#ec4899", "AI Magic": "#8b5cf6",
+    };
+
+    // Hub node
+    const hubNode = {
+      id: "hub", label: "Studio", sublabel: user?.name?.split(" ")[0] || "Your",
+      x: cx, y: cy, r: 52,
+      color: THEME.wine, type: "hub",
+      pulse: 0, floatOffset: 0, isActive: true,
+      glowIntensity: 1,
+    };
+
+    // Project nodes — golden spiral placement
+    const mainNodes = projects.map((proj, i) => {
+      const angle = (i / projects.length) * 2 * Math.PI - Math.PI / 2;
+      const orbitR = Math.min(W, H - 100) * 0.3 + (i % 2) * 20;
+      return {
+        id: proj.id || `proj_${i}`,
+        label: proj.title || "Untitled",
+        sublabel: proj.tool || proj.category || "Design",
+        x: cx + orbitR * Math.cos(angle),
+        y: Math.min(cy + orbitR * Math.sin(angle), H - 110),
+        r: 40, color: TOOL_COLORS[proj.tool] || proj.accent || THEME.wine,
+        type: "main", angle,
+        isActive: Math.random() > 0.4,
+        pulse: Math.random() * Math.PI * 2,
+        floatOffset: Math.random() * Math.PI * 2,
+        proj,
+        activities: getActivitiesForProject(proj),
+        glowIntensity: Math.random() * 0.5 + 0.5,
+        tags: proj.tags || [],
+      };
+    });
+
+    // Branch nodes — real data only, no fake timestamps
+    const branchNodes = [];
+    mainNodes.forEach(mn => {
+      mn.activities.forEach((act, b) => {
+        if (!act?.label) return;
+        const spreadAngle = mn.angle + (b - mn.activities.length / 2 + 0.5) * 0.55;
+        const br = 88 + b * 8;
+        const bx = Math.max(80, Math.min(W - 80, mn.x + br * Math.cos(spreadAngle)));
+        const by = Math.max(50, Math.min(H - 90, mn.y + br * Math.sin(spreadAngle)));
+        branchNodes.push({
+          id: `${mn.id}_b${b}`,
+          label: act.label,
+          sublabel: null,   // no fake timestamps ever
+          x: bx, y: by, r: 18,
+          color: act.color,
+          type: "branch", parentId: mn.id,
+          pulse: Math.random() * Math.PI * 2,
+          floatOffset: Math.random() * Math.PI * 2,
+          glowIntensity: 0.6,
+        });
+      });
+    });
+
+    // Edges
+    const edges = [];
+    // Hub → main (with multiple animated pulses)
+    mainNodes.forEach(mn => {
+      edges.push({
+        from: "hub", to: mn.id, type: "main",
+        pulses: [
+          { t: Math.random(), speed: 0.3 + Math.random() * 0.2 },
+          { t: Math.random(), speed: 0.3 + Math.random() * 0.2 },
+        ],
+        active: mn.isActive, color: mn.color,
+      });
+    });
+    // Main → branch
+    branchNodes.forEach(bn => {
+      const parent = mainNodes.find(m => m.id === bn.parentId);
+      edges.push({
+        from: bn.parentId, to: bn.id, type: "branch",
+        pulses: [{ t: Math.random(), speed: 0.15 + Math.random() * 0.1 }],
+        active: false, color: bn.color,
+      });
+    });
+
+    // Background ambient particles
+    const particles = Array.from({ length: 40 }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 2 + 0.5,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      opacity: Math.random() * 0.4 + 0.1,
+      color: [THEME.wine, "#3b82f6", "#8b5cf6", "#10b981"][Math.floor(Math.random() * 4)],
+    }));
+
+    nodesRef.current = [hubNode, ...mainNodes, ...branchNodes];
+    edgesRef.current = edges;
+    particlesRef.current = particles;
+    setStats({ nodes: 1 + mainNodes.length, edges: edges.length, active: mainNodes.filter(m => m.isActive).length });
+  }, [pastWorks]);
+
+  // Advanced canvas draw loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+
+    const hexRgba = (hex, a) => {
+      if (!hex || hex.length < 7) return `rgba(148,41,69,${a})`;
+      const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b2 = parseInt(hex.slice(5,7),16);
+      return `rgba(${r},${g},${b2},${a})`;
+    };
+    const roundRect = (x, y, w, h, r) => {
+      ctx.beginPath();
+      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
+    };
+    const bezierPt = (ax,ay,cpx,cpy,bx,by,t) => ({
+      x:(1-t)*(1-t)*ax+2*(1-t)*t*cpx+t*t*bx,
+      y:(1-t)*(1-t)*ay+2*(1-t)*t*cpy+t*t*by,
+    });
+
+    const draw = () => {
+      const { w, h } = dimensions;
+      // DPR-aware canvas sizing — this is the fix for blurriness
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      timeRef.current += 0.014;
+      const t = timeRef.current;
+      const mx = mouseRef.current.x, my = mouseRef.current.y;
+      const nodeMap = {};
+      nodesRef.current.forEach(n => { nodeMap[n.id] = n; });
+
+      // 1. Ambient particles
+      particlesRef.current.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x<0) p.x=w; if (p.x>w) p.x=0;
+        if (p.y<0) p.y=h; if (p.y>h) p.y=0;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle = hexRgba(p.color, p.opacity*0.5); ctx.fill();
+      });
+
+      // 2. Float animation
+      nodesRef.current.forEach(n => {
+        if (n.type==="branch") { n.x+=Math.sin(t*0.7+n.floatOffset)*0.22; n.y+=Math.cos(t*0.55+n.floatOffset)*0.18; }
+        else if (n.type==="main") { n.x+=Math.sin(t*0.35+n.floatOffset)*0.1; n.y+=Math.cos(t*0.3+n.floatOffset)*0.1; }
+        else if (n.type==="hub") { n.x+=Math.sin(t*0.2)*0.04; n.y+=Math.cos(t*0.18)*0.04; }
+      });
+
+      // 3. Draw edges with gradient + animated orbs
+      const edgeCurves = {};
+      edgesRef.current.forEach(edge => {
+        const a = nodeMap[edge.from], b = nodeMap[edge.to];
+        if (!a||!b) return;
+        const isMain = edge.type==="main";
+        const cpx = (a.x+b.x)/2+(b.y-a.y)*0.15, cpy = (a.y+b.y)/2-(b.x-a.x)*0.15;
+        edgeCurves[`${edge.from}-${edge.to}`] = {cpx,cpy};
+        // Gradient stroke
+        const lg = ctx.createLinearGradient(a.x,a.y,b.x,b.y);
+        lg.addColorStop(0, hexRgba(a.color, isMain?0.3:0.15));
+        lg.addColorStop(1, hexRgba(b.color, isMain?0.2:0.08));
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo(cpx,cpy,b.x,b.y);
+        ctx.strokeStyle=lg; ctx.lineWidth=isMain?1.8:1; ctx.setLineDash(isMain?[]:[4,7]); ctx.stroke(); ctx.setLineDash([]);
+        // Pulse orbs
+        edge.pulses.forEach(pulse => {
+          pulse.t = (pulse.t + pulse.speed*0.012)%1;
+          const pt = bezierPt(a.x,a.y,cpx,cpy,b.x,b.y,pulse.t);
+          if (isMain) {
+            const orb = ctx.createRadialGradient(pt.x,pt.y,0,pt.x,pt.y,9);
+            orb.addColorStop(0,hexRgba(edge.color||a.color,0.95));
+            orb.addColorStop(0.4,hexRgba(edge.color||a.color,0.5));
+            orb.addColorStop(1,hexRgba(edge.color||a.color,0));
+            ctx.beginPath(); ctx.arc(pt.x,pt.y,9,0,Math.PI*2); ctx.fillStyle=orb; ctx.fill();
+            ctx.beginPath(); ctx.arc(pt.x,pt.y,2.5,0,Math.PI*2); ctx.fillStyle="#fff"; ctx.fill();
+          } else {
+            ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2);
+            ctx.fillStyle=hexRgba(b.color,0.6); ctx.fill();
+          }
+        });
+      });
+
+      // 4. Draw nodes
+      nodesRef.current.forEach(n => {
+        const isHov = hoveredNodeRef.current===n.id;
+        const isSel = selectedNode?.id===n.id;
+        const r = n.r*(isHov?1.12:isSel?1.08:1);
+        const prox = Math.max(0,1-Math.hypot(n.x-mx,n.y-my)/180);
+
+        if (n.type==="hub") {
+          // Atmosphere rings
+          for (let ring=3;ring>=1;ring--) {
+            const rr = r+20+ring*16+Math.sin(t*0.8+ring*1.2)*5;
+            ctx.beginPath(); ctx.arc(n.x,n.y,rr,0,Math.PI*2);
+            ctx.strokeStyle=hexRgba(n.color,0.06/ring); ctx.lineWidth=1.2; ctx.stroke();
+          }
+          // Glow
+          const gw = ctx.createRadialGradient(n.x,n.y,r*0.3,n.x,n.y,r+30+Math.sin(t)*5);
+          gw.addColorStop(0,hexRgba(n.color,0.4)); gw.addColorStop(1,hexRgba(n.color,0));
+          ctx.beginPath(); ctx.arc(n.x,n.y,r+35,0,Math.PI*2); ctx.fillStyle=gw; ctx.fill();
+          // Body
+          const bd = ctx.createRadialGradient(n.x-r*0.25,n.y-r*0.25,0,n.x,n.y,r);
+          bd.addColorStop(0,hexRgba(n.color,1)); bd.addColorStop(0.6,hexRgba(n.color,0.9)); bd.addColorStop(1,"rgba(10,0,5,0.92)");
+          ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
+          ctx.fillStyle=bd; ctx.shadowColor=n.color; ctx.shadowBlur=24+Math.sin(t*1.5)*6; ctx.fill(); ctx.shadowBlur=0;
+          ctx.strokeStyle="rgba(255,255,255,0.22)"; ctx.lineWidth=1.5; ctx.stroke();
+          ctx.beginPath(); ctx.arc(n.x-r*0.15,n.y-r*0.3,r*0.55,Math.PI*1.2,Math.PI*1.9);
+          ctx.strokeStyle="rgba(255,255,255,0.15)"; ctx.lineWidth=3; ctx.stroke();
+          ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+          ctx.font=`bold 13px 'Poppins',sans-serif`; ctx.shadowColor="rgba(0,0,0,0.5)"; ctx.shadowBlur=4;
+          ctx.fillText(n.sublabel,n.x,n.y-8);
+          ctx.font=`500 9px 'Poppins',sans-serif`; ctx.fillStyle="rgba(255,255,255,0.65)";
+          ctx.fillText("Studio",n.x,n.y+8); ctx.shadowBlur=0;
+
+        } else if (n.type==="main") {
+          // Halo
+          const halo = ctx.createRadialGradient(n.x,n.y,r*0.5,n.x,n.y,r+22+prox*10);
+          halo.addColorStop(0,hexRgba(n.color,0.22+prox*0.08)); halo.addColorStop(1,hexRgba(n.color,0));
+          ctx.beginPath(); ctx.arc(n.x,n.y,r+25,0,Math.PI*2); ctx.fillStyle=halo; ctx.fill();
+          // Body
+          ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
+          ctx.fillStyle=isDark?"#1a0b12":"#ffffff";
+          ctx.shadowColor=n.color; ctx.shadowBlur=isHov?28:10+prox*12; ctx.fill(); ctx.shadowBlur=0;
+          // Ring
+          ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
+          ctx.strokeStyle=isHov||isSel?n.color:hexRgba(n.color,0.6);
+          ctx.lineWidth=isHov?2.5:2; ctx.stroke();
+          // Top arc accent
+          ctx.beginPath(); ctx.arc(n.x,n.y,r-1,Math.PI*1.15,Math.PI*1.85);
+          ctx.strokeStyle=n.color; ctx.lineWidth=3; ctx.stroke();
+          // Active badge
+          if (n.isActive) {
+            const bp = 0.6+Math.sin(t*2.5+n.pulse)*0.4;
+            ctx.beginPath(); ctx.arc(n.x+r*0.68,n.y-r*0.68,7*bp,0,Math.PI*2);
+            ctx.fillStyle=hexRgba("#22c55e",0.2); ctx.fill();
+            ctx.beginPath(); ctx.arc(n.x+r*0.68,n.y-r*0.68,4.5,0,Math.PI*2);
+            ctx.fillStyle="#22c55e"; ctx.shadowColor="#22c55e"; ctx.shadowBlur=10; ctx.fill(); ctx.shadowBlur=0;
+          }
+          // Labels
+          const mw=r*1.55;
+          ctx.textAlign="center"; ctx.textBaseline="middle";
+          ctx.fillStyle=n.color; ctx.font=`700 9.5px 'Poppins',sans-serif`;
+          ctx.shadowColor=isDark?"rgba(0,0,0,0.8)":"rgba(255,255,255,0.8)"; ctx.shadowBlur=3;
+          let lbl=n.label; while(ctx.measureText(lbl).width>mw&&lbl.length>3)lbl=lbl.slice(0,-1); if(lbl!==n.label)lbl+="…";
+          ctx.fillText(lbl,n.x,n.y-7);
+          ctx.font=`400 8px 'Poppins',sans-serif`; ctx.fillStyle=isDark?"rgba(255,255,255,0.42)":"rgba(0,0,0,0.38)";
+          let sub=n.sublabel; while(ctx.measureText(sub).width>mw&&sub.length>3)sub=sub.slice(0,-1); if(sub!==n.sublabel)sub+="…";
+          ctx.fillText(sub,n.x,n.y+7); ctx.shadowBlur=0;
+
+        } else if (n.type==="branch") {
+          const pw=86,ph=n.sublabel?26:20,pr=10;
+          // Shadow
+          ctx.fillStyle=hexRgba("#000",0.1); ctx.filter="blur(3px)";
+          roundRect(n.x-pw/2,n.y-ph/2+3,pw,ph,pr); ctx.fill(); ctx.filter="none";
+          // Body
+          const pbg=ctx.createLinearGradient(n.x-pw/2,n.y,n.x+pw/2,n.y);
+          pbg.addColorStop(0,isDark?"#1a0b12":"#ffffff"); pbg.addColorStop(1,isDark?"#200d16":"#fdf8ff");
+          roundRect(n.x-pw/2,n.y-ph/2,pw,ph,pr); ctx.fillStyle=pbg; ctx.fill();
+          ctx.strokeStyle=hexRgba(n.color,isHov?0.85:0.4); ctx.lineWidth=isHov?1.5:1; ctx.stroke();
+          // Color dot
+          ctx.beginPath(); ctx.arc(n.x-pw/2+10,n.y,3.5,0,Math.PI*2);
+          ctx.fillStyle=n.color; ctx.shadowColor=n.color; ctx.shadowBlur=7; ctx.fill(); ctx.shadowBlur=0;
+          // Label only — no timestamps
+          ctx.textBaseline="middle"; ctx.textAlign="left";
+          ctx.fillStyle=isDark?"rgba(255,255,255,0.85)":"rgba(0,0,0,0.78)";
+          ctx.font=`600 8px 'Poppins',sans-serif`;
+          let bl=n.label;
+          while(ctx.measureText(bl).width>pw-24&&bl.length>3)bl=bl.slice(0,-1);
+          if(bl!==n.label)bl+="…";
+          ctx.fillText(bl,n.x-pw/2+20,n.y);
+        }
+      });
+
+      // 5. Mouse aura
+      if (mx>0&&my>0) {
+        const mg=ctx.createRadialGradient(mx,my,0,mx,my,55);
+        mg.addColorStop(0,hexRgba(THEME.wine,0.05)); mg.addColorStop(1,hexRgba(THEME.wine,0));
+        ctx.beginPath(); ctx.arc(mx,my,55,0,Math.PI*2); ctx.fillStyle=mg; ctx.fill();
+      }
+
+      animRef.current = requestAnimationFrame(draw);
+    };
+
+    animRef.current = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(animRef.current);
+  }, [dimensions, isDark, selectedNode]);
+
+  // Resize observer
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const ro = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      setDimensions({ w: width, h: height });
+    });
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, []);
+
+  const handleMouseMove = (e) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    mouseRef.current = { x: mx, y: my };
+    let found = null;
+    for (const n of nodesRef.current) {
+      const hitR = n.type==="branch" ? 44 : n.r + 8;
+      if (Math.hypot(n.x-mx, n.y-my) < hitR) { found = n; break; }
+    }
+    hoveredNodeRef.current = found?.id || null;
+    setHoveredNode(found);
+    setTooltip(found && found.type!=="hub" ? { x: found.x, y: found.y - found.r - 16, node: found } : null);
+  };
+
+  const handleClick = () => {
+    const n = nodesRef.current.find(x => x.id === hoveredNodeRef.current);
+    if (!n) return;
+    if (n.type === "main") {
+      setSelectedNode(prev => prev?.id === n.id ? null : n);
+    }
+  };
+
+  return (
+    <div ref={containerRef} style={{
+      position: "relative", width: "100%", height: "600px",
+      borderRadius: "0",
+      background: "transparent",
+      border: "none",
+      overflow: "hidden",
+      boxShadow: "none",
+      paddingBottom: "52px",  /* reserve space for stats bar */
+      boxSizing: "border-box",
+    }}>
+      {/* No background overlays — graph floats freely */}
+
+      <canvas
+        ref={canvasRef}
+        style={{ position: "absolute", inset: 0, cursor: hoveredNode ? "pointer" : "default" }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => { hoveredNodeRef.current=null; mouseRef.current={x:-999,y:-999}; setHoveredNode(null); setTooltip(null); }}
+        onClick={handleClick}
+      />
+
+      {/* Rich tooltip */}
+      {tooltip && (
+        <div style={{
+          position: "absolute",
+          left: Math.min(tooltip.x, dimensions.w - 200),
+          top: Math.max(8, tooltip.y - 8),
+          transform: "translate(-50%, -100%)",
+          background: isDark
+            ? "linear-gradient(135deg, #1e0f16, #2a1020)"
+            : "linear-gradient(135deg, #ffffff, #fdf4f8)",
+          border: `1px solid ${tooltip.node.color}50`,
+          borderRadius: "14px",
+          padding: "12px 16px",
+          pointerEvents: "none",
+          boxShadow: `0 12px 40px ${tooltip.node.color}30, 0 4px 12px rgba(0,0,0,0.15)`,
+          zIndex: 20, minWidth: 150, maxWidth: 220,
+          backdropFilter: "blur(12px)",
+        }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+            <div style={{
+              width:10, height:10, borderRadius:"50%",
+              background: tooltip.node.color,
+              boxShadow: `0 0 8px ${tooltip.node.color}`,
+              flexShrink: 0,
+            }} />
+            <span style={{ fontSize:12, fontWeight:700, color: tooltip.node.color, fontFamily:"'Poppins',sans-serif", lineHeight:1.2 }}>
+              {tooltip.node.label}
+            </span>
+          </div>
+          {tooltip.node.sublabel && (
+            <div style={{ fontSize:10, color: isDark?"rgba(255,255,255,0.5)":"rgba(0,0,0,0.45)", fontFamily:"'Instrument Sans',sans-serif", marginBottom:6 }}>
+              {tooltip.node.sublabel}
+            </div>
+          )}
+          {tooltip.node.tags?.length > 0 && (
+            <div style={{ display:"flex", gap:4, flexWrap:"wrap", marginBottom:6 }}>
+              {tooltip.node.tags.slice(0,3).map(tag => (
+                <span key={tag} style={{
+                  fontSize:8, padding:"2px 6px", borderRadius:99,
+                  background: `${tooltip.node.color}20`,
+                  color: tooltip.node.color,
+                  fontFamily:"'Poppins',sans-serif", fontWeight:600,
+                }}>{tag}</span>
+              ))}
+            </div>
+          )}
+          {tooltip.node.isActive && (
+            <div style={{ display:"flex", alignItems:"center", gap:5 }}>
+              <div style={{ width:6, height:6, borderRadius:"50%", background:"#22c55e", boxShadow:"0 0 6px #22c55e" }} />
+              <span style={{ fontSize:9, color:"#22c55e", fontWeight:600, fontFamily:"'Poppins',sans-serif" }}>Active now</span>
+            </div>
+          )}
+          {tooltip.node.type==="main" && (
+            <div style={{ marginTop:8, fontSize:9, color: isDark?"rgba(255,255,255,0.35)":"rgba(0,0,0,0.3)", fontFamily:"'Poppins',sans-serif" }}>
+              Click to select · View in Projects tab →
+            </div>
+          )}
+          {tooltip.node.type==="branch" && (
+            <div style={{ marginTop:4, fontSize:9, color: isDark?"rgba(255,255,255,0.35)":"rgba(0,0,0,0.3)", fontFamily:"'Poppins',sans-serif" }}>
+              {tooltip.node.sublabel}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Top-left: Title badge */}
+      <div style={{
+        position:"absolute", top:20, left:20,
+        display:"flex", alignItems:"center", gap:10,
+      }}>
+        <div style={{
+          background: isDark?"rgba(15,8,12,0.8)":"rgba(255,255,255,0.85)",
+          border:`1px solid ${isDark?"rgba(148,41,69,0.2)":"rgba(148,41,69,0.12)"}`,
+          borderRadius:12, padding:"8px 14px",
+          backdropFilter:"blur(12px)",
+          display:"flex", alignItems:"center", gap:8,
+        }}>
+          <div style={{ width:8, height:8, borderRadius:"50%", background:THEME.wine, boxShadow:`0 0 10px ${THEME.wine}`, animation:"pulse 1.8s ease-in-out infinite" }} />
+          <span style={{ fontSize:11, fontWeight:700, color: isDark?"rgba(255,255,255,0.8)":THEME.wine, fontFamily:"'Poppins',sans-serif", letterSpacing:"0.04em" }}>
+            Activity Graph
+          </span>
+        </div>
+      </div>
+
+      {/* Top-right: Live + Stats */}
+      <div style={{ position:"absolute", top:20, right:20, display:"flex", gap:8 }}>
+        <div style={{
+          background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.25)",
+          borderRadius:99, padding:"5px 12px",
+          display:"flex", alignItems:"center", gap:6,
+          backdropFilter:"blur(8px)",
+        }}>
+          <div style={{ width:6, height:6, borderRadius:"50%", background:"#22c55e", animation:"pulse 1.4s ease-in-out infinite" }} />
+          <span style={{ fontSize:10, fontWeight:700, color:"#22c55e", fontFamily:"'Poppins',sans-serif" }}>Live</span>
+        </div>
+      </div>
+
+      {/* Bottom: Stats bar */}
+      <div style={{
+        position:"absolute", bottom:0, left:0, right:0,
+        background: "transparent",
+        borderTop: `1px solid ${isDark?"rgba(148,41,69,0.1)":"rgba(148,41,69,0.07)"}`,
+        padding:"10px 24px",
+        display:"flex", alignItems:"center", justifyContent:"space-between",
+      }}>
+        <div style={{ display:"flex", gap:28 }}>
+          {[
+            { label:"Projects", value: stats.nodes - 1, color: THEME.wine },
+            { label:"Active now", value: stats.active, color:"#22c55e" },
+            { label:"Connections", value: stats.edges, color:"#3b82f6" },
+          ].map(s => (
+            <div key={s.label} style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <div style={{ width:6, height:6, borderRadius:"50%", background:s.color, boxShadow:`0 0 6px ${s.color}80` }} />
+              <span style={{ fontSize:11, fontWeight:700, color:s.color, fontFamily:"'Poppins',sans-serif" }}>{s.value}</span>
+              <span style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.4)":"rgba(0,0,0,0.4)", fontFamily:"'Instrument Sans',sans-serif" }}>{s.label}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ display:"flex", gap:16, alignItems:"center" }}>
+          {/* Selected project quick action */}
+          {selectedNode && (
+            <button
+              onClick={() => onSwitchTab && onSwitchTab("projects")}
+              style={{
+                background: `linear-gradient(135deg, ${selectedNode.color}, ${selectedNode.color}cc)`,
+                border: "none", borderRadius: 99,
+                padding: "6px 14px", cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 6,
+                boxShadow: `0 4px 12px ${selectedNode.color}40`,
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.04)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            >
+              <span style={{ fontSize:10, fontWeight:700, color:"#fff", fontFamily:"'Poppins',sans-serif" }}>
+                {selectedNode.label}
+              </span>
+              <span style={{ fontSize:9, color:"rgba(255,255,255,0.75)", fontFamily:"'Poppins',sans-serif" }}>
+                → View projects
+              </span>
+            </button>
+          )}
+          {[
+            { color:"#22c55e", label:"Active" },
+            { color: THEME.wine, label:"Project" },
+            { color:"#94a3b8", label:"Activity" },
+          ].map(l => (
+            <div key={l.label} style={{ display:"flex", alignItems:"center", gap:5 }}>
+              <div style={{ width:7, height:7, borderRadius:"50%", background:l.color, boxShadow:`0 0 5px ${l.color}60` }} />
+              <span style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.45)":"rgba(0,0,0,0.45)", fontFamily:"'Poppins',sans-serif" }}>{l.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Empty state */}
+      {pastWorks.length === 0 && (
+        <div style={{
+          position:"absolute", inset:0, display:"flex", flexDirection:"column",
+          alignItems:"center", justifyContent:"center", gap:12, pointerEvents:"none",
+        }}>
+          <div style={{ fontSize:40, opacity:0.3 }}>🕸️</div>
+          <div style={{ fontSize:14, fontWeight:600, color:isDark?"rgba(255,255,255,0.3)":"rgba(0,0,0,0.25)", fontFamily:"'Poppins',sans-serif" }}>
+            Create your first project to see the graph
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HomePage({ onNavigate, user, onSignOut, theme = "light" }) {
   const [hoveredCard, setHoveredCard]         = useState(null);
@@ -533,7 +1122,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
   const [homeTab, setHomeTab] = useState("home");
   const [searchVal, setSearchVal] = useState("");
 
-  const sidebarW = 72;
+  const sidebarW = 64;
   const pageMax = 1400;
 
   const AvatarCircle = ({ size = 36, onClick, showBorder = false }) => (
@@ -557,49 +1146,125 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
     </button>
   );
 
-  const SidebarIcon = ({ active, icon, label, onClick, crownBadge, bottom = false }) => (
-    <div style={{ position: "relative", width: "100%", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: bottom ? 6 : 0 }}>
-      <button
-        onClick={onClick}
-        title={label}
-        style={{
-          width: 44, height: 44, borderRadius: 12, display: "flex",
-          alignItems: "center", justifyContent: "center",
-          background: active ? THEME.wineTint : "transparent",
-          border: active
-            ? `1px solid ${THEME.hexA(THEME.wine, 0.35)}`
-            : "1px solid transparent",
-          color: active ? THEME.wine : THEME.text,
-          cursor: "pointer", transition: "all 0.2s", outline: "none", position: "relative",
-        }}
-        onMouseEnter={e => {
-          if (!active) {
-            e.currentTarget.style.background = THEME.wineTint;
-          }
-        }}
-        onMouseLeave={e => {
-          if (!active) {
-            e.currentTarget.style.background = "transparent";
-          }
-        }}
-      >
-        {icon}
-        {crownBadge && (
+  const SidebarIcon = ({ active, icon: IconComponent, label, onClick, crownBadge, bottom = false, animationType = "scale" }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const [isClicked, setIsClicked] = useState(false);
+
+    const handleClick = () => {
+      setIsClicked(true);
+      setTimeout(() => setIsClicked(false), 300);
+      onClick();
+    };
+
+    const getAnimationStyles = () => {
+      if (isClicked) {
+        return {
+          transform: animationType === "rotate" ? "scale(0.9) rotate(180deg)" : "scale(0.9)",
+          transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
+        };
+      }
+      if (isHovered && !active) {
+        switch(animationType) {
+          case "rotate":
+            return { transform: "scale(1.1) rotate(15deg)" };
+          case "bounce":
+            return { transform: "scale(1.1) translateY(-2px)" };
+          case "pulse":
+            return { transform: "scale(1.15)" };
+          default:
+            return { transform: "scale(1.1)" };
+        }
+      }
+      return {};
+    };
+
+    return (
+      <div style={{ 
+        position: "relative", 
+        width: "100%", 
+        display: "flex", 
+        flexDirection: "column", 
+        alignItems: "center", 
+        marginBottom: bottom ? 4 : 0 
+      }}>
+        <button
+          onClick={handleClick}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          title={label}
+          style={{
+            width: 40, 
+            height: 40, 
+            borderRadius: 11, 
+            display: "flex",
+            alignItems: "center", 
+            justifyContent: "center",
+            background: active 
+              ? `linear-gradient(135deg, ${THEME.hexA(THEME.wine, 0.15)}, ${THEME.hexA(THEME.wine, 0.08)})` 
+              : isHovered 
+                ? `linear-gradient(135deg, ${THEME.hexA(THEME.wine, 0.08)}, ${THEME.hexA(THEME.wine, 0.03)})`
+                : "transparent",
+            border: active
+              ? `2px solid ${THEME.hexA(THEME.wine, 0.4)}`
+              : `2px solid transparent`,
+            color: active ? THEME.wine : isHovered ? THEME.wine : THEME.textMuted,
+            cursor: "pointer", 
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)", 
+            outline: "none", 
+            position: "relative",
+            boxShadow: active 
+              ? `0 4px 12px ${THEME.hexA(THEME.wine, 0.2)}` 
+              : isHovered 
+                ? `0 2px 8px ${THEME.hexA(THEME.wine, 0.1)}`
+                : "none",
+          }}
+        >
           <div style={{
-            position: "absolute", top: -4, right: -4,
-            background: THEME.grad.gold,
-            width: 14, height: 14, borderRadius: "50%",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 8, boxShadow: "0 1px 4px rgba(0,0,0,0.25)",
-          }}>👑</div>
-        )}
-      </button>
-      <span style={{
-        fontSize: 9.5, marginTop: 3, color: active ? THEME.wine : THEME.textMuted,
-        fontFamily: "'Poppins',sans-serif", fontWeight: active ? 600 : 400, letterSpacing: "-0.01em",
-      }}>{label}</span>
-    </div>
-  );
+            ...getAnimationStyles(),
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
+          }}>
+            <IconComponent 
+              size={20} 
+              strokeWidth={active ? 2.5 : 2}
+              style={{ 
+                filter: active ? `drop-shadow(0 0 4px ${THEME.hexA(THEME.wine, 0.3)})` : "none",
+              }}
+            />
+          </div>
+          {crownBadge && (
+            <div style={{
+              position: "absolute", 
+              top: -3, 
+              right: -3,
+              background: THEME.grad.gold,
+              width: 13, 
+              height: 13, 
+              borderRadius: "50%",
+              display: "flex", 
+              alignItems: "center", 
+              justifyContent: "center",
+              fontSize: 7, 
+              boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+              animation: isHovered ? "bounce 0.5s ease-in-out" : "none"
+            }}>👑</div>
+          )}
+        </button>
+        <span style={{
+          fontSize: 8.5, 
+          marginTop: 2, 
+          color: active ? THEME.wine : isHovered ? THEME.wine : THEME.textMuted,
+          fontFamily: "'Poppins',sans-serif", 
+          fontWeight: active ? 600 : 400, 
+          letterSpacing: "-0.01em",
+          transition: "all 0.2s ease",
+          opacity: isHovered || active ? 1 : 0.8
+        }}>{label}</span>
+      </div>
+    );
+  };
 
   const HeroToolBtn = ({ icon, label, bg, onClick, isCrown }) => {
     const [h, setH] = useState(false);
@@ -724,14 +1389,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 14px",
             color: isDark ? "#fff" : THEME.text,
           }}>
-            Bring your ideas to life
+            Your creative
             <br />
             <span style={{
               background: `linear-gradient(135deg, ${THEME.wine} 0%, ${THEME.roseGold} 100%)`,
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>in seconds.</span>
+            }}>design studio.</span>
           </h3>
           <p style={{
             fontSize: 14.5, lineHeight: 1.65, margin: 0,
@@ -739,7 +1404,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             fontFamily: "'Instrument Sans',sans-serif", fontWeight: 400,
             maxWidth: 460,
           }}>
-            Pick from thousands of templates or start from scratch. Video, social, presentations, logos — all in one place.
+            Professional tools for video editing, presentations, graphics, and more. Everything you need to create stunning content.
           </p>
           <div style={{ display: "flex", gap: "14px", marginTop: "22px", alignItems: "center", flexWrap: "wrap" }}>
             {[
@@ -990,6 +1655,24 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       fontFamily: "'Instrument Sans',sans-serif", overflowX: "hidden",
       transition: "background 0.3s, color 0.3s", minHeight: "100vh",
     }}>
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes glow {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 1; }
+        }
+      `}</style>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Instrument+Sans:wght@300;400;500;600&family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
 
       {/* ═══════════════ CANVA-STYLE VERTICAL SIDEBAR ═══════════════ */}
@@ -1030,34 +1713,213 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           )}
         </div>
 
-        <div style={{ width: "70%", height: 1, background: THEME.hexA(THEME.wine, 0.12), margin: "4px 0 10px" }} />
+        <div style={{ 
+          width: "70%", 
+          height: 1, 
+          background: `linear-gradient(90deg, transparent 0%, ${THEME.hexA(THEME.wine, 0.15)} 50%, transparent 100%)`,
+          margin: "8px 0 12px",
+          transition: "all 0.3s ease"
+        }} />
 
         {/* Nav stack */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, width: "100%" }}>
-          <SidebarIcon active={activeNav === "home"} label="Home" onClick={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 7v11h-6v-7H9v7H3V10z"/></svg>} />
-          <SidebarIcon active={activeNav === "projects"} label="Projects" onClick={() => { setActiveNav("projects"); }}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>} />
-          <SidebarIcon active={activeNav === "templates"} label="Templates" onClick={() => { setActiveNav("templates"); scrollTo("tools-section", "templates"); }}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>} />
-          <SidebarIcon active={activeNav === "more"} label="More" onClick={() => setActiveNav("more")}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>} />
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%" }}>
+          <SidebarIcon 
+            active={activeNav === "home"} 
+            label="Home" 
+            onClick={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            icon={Home}
+            animationType="bounce"
+          />
+          <SidebarIcon 
+            active={activeNav === "projects"} 
+            label="Projects" 
+            onClick={() => { setActiveNav("projects"); }}
+            icon={FolderOpen}
+            animationType="scale"
+          />
+          <SidebarIcon 
+            active={activeNav === "tools"} 
+            label="Tools" 
+            onClick={() => { setActiveNav("tools"); scrollTo("tools-section", "tools"); }}
+            icon={Wrench}
+            animationType="rotate"
+          />
+          <SidebarIcon 
+            active={activeNav === "templates"} 
+            label="Templates" 
+            onClick={() => { setActiveNav("templates"); scrollTo("tools-section", "templates"); }}
+            icon={LayoutGrid}
+            animationType="pulse"
+          />
         </div>
 
-        {/* Empty space at bottom */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%" }} />
+        {/* Bottom section with Settings & More */}
+        <div style={{ 
+          width: "70%", 
+          height: 1, 
+          background: `linear-gradient(90deg, transparent 0%, ${THEME.hexA(THEME.wine, 0.15)} 50%, transparent 100%)`,
+          margin: "8px 0 12px",
+          transition: "all 0.3s ease"
+        }} />
+
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%", paddingBottom: 8 }}>
+          <SidebarIcon 
+            active={activeNav === "settings"} 
+            label="Settings" 
+            onClick={() => setActiveNav("settings")}
+            icon={Settings}
+            animationType="rotate"
+          />
+          <SidebarIcon 
+            active={activeNav === "more"} 
+            label="More" 
+            onClick={() => setActiveNav("more")}
+            icon={MoreHorizontal}
+            animationType="scale"
+          />
+        </div>
       </aside>
 
       {/* ═══════════════ MAIN CONTENT (full width with sidebar padding) ═══════════════ */}
-      <main style={{ width: "100%", position: "relative", overflow: "hidden", paddingLeft: "100px" }}>
+      <main style={{ width: "100%", position: "relative", overflow: "hidden", paddingLeft: "88px" }}>
 
         {/* Conditional rendering based on activeNav */}
         {activeNav === "projects" ? (
-          <ProjectsDetail
-            onBack={() => setActiveNav("home")}
-            onNavigate={onNavigate}
-            user={user}
-          />
+          /* ── INLINE PROJECTS VIEW — keeps sidebar visible ── */
+          <div style={{ padding: "48px", minHeight: "100vh" }}>
+            {/* Header */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:40 }}>
+              <div>
+                <h1 style={{
+                  fontFamily:"Syne,sans-serif", fontSize:"clamp(28px,4vw,44px)",
+                  fontWeight:800, letterSpacing:"-0.04em", margin:"0 0 6px",
+                  color: THEME.wine,
+                }}>Your Projects</h1>
+                <p style={{ margin:0, fontSize:14, color:colors.textMuted, fontFamily:"'Instrument Sans',sans-serif" }}>
+                  {pastWorks.length} {pastWorks.length===1?"project":"projects"} created
+                </p>
+              </div>
+              <button
+                onClick={() => setActiveNav("home")}
+                style={{
+                  display:"flex", alignItems:"center", gap:8,
+                  background:"none", border:`1px solid ${THEME.hexA(THEME.wine,0.2)}`,
+                  borderRadius:10, padding:"8px 16px", cursor:"pointer",
+                  color: THEME.wine, fontSize:13, fontWeight:600,
+                  fontFamily:"'Poppins',sans-serif", transition:"all 0.2s",
+                }}
+                onMouseEnter={e=>e.currentTarget.style.background=THEME.wineTint}
+                onMouseLeave={e=>e.currentTarget.style.background="none"}
+              >
+                ← Back to Home
+              </button>
+            </div>
+
+            {/* Empty state */}
+            {pastWorks.length === 0 ? (
+              <div style={{ textAlign:"center", padding:"80px 0" }}>
+                <div style={{ fontSize:48, marginBottom:16 }}>🎨</div>
+                <h3 style={{ fontFamily:"Syne,sans-serif", fontSize:22, fontWeight:700, color:colors.text, margin:"0 0 8px" }}>
+                  No projects yet
+                </h3>
+                <p style={{ color:colors.textMuted, fontSize:14, fontFamily:"'Instrument Sans',sans-serif" }}>
+                  Start creating to see your work here.
+                </p>
+              </div>
+            ) : (
+              <div style={{
+                display:"grid",
+                gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",
+                gap:28,
+              }}>
+                {pastWorks.map((proj) => {
+                  const accent = proj.accent || THEME.wine;
+                  return (
+                    <div key={proj.id}
+                      style={{
+                        borderRadius:20, overflow:"hidden",
+                        background: isDark ? "#1a0f16" : "#fff",
+                        border:`1px solid ${THEME.hexA(accent, 0.15)}`,
+                        boxShadow:`0 4px 20px ${THEME.hexA(accent, 0.08)}`,
+                        transition:"all 0.25s cubic-bezier(0.4,0,0.2,1)",
+                        cursor:"pointer",
+                      }}
+                      onMouseEnter={e=>{
+                        e.currentTarget.style.transform="translateY(-4px)";
+                        e.currentTarget.style.boxShadow=`0 12px 32px ${THEME.hexA(accent,0.18)}`;
+                        e.currentTarget.style.borderColor=THEME.hexA(accent,0.4);
+                      }}
+                      onMouseLeave={e=>{
+                        e.currentTarget.style.transform="translateY(0)";
+                        e.currentTarget.style.boxShadow=`0 4px 20px ${THEME.hexA(accent,0.08)}`;
+                        e.currentTarget.style.borderColor=THEME.hexA(accent,0.15);
+                      }}
+                    >
+                      {/* Thumbnail */}
+                      <div style={{
+                        height:170, position:"relative", overflow:"hidden",
+                        background: proj.gradient || `linear-gradient(135deg, ${accent}22, ${accent}44)`,
+                      }}>
+                        {proj.image && typeof proj.image === "string" && proj.image.startsWith("data:") ? (
+                          <img src={proj.image} alt={proj.title}
+                            style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                        ) : proj.image && !proj.image.startsWith("data:") ? (
+                          <img src={proj.image} alt={proj.title}
+                            style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                        ) : (
+                          <div style={{
+                            width:"100%", height:"100%", display:"flex",
+                            alignItems:"center", justifyContent:"center",
+                            fontSize:40, opacity:0.4,
+                          }}>
+                            {proj.icon || "🎨"}
+                          </div>
+                        )}
+                        {/* Tool badge */}
+                        <div style={{
+                          position:"absolute", top:10, left:10,
+                          background:"rgba(0,0,0,0.55)", backdropFilter:"blur(8px)",
+                          borderRadius:99, padding:"3px 10px",
+                        }}>
+                          <span style={{ fontSize:10, color:"#fff", fontFamily:"'Poppins',sans-serif", fontWeight:600 }}>
+                            {proj.tool || proj.category || "Design"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Info */}
+                      <div style={{ padding:"16px 18px 18px" }}>
+                        <h3 style={{
+                          margin:"0 0 4px", fontSize:15, fontWeight:700,
+                          color: accent, fontFamily:"'Poppins',sans-serif",
+                          letterSpacing:"-0.02em",
+                          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+                        }}>{proj.title || "Untitled"}</h3>
+                        <p style={{
+                          margin:"0 0 10px", fontSize:12, color:colors.textMuted,
+                          fontFamily:"'Instrument Sans',sans-serif",
+                        }}>
+                          {proj.category || proj.tool || "Design"} · {proj.year || new Date().getFullYear()}
+                        </p>
+                        {/* Tags — real data only */}
+                        {proj.tags?.length > 0 && (
+                          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                            {proj.tags.slice(0,3).map(tag => (
+                              <span key={tag} style={{
+                                fontSize:10, padding:"2px 8px", borderRadius:99,
+                                background:`${accent}15`, color:accent,
+                                fontFamily:"'Poppins',sans-serif", fontWeight:600,
+                              }}>{tag}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         ) : (
           <>
 
@@ -1643,6 +2505,49 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
               boxShadow: `0 0 12px ${THEME.hexA(THEME.roseGold, 0.5)}`,
             }} />
           </div>
+        </div>
+      </section>
+
+      {/* ── MIND MAP / GRAPH NODE ACTIVITY ─────────────────────────────────── */}
+      <section className="reveal" id="mindmap-section" style={{
+        padding: "80px 48px",
+        background: isDark ? "rgba(20,10,15,0.6)" : "rgba(247,244,251,0.8)",
+        opacity: revealedSections.has("mindmap-section") ? 1 : 0,
+        transform: revealedSections.has("mindmap-section") ? "translateY(0)" : "translateY(40px)",
+        transition: "opacity 0.8s ease, transform 0.8s ease",
+      }}>
+        <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+          {/* Header */}
+          <div style={{ marginBottom: "48px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+              <div style={{
+                width: 8, height: 8, borderRadius: "50%",
+                background: `linear-gradient(135deg, ${THEME.wine}, ${THEME.roseGold})`,
+                boxShadow: `0 0 12px ${THEME.hexA(THEME.wine, 0.6)}`,
+                animation: "glow 2s ease-in-out infinite",
+              }} />
+              <span style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: THEME.wine, fontFamily: "'Poppins',sans-serif" }}>
+                Live Activity Graph
+              </span>
+            </div>
+            <h2 style={{
+              fontFamily: "Syne,sans-serif", fontSize: "clamp(28px,4vw,48px)",
+              fontWeight: 800, letterSpacing: "-0.04em", lineHeight: 1.1,
+              color: colors.text, margin: 0,
+            }}>
+              Your projects,<br />
+              <span style={{
+                background: `linear-gradient(135deg, ${THEME.wine} 0%, ${THEME.roseGold} 100%)`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
+              }}>alive & connected.</span>
+            </h2>
+            <p style={{ fontSize: "15px", color: colors.textMuted, marginTop: "12px", fontFamily: "'Instrument Sans',sans-serif", maxWidth: 480 }}>
+              Every project is a living node. Watch activity pulse through your creative ecosystem in real-time.
+            </p>
+          </div>
+
+          {/* Graph Canvas */}
+          <MindMapGraph pastWorks={pastWorks} isDark={isDark} THEME={THEME} colors={colors} onNavigate={onNavigate} user={user} onSwitchTab={setActiveNav} />
         </div>
       </section>
 

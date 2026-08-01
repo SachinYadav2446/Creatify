@@ -842,29 +842,29 @@ export default function VideoEditor({ onBack, user, initialProject }) {
   const cssFilter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%) hue-rotate(${state.hue}deg) opacity(${state.opacity}%) blur(${state.blur}px) sepia(${state.sepia}%)`;
 
   const tools = [
-    { id:"select", icon:<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M4 0l16 12-7 1 4 7-2 1-4-7-7 6z"/></svg>, label:"Select (V)" },
-    { id:"cut",    icon:<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>, label:"Cut (C)" },
-    { id:"trim",   icon:<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 3l14 9-14 9V3z"/><line x1="19" y1="3" x2="19" y2="21"/></svg>, label:"Trim (T)" },
+    { id:"select", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3l14 7-7 1.5 2 6.5L5 3z"/></svg>, label:"Select (V)" },
+    { id:"cut",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>, label:"Cut (C)" },
+    { id:"trim",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>, label:"Trim (T)" },
   ];
 
   const editActions = [
-    { label:"Split (S)",  icon:"✂", action: onSplitClip,          disabled: !state.selectedClip },
-    { label:"Trim In",    icon:"◁|", action: onTrimInAtPlayhead,   disabled: !state.selectedClip },
-    { label:"Trim Out",   icon:"|▷", action: onTrimOutAtPlayhead,  disabled: !state.selectedClip },
-    { label:"Duplicate",  icon:"⊕",  action: onDuplicateClip,      disabled: !state.selectedClip },
-    { label:"Delete",     icon:"✕",  action: onDeleteClip,         disabled: !state.selectedClip, danger: true },
+    { label:"Split (S)",  icon:<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, action: onSplitClip,          disabled: !state.selectedClip },
+    { label:"Trim In",    icon:<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>, action: onTrimInAtPlayhead,   disabled: !state.selectedClip },
+    { label:"Trim Out",   icon:<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>, action: onTrimOutAtPlayhead,  disabled: !state.selectedClip },
+    { label:"Duplicate",  icon:<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>, action: onDuplicateClip,      disabled: !state.selectedClip },
+    { label:"Delete",     icon:<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>, action: onDeleteClip,         disabled: !state.selectedClip, danger: true },
   ];
 
   const activeRatioObj = ASPECT_RATIOS.find(a => a.id === (state.aspectRatio || "16:9")) || ASPECT_RATIOS[0];
 
   const tabsConfig = [
-    { id: "media", label: "Media", icon: "📹" },
-    { id: "text", label: "Text", icon: "T" },
-    { id: "stickers", label: "Stickers", icon: "✨" },
-    { id: "audio", label: "Audio", icon: "🎵" },
-    { id: "presets", label: "LUTs", icon: "🎨" },
-    { id: "transitions", label: "FX", icon: "◐" },
-    { id: "properties", label: "Props", icon: "⚙️" },
+    { id: "media", label: "Media", icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg> },
+    { id: "text", label: "Text", icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg> },
+    { id: "stickers", label: "Emoji", icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg> },
+    { id: "audio", label: "Audio", icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> },
+    { id: "presets", label: "Color", icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg> },
+    { id: "transitions", label: "Effects", icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+    { id: "properties", label: "Inspect", icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg> },
   ];
 
   return (
@@ -961,19 +961,20 @@ export default function VideoEditor({ onBack, user, initialProject }) {
             >↷</button>
           </div>
 
-          <button className="tool-btn" onClick={() => setShowShortcutsModal(true)} title="Hotkeys (?)" style={{ padding:"4px 8px", fontSize:"11px" }}>
-            ⌨️ Hotkeys
+          <button className="tool-btn" onClick={() => setShowShortcutsModal(true)} title="Hotkeys (?)" style={{ padding:"4px 9px", fontSize:"11px", gap:"5px" }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><path d="M6 8h.001M10 8h.001M14 8h.001M18 8h.001M6 12h.001M10 12h.001M14 12h.001M18 12h.001M6 16h12"/></svg>
+            Keys
           </button>
         </div>
 
         {/* Right: Import/Export JSON + Export Video */}
         <div style={{ display:"flex", alignItems:"center", gap:"6px", flexShrink:0 }}>
           <input ref={jsonInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={importProjectJson} />
-          <button className="tool-btn" onClick={() => jsonInputRef.current.click()} title="Import JSON" style={{ padding: "4px 8px", fontSize: "11px" }}>
-            📥
+          <button className="tool-btn" onClick={() => jsonInputRef.current.click()} title="Import Project" style={{ padding: "4px 8px", fontSize: "11px" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           </button>
-          <button className="tool-btn" onClick={exportProjectJson} title="Backup JSON" style={{ padding: "4px 8px", fontSize: "11px" }}>
-            💾
+          <button className="tool-btn" onClick={exportProjectJson} title="Save Project" style={{ padding: "4px 8px", fontSize: "11px" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           </button>
 
           <div style={{ height:"16px", width:"1px", background:"rgba(225,73,109,0.18)" }} />
@@ -999,8 +1000,8 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                 onClick={() => handleTabIconClick(t.id)}
                 title={t.label}
               >
-                <span style={{ fontSize:"16px" }}>{t.icon}</span>
-                <span>{t.label}</span>
+                <span style={{ display:"flex", alignItems:"center", justifyContent:"center", lineHeight:1 }}>{t.icon}</span>
+                <span style={{ fontSize:"9px", letterSpacing:"0.03em" }}>{t.label}</span>
               </button>
             );
           })}
@@ -1039,8 +1040,14 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               {leftTab === "media" && (
                 <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
                   <div style={{ display:"flex", gap:"6px" }}>
-                    <button className="tool-btn" onClick={onAddVideo} style={{ flex:1, justifyContent:"center", fontSize:"11px" }}>📹 Video</button>
-                    <button className="tool-btn" onClick={onAddImage} style={{ flex:1, justifyContent:"center", fontSize:"11px" }}>🖼 Photo</button>
+                    <button className="tool-btn" onClick={onAddVideo} style={{ flex:1, justifyContent:"center", fontSize:"11px", gap:"5px" }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                      Video
+                    </button>
+                    <button className="tool-btn" onClick={onAddImage} style={{ flex:1, justifyContent:"center", fontSize:"11px", gap:"5px" }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      Photo
+                    </button>
                   </div>
 
                   <div style={{ fontSize:"10px", color:"#8c8780", fontWeight:600, letterSpacing:"0.05em" }}>CURATED STOCK MEDIA</div>

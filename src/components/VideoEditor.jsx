@@ -1,36 +1,96 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useEditorState } from "../hooks/useEditorState";
-import { uid, fmtTime } from "../constants";
+import {
+  uid, fmtTime, ASPECT_RATIOS, EFFECT_PRESETS, TEXT_PRESETS,
+  FONT_FAMILIES, SHAPE_TYPES, STICKERS, BG_MUSIC, STOCK_MEDIA,
+  TRANSITIONS, ANIMATIONS, GRADIENTS
+} from "../constants";
 import Timeline from "./Timeline";
 import ExportModal from "./ExportModal";
+import ShortcutsModal from "./ShortcutsModal";
+
+const SFX_LIBRARY = [
+  { id: "sfx1", name: "Whoosh Swish", type: "audio", url: "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3", duration: 1, category: "SFX", thumb: "💨" },
+  { id: "sfx2", name: "Pop Click", type: "audio", url: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3", duration: 1, category: "SFX", thumb: "🎈" },
+  { id: "sfx3", name: "Success Bell", type: "audio", url: "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3", duration: 2, category: "SFX", thumb: "🔔" },
+  { id: "sfx4", name: "Camera Shutter", type: "audio", url: "https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3", duration: 1, category: "SFX", thumb: "📸" },
+  { id: "sfx5", name: "Applause Cheer", type: "audio", url: "https://assets.mixkit.co/active_storage/sfx/2805/2805-preview.mp3", duration: 4, category: "SFX", thumb: "👏" },
+  { id: "sfx6", name: "Glitch Buzz", type: "audio", url: "https://assets.mixkit.co/active_storage/sfx/2688/2688-preview.mp3", duration: 2, category: "SFX", thumb: "⚡" },
+];
 
 export default function VideoEditor({ onBack, user, initialProject }) {
   const [state, dispatch] = useEditorState();
   const [showExport, setShowExport]               = useState(false);
   const [exportUrl, setExportUrl]                 = useState(null);
-  const [showAddMenu, setShowAddMenu]             = useState(false);
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
   const [leftTab, setLeftTab]                     = useState("media");
   const [activeTool, setActiveTool]               = useState("select"); // select | cut | trim
-  const [undoStack, setUndoStack]                 = useState([]);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal]       = useState(false);
+  const [draggingCanvasClip, setDraggingCanvasClip] = useState(null);
+  const [exportResolution, setExportResolution]   = useState("1080p");
+  const [exportFps, setExportFps]                 = useState(30);
+
   const [projectTitle, setProjectTitle]           = useState(() => {
-    return initialProject ? initialProject.title : "Untitled Video Project";
+    return initialProject ? initialProject.title : "Cinematic Video Studio";
   });
+
   const timelineRef      = useRef(null);
   const playIntervalRef  = useRef(null);
   const fileInputRef     = useRef(null);
   const jsonInputRef     = useRef(null);
   const fileInputTypeRef = useRef("video");
   const videoRef         = useRef(null);
+  const canvasPreviewRef = useRef(null);
 
-  // Load project if provided
+  // Initialize sample project tracks if brand new project
   useEffect(() => {
     if (initialProject && initialProject.data) {
       dispatch({ type: "LOAD_PROJECT", projectState: initialProject.data });
-      if (initialProject.title) {
-        setProjectTitle(initialProject.title);
-      }
+      if (initialProject.title) setProjectTitle(initialProject.title);
+    } else if (state.tracks.length === 0) {
+      // Add standard initial tracks for instant user editing
+      const vTrack = { id: uid(), type: "video", name: "Video Layer 1", clips: [] };
+      const tTrack = { id: uid(), type: "text", name: "Titles & Text", clips: [] };
+      const aTrack = { id: uid(), type: "audio", name: "Background Music", clips: [] };
+      dispatch({ type: "ADD_TRACK", track: vTrack });
+      dispatch({ type: "ADD_TRACK", track: tTrack });
+      dispatch({ type: "ADD_TRACK", track: aTrack });
+
+      // Add a starter stock video & title text
+      const starterVideo = STOCK_MEDIA[0];
+      dispatch({
+        type: "ADD_CLIP",
+        trackId: vTrack.id,
+        clip: {
+          id: uid(),
+          name: starterVideo.name,
+          start: 0,
+          duration: starterVideo.duration,
+          url: starterVideo.url,
+          type: "video",
+        }
+      });
+      dispatch({
+        type: "ADD_CLIP",
+        trackId: tTrack.id,
+        clip: {
+          id: uid(),
+          name: "Welcome Title",
+          text: "CINÉCUT STUDIO",
+          start: 0.5,
+          duration: 5,
+          type: "text",
+          x: 50,
+          y: 50,
+          fontSize: 42,
+          fontFamily: "'Syne', sans-serif",
+          color: "#ffffff",
+          bgColor: "rgba(10, 8, 7, 0.82)",
+          borderColor: "#e1496d",
+          animation: "slideUp",
+        }
+      });
     }
   }, [initialProject, dispatch]);
 
@@ -38,7 +98,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     const savedWorks = JSON.parse(localStorage.getItem("creatify_past_works") || "[]");
     const projectId = initialProject?.id || `video_${Date.now()}`;
     const existingIdx = savedWorks.findIndex(w => w.id === projectId);
-    
+
     const projectData = {
       id: projectId,
       title: projectTitle.trim() || "Untitled Video Project",
@@ -48,31 +108,33 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       accent: "#e1496d",
       gradient: "linear-gradient(135deg, #23141b 0%, #3a0c19 50%, #1a0f14 100%)",
       icon: "🎬",
-      tags: ["4K UHD", "LUTs", `${state.tracks.reduce((acc, t) => acc + t.clips.length, 0)} Clips`],
-      desc: `Edited project with ${state.tracks.length} tracks.`,
+      tags: [state.aspectRatio || "16:9", `${state.tracks.reduce((acc, t) => acc + t.clips.length, 0)} Clips`],
+      desc: `Edited project with ${state.tracks.length} tracks in ${state.aspectRatio} format.`,
       data: {
         tracks: state.tracks,
         duration: state.duration,
+        aspectRatio: state.aspectRatio,
         brightness: state.brightness,
         contrast: state.contrast,
         saturation: state.saturation,
         hue: state.hue,
         opacity: state.opacity,
+        sepia: state.sepia,
         playbackSpeed: state.playbackSpeed,
         blur: state.blur,
         sharpen: state.sharpen,
         vignette: state.vignette
       }
     };
-    
+
     if (existingIdx > -1) {
       savedWorks[existingIdx] = projectData;
     } else {
       savedWorks.unshift(projectData);
     }
-    
+
     localStorage.setItem("creatify_past_works", JSON.stringify(savedWorks));
-    
+
     if (user && user.email) {
       const userKey = `creatify_video_projects_${user.email}`;
       const userProjects = JSON.parse(localStorage.getItem(userKey) || "[]");
@@ -97,7 +159,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       })
       .then(res => {
         if (!res.ok) throw new Error("Server rejected save");
-        console.log("Saved video project to DB successfully");
       })
       .catch(err => {
         console.error("DB save error:", err.message);
@@ -114,16 +175,16 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     onBack();
   };
 
-  // ── Active clip at playhead ──────────────────────────────────────────────
+  // ── Active video clip at playhead ────────────────────────────────────────
   const activeClip = state.tracks.flatMap(t => t.clips).find(c =>
-    c.start <= state.playhead && c.start + c.duration > state.playhead && (c.videoEl || c.imageEl)
+    c.start <= state.playhead && c.start + c.duration > state.playhead && (c.videoEl || c.url) && (c.type === "video" || c.type === "image")
   );
 
   // ── Sync video element with timeline ────────────────────────────────────
   useEffect(() => {
     if (!videoRef.current) return;
     const video = videoRef.current;
-    if (activeClip?.videoEl) {
+    if (activeClip?.type === "video" && activeClip?.url) {
       if (video.src !== activeClip.url) { video.src = activeClip.url; video.load(); }
       const videoTime = state.playhead - activeClip.start;
       if (state.isPlaying) { video.play().catch(() => {}); }
@@ -132,7 +193,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
   }, [state.playhead, state.isPlaying, activeClip]);
 
   useEffect(() => {
-    if (!videoRef.current || !state.isPlaying || !activeClip?.videoEl) return;
+    if (!videoRef.current || !state.isPlaying || activeClip?.type !== "video") return;
     const video = videoRef.current;
     const handleTimeUpdate = () => dispatch({ type: "SET_PLAYHEAD", time: activeClip.start + video.currentTime });
     video.addEventListener("timeupdate", handleTimeUpdate);
@@ -149,7 +210,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
 
   // ── Playback interval for non-video clips ────────────────────────────
   useEffect(() => {
-    const hasVideo = state.tracks.some(t => t.clips.some(c => c.videoEl && c.start <= state.playhead && c.start + c.duration > state.playhead));
+    const hasVideo = state.tracks.some(t => t.clips.some(c => c.type === "video" && c.start <= state.playhead && c.start + c.duration > state.playhead));
     if (state.isPlaying && !hasVideo) {
       playIntervalRef.current = setInterval(() => {
         dispatch({ type: "SET_PLAYHEAD", time: state.playhead + 0.033 * state.playbackSpeed });
@@ -159,10 +220,9 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     return () => clearInterval(playIntervalRef.current);
   }, [state.isPlaying, state.playhead, state.duration, dispatch, state.tracks, state.playbackSpeed]);
 
-  // ── Audio playback sync engine ──────────────────────────────────────────
+  // ── Audio playback engine ──────────────────────────────────────────
   const audioElementsRef = useRef({});
 
-  // Cleanup audios on unmount
   useEffect(() => {
     return () => {
       Object.values(audioElementsRef.current).forEach(audio => {
@@ -172,13 +232,11 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     };
   }, []);
 
-  // Sync audio playback with timeline playhead
   useEffect(() => {
     const audioClips = state.tracks
       .filter(t => t.type === "audio")
       .flatMap(t => t.clips);
 
-    // Remove old audio tags
     const activeClipIds = new Set(audioClips.map(c => c.id));
     Object.keys(audioElementsRef.current).forEach(id => {
       if (!activeClipIds.has(id)) {
@@ -189,7 +247,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       }
     });
 
-    // Sync playhead state with actual HTML5 Audio playback
     audioClips.forEach(clip => {
       let audio = audioElementsRef.current[clip.id];
       if (!audio) {
@@ -198,29 +255,22 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         audioElementsRef.current[clip.id] = audio;
       }
 
-      // Update volume
-      audio.volume = clip.volume ?? 1;
+      audio.volume = Math.max(0, Math.min(1, clip.volume ?? 1));
 
       const offsetTime = state.playhead - clip.start;
       const isWithinClipRange = offsetTime >= 0 && offsetTime < clip.duration;
 
       if (state.isPlaying && isWithinClipRange) {
-        // Sync timecode if off by > 0.15s (prevents stuttering on continuous play)
         if (Math.abs(audio.currentTime - offsetTime) > 0.15) {
           audio.currentTime = offsetTime;
         }
         if (audio.paused) {
-          audio.play().catch(e => console.warn("Audio element failed playing:", e.message));
+          audio.play().catch(e => console.warn("Audio play blocked:", e.message));
         }
       } else {
-        if (!audio.paused) {
-          audio.pause();
-        }
-        if (isWithinClipRange) {
-          audio.currentTime = offsetTime;
-        } else {
-          audio.currentTime = 0;
-        }
+        if (!audio.paused) audio.pause();
+        if (isWithinClipRange) audio.currentTime = offsetTime;
+        else audio.currentTime = 0;
       }
     });
   }, [state.isPlaying, state.playhead, state.tracks]);
@@ -229,6 +279,17 @@ export default function VideoEditor({ onBack, user, initialProject }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+      if (e.key === "Escape") {
+        setShowShortcutsModal(false);
+        setShowLeaveModal(false);
+        dispatch({ type: "DESELECT_ALL" });
+        return;
+      }
+      if (e.key === "?") {
+        e.preventDefault();
+        setShowShortcutsModal(prev => !prev);
+        return;
+      }
       switch (e.key) {
         case " ": e.preventDefault(); dispatch({ type: "SET_PLAYING", value: !state.isPlaying }); break;
         case "ArrowLeft":
@@ -237,9 +298,24 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         case "ArrowRight":
           e.preventDefault();
           dispatch({ type: "SET_PLAYHEAD", time: Math.min(state.duration, state.playhead + (e.shiftKey ? 0.033 : 5)) }); break;
-        case "s": if (e.ctrlKey || e.metaKey) { e.preventDefault(); onSplitClip(); } break;
+        case "s": case "S":
+          if (e.ctrlKey || e.metaKey) { e.preventDefault(); handleSaveAndExit(); }
+          else { e.preventDefault(); onSplitClip(); } break;
         case "Delete": case "Backspace": if (state.selectedClip) { e.preventDefault(); onDeleteClip(); } break;
-        case "z": if (e.ctrlKey || e.metaKey) { e.preventDefault(); /* undo stub */ } break;
+        case "z": case "Z":
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            if (e.shiftKey) dispatch({ type: "REDO" });
+            else dispatch({ type: "UNDO" });
+          }
+          break;
+        case "y": case "Y": if (e.ctrlKey || e.metaKey) { e.preventDefault(); dispatch({ type: "REDO" }); } break;
+        case "i": case "I": e.preventDefault(); dispatch({ type: "SET_IN_POINT", value: state.playhead }); break;
+        case "o": case "O": e.preventDefault(); dispatch({ type: "SET_OUT_POINT", value: state.playhead }); break;
+        case "m": case "M": e.preventDefault(); dispatch({ type: "ADD_MARKER", time: state.playhead, label: "Marker", color: "#e1496d" }); break;
+        case "c": case "C": setActiveTool("cut"); break;
+        case "v": case "V": setActiveTool("select"); break;
+        case "t": case "T": setActiveTool("trim"); break;
         case "Home": e.preventDefault(); dispatch({ type: "SET_PLAYHEAD", time: 0 }); break;
         case "End": e.preventDefault(); dispatch({ type: "SET_PLAYHEAD", time: state.duration }); break;
       }
@@ -248,22 +324,130 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [state.selectedClip, state.playhead, state.duration, state.isPlaying, state.tracks, dispatch]);
 
-  // ── Handlers ─────────────────────────────────────────────────────────
+  // ── Selected clip data & properties ──────────────────────────────────
   const selectedClipData = state.selectedClip
     ? state.tracks.flatMap(t => t.clips).find(c => c.id === state.selectedClip)
     : null;
 
   useEffect(() => { if (state.selectedClip) setLeftTab("properties"); }, [state.selectedClip]);
 
-  const selectedTextClip = state.selectedClip
-    ? state.tracks.flatMap(t => t.clips).find(c => c.id === state.selectedClip && c.type === "text")
-    : null;
-
-  const addTextClip = () => {
+  // ── Clip Adders ──────────────────────────────────────────────────────
+  const addTextClip = (preset = null) => {
     let track = state.tracks.find(t => t.type === "text");
-    if (!track) { track = { id: uid(), type: "text", name: "Text", clips: [] }; dispatch({ type: "ADD_TRACK", track }); }
+    if (!track) {
+      track = { id: uid(), type: "text", name: "Text Track", clips: [] };
+      dispatch({ type: "ADD_TRACK", track });
+    }
     const maxStart = track.clips.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
-    dispatch({ type: "ADD_CLIP", trackId: track.id, clip: { id: uid(), name: "Text Clip", text: "Your Text Here", start: maxStart, duration: 4, type: "text" } });
+    const start = Math.max(state.playhead, maxStart);
+
+    const clipData = {
+      id: uid(),
+      name: preset ? preset.name : "Title Text",
+      text: preset ? (preset.name === "Big Heading" ? "MAIN HEADLINE" : preset.name) : "Your Title Here",
+      start,
+      duration: 4,
+      type: "text",
+      x: 50,
+      y: 50,
+      fontSize: preset ? Math.round(preset.fontSize / 2.5) : 36,
+      fontFamily: preset?.neon ? "'Syne', sans-serif" : "'Poppins', sans-serif",
+      color: preset?.color || "#ffffff",
+      bgColor: preset?.neon ? "rgba(255, 107, 138, 0.15)" : "rgba(10, 8, 7, 0.8)",
+      borderColor: preset?.stroke || "#e1496d",
+      animation: preset?.neon ? "pulse" : "slideUp",
+    };
+
+    dispatch({ type: "ADD_CLIP", trackId: track.id, clip: clipData });
+  };
+
+  const addStickerClip = (sticker) => {
+    let track = state.tracks.find(t => t.type === "sticker");
+    if (!track) {
+      track = { id: uid(), type: "sticker", name: "Stickers & Emojis", clips: [] };
+      dispatch({ type: "ADD_TRACK", track });
+    }
+    const maxStart = track.clips.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
+    const start = Math.max(state.playhead, maxStart);
+
+    dispatch({
+      type: "ADD_CLIP",
+      trackId: track.id,
+      clip: {
+        id: uid(),
+        name: sticker.name,
+        emoji: sticker.emoji,
+        start,
+        duration: 4,
+        type: "sticker",
+        x: 50,
+        y: 50,
+        scale: 1,
+        animation: "popIn",
+      }
+    });
+  };
+
+  const addShapeClip = (shape) => {
+    let track = state.tracks.find(t => t.type === "shape");
+    if (!track) {
+      track = { id: uid(), type: "shape", name: "Geometric Shapes", clips: [] };
+      dispatch({ type: "ADD_TRACK", track });
+    }
+    const maxStart = track.clips.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
+    const start = Math.max(state.playhead, maxStart);
+
+    dispatch({
+      type: "ADD_CLIP",
+      trackId: track.id,
+      clip: {
+        id: uid(),
+        name: shape.name,
+        shapeIcon: shape.icon,
+        shapeType: shape.id,
+        start,
+        duration: 5,
+        type: "shape",
+        x: 50,
+        y: 50,
+        fill: shape.default.fill,
+        stroke: shape.default.stroke,
+        strokeWidth: shape.default.strokeWidth,
+        animation: "fadeIn",
+      }
+    });
+  };
+
+  const addStockMedia = (item) => {
+    let track = state.tracks.find(t => t.type === item.type);
+    let trackId;
+    if (!track) {
+      trackId = uid();
+      dispatch({ type: "ADD_TRACK", track: { id: trackId, type: item.type, name: item.type.toUpperCase() + " Track", clips: [] } });
+    } else trackId = track.id;
+
+    const clipId = uid();
+    const newClip = {
+      id: clipId,
+      name: item.name,
+      start: state.playhead,
+      duration: item.duration,
+      url: item.url,
+      type: item.type,
+      volume: item.type === "audio" ? 0.8 : 1,
+    };
+
+    if (item.type === "image") {
+      const img = new Image();
+      img.onload = () => dispatch({ type: "ADD_CLIP", trackId, clip: { ...newClip, imageEl: img } });
+      img.src = item.url;
+    } else if (item.type === "video") {
+      const v = document.createElement("video");
+      v.src = item.url; v.playsInline = true; v.crossOrigin = "anonymous";
+      v.onloadedmetadata = () => dispatch({ type: "ADD_CLIP", trackId, clip: { ...newClip, duration: v.duration || item.duration, videoEl: v } });
+    } else {
+      dispatch({ type: "ADD_CLIP", trackId, clip: newClip });
+    }
   };
 
   const handleFileUpload = (e) => {
@@ -285,15 +469,15 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         video.src = url; video.playsInline = true; video.crossOrigin = "anonymous";
         video.onloadedmetadata = () => {
           let track = state.tracks.find(t => t.type === "video");
-          if (!track) { track = { id: uid(), type: "video", name: "Video", clips: [] }; dispatch({ type: "ADD_TRACK", track }); }
+          if (!track) { track = { id: uid(), type: "video", name: "Video Layer", clips: [] }; dispatch({ type: "ADD_TRACK", track }); }
           const maxStart = track.clips.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
           dispatch({ type: "ADD_CLIP", trackId: track.id, clip: { id: clipId, name: file.name, start: maxStart, duration: video.duration || 10, url, videoEl: video, type: "video" } });
         };
       } else if (file.type.startsWith("audio/")) {
         let track = state.tracks.find(t => t.type === "audio");
-        if (!track) { track = { id: uid(), type: "audio", name: "Audio", clips: [] }; dispatch({ type: "ADD_TRACK", track }); }
+        if (!track) { track = { id: uid(), type: "audio", name: "Audio Track", clips: [] }; dispatch({ type: "ADD_TRACK", track }); }
         const maxStart = track.clips.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
-        dispatch({ type: "ADD_CLIP", trackId: track.id, clip: { id: clipId, name: file.name, start: maxStart, duration: 30, url, type: "audio" } });
+        dispatch({ type: "ADD_CLIP", trackId: track.id, clip: { id: clipId, name: file.name, start: maxStart, duration: 30, url, type: "audio", volume: 1 } });
       }
     });
     e.target.value = "";
@@ -313,7 +497,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
   const handleClipMouseDown = (e, trackId, clip) => {
     e.stopPropagation();
     dispatch({ type: "SELECT_CLIP", clipId: clip.id });
-    // Cut tool: split on click
     if (activeTool === "cut") {
       const track = state.tracks.find(t => t.id === trackId);
       if (track) dispatch({ type: "SPLIT_CLIP", trackId, clipId: clip.id, time: state.playhead });
@@ -333,6 +516,33 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
   };
 
+  // Canvas element dragging
+  const handleCanvasElementMouseDown = (e, clip) => {
+    e.stopPropagation();
+    dispatch({ type: "SELECT_CLIP", clipId: clip.id });
+    const previewContainer = canvasPreviewRef.current;
+    if (!previewContainer) return;
+    const rect = previewContainer.getBoundingClientRect();
+
+    const onMove = (me) => {
+      const newXPercentage = Math.max(5, Math.min(95, ((me.clientX - rect.left) / rect.width) * 100));
+      const newYPercentage = Math.max(5, Math.min(95, ((me.clientY - rect.top) / rect.height) * 100));
+      dispatch({
+        type: "UPDATE_CLIP",
+        clipId: clip.id,
+        patch: { x: Math.round(newXPercentage), y: Math.round(newYPercentage) }
+      });
+    };
+
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
   const onSplitClip = () => {
     if (!state.selectedClip) return;
     const clip = state.tracks.flatMap(t => t.clips).find(c => c.id === state.selectedClip);
@@ -343,16 +553,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
   const onDeleteClip = () => {
     if (!state.selectedClip) return;
     dispatch({ type: "REMOVE_CLIP", clipId: state.selectedClip });
-  };
-
-  const onTrimClip = () => {
-    if (!state.selectedClip) return;
-    const clip = state.tracks.flatMap(t => t.clips).find(c => c.id === state.selectedClip);
-    const track = state.tracks.find(t => t.clips.some(c => c.id === state.selectedClip));
-    if (clip && track) {
-      const trim = clip.duration * 0.1;
-      dispatch({ type: "TRIM_CLIP", trackId: track.id, clipId: state.selectedClip, newStart: clip.start + trim, newDuration: clip.duration - trim * 2 });
-    }
   };
 
   const onTrimInAtPlayhead = () => {
@@ -389,43 +589,17 @@ export default function VideoEditor({ onBack, user, initialProject }) {
   const onFrameBackward = () => dispatch({ type: "SET_PLAYHEAD", time: Math.max(0, state.playhead - 0.033) });
   const onSetPlaybackSpeed = (speed) => { dispatch({ type: "SET_PLAYBACK_SPEED", value: speed }); if (videoRef.current) videoRef.current.playbackRate = speed; };
   const onAddTrack = () => { dispatch({ type: "ADD_TRACK", track: { id: uid(), type: "video", name: `Track ${state.tracks.length + 1}`, clips: [] } }); };
-  const onResetFilters = () => ["brightness","contrast","saturation","hue","opacity","blur","sharpen","vignette"].forEach(k => dispatch({ type: "SET_FILTER", key: k, value: k==="hue"||k==="blur"||k==="sharpen"||k==="vignette" ? 0 : 100 }));
+  const onResetFilters = () => ["brightness","contrast","saturation","hue","sepia","opacity","blur","sharpen","vignette"].forEach(k => dispatch({ type: "SET_FILTER", key: k, value: k==="hue"||k==="blur"||k==="sharpen"||k==="vignette"||k==="sepia" ? 0 : 100 }));
   const onSetClipVolume = (clipId, volume) => dispatch({ type: "UPDATE_CLIP_VOLUME", clipId, volume });
+
   const onAddVideo  = () => { fileInputTypeRef.current = "video"; fileInputRef.current.click(); };
   const onAddImage  = () => { fileInputTypeRef.current = "image"; fileInputRef.current.click(); };
   const onAddAudio  = () => { fileInputTypeRef.current = "audio"; fileInputRef.current.click(); };
 
-  const STOCK_MEDIA = [
-    { id: "sv1", name: "SaaS Product Intro",   type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-animation-of-a-screen-with-graphs-34356-large.mp4",                    duration: 8,  thumb: "📊" },
-    { id: "sv2", name: "Modern Office Loop",    type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-woman-working-on-a-laptop-in-a-bright-office-42323-large.mp4",         duration: 12, thumb: "💻" },
-    { id: "sv3", name: "Cinematic Forest",      type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-thick-forest-and-river-42358-large.mp4",               duration: 15, thumb: "🌲" },
-    { id: "si1", name: "Creatify Hero Art",     type: "image", url: "https://picsum.photos/id/180/800/450",  duration: 5,  thumb: "📸" },
-    { id: "si2", name: "Creative Brand Logo",   type: "image", url: "https://picsum.photos/id/200/800/450",  duration: 5,  thumb: "🎨" },
-    { id: "sa1", name: "Upbeat Synthwave",      type: "audio", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", duration: 30, thumb: "🎵" },
-    { id: "sa2", name: "Ambient Piano",         type: "audio", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", duration: 30, thumb: "🎹" },
-  ];
-
-  const addStockMedia = (item) => {
-    let track = state.tracks.find(t => t.type === item.type);
-    let trackId;
-    if (!track) { trackId = uid(); dispatch({ type: "ADD_TRACK", track: { id: trackId, type: item.type, name: item.type.toUpperCase() + " Track", clips: [] } }); }
-    else trackId = track.id;
-    const clipId = uid();
-    const newClip = { id: clipId, name: item.name, start: state.playhead, duration: item.duration, url: item.url, type: item.type };
-    if (item.type === "image") { const img = new Image(); img.onload = () => dispatch({ type: "ADD_CLIP", trackId, clip: { ...newClip, imageEl: img } }); img.src = item.url; }
-    else if (item.type === "video") { const v = document.createElement("video"); v.src = item.url; v.playsInline = true; v.crossOrigin = "anonymous"; v.onloadedmetadata = () => dispatch({ type: "ADD_CLIP", trackId, clip: { ...newClip, duration: v.duration || item.duration, videoEl: v } }); }
-    else dispatch({ type: "ADD_CLIP", trackId, clip: newClip });
-  };
-
   const applyPreset = (name) => {
-    const presets = {
-      vintage: { brightness:105, contrast:110, saturation:125, hue:6,   vignette:20, blur:0, sharpen:5  },
-      cyber:   { brightness:100, contrast:125, saturation:160, hue:310, vignette:15, blur:0, sharpen:20 },
-      noir:    { brightness:95,  contrast:135, saturation:0,   hue:0,   vignette:40, blur:0, sharpen:10 },
-      cream:   { brightness:110, contrast:90,  saturation:95,  hue:10,  vignette:8,  blur:2, sharpen:0  },
-      reset:   { brightness:100, contrast:100, saturation:100, hue:0,   vignette:0,  blur:0, sharpen:0, opacity:100 },
-    };
-    if (presets[name]) Object.entries(presets[name]).forEach(([key, value]) => dispatch({ type: "SET_FILTER", key, value }));
+    if (EFFECT_PRESETS[name]) {
+      Object.entries(EFFECT_PRESETS[name]).forEach(([key, value]) => dispatch({ type: "SET_FILTER", key, value }));
+    }
   };
 
   const exportProjectJson = () => {
@@ -433,10 +607,12 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       title: projectTitle,
       tracks: state.tracks,
       duration: state.duration,
+      aspectRatio: state.aspectRatio,
       brightness: state.brightness,
       contrast: state.contrast,
       saturation: state.saturation,
       hue: state.hue,
+      sepia: state.sepia,
       opacity: state.opacity,
       playbackSpeed: state.playbackSpeed,
       blur: state.blur,
@@ -471,40 +647,36 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     e.target.value = "";
   };
 
+  // Advanced Client-Side Multi-Track Exporter
   const performRealExport = async () => {
     setShowExport(true);
     dispatch({ type: "SET_EXPORT_PROGRESS", value: 0 });
     setExportUrl(null);
 
     const canvas = document.createElement("canvas");
-    canvas.width = 1280;
-    canvas.height = 720;
+    const aspectObj = ASPECT_RATIOS.find(a => a.id === state.aspectRatio) || ASPECT_RATIOS[0];
+    canvas.width = exportResolution === "4K" ? 3840 : exportResolution === "720p" ? 1280 : aspectObj.w || 1920;
+    canvas.height = exportResolution === "4K" ? 2160 : exportResolution === "720p" ? 720 : aspectObj.h || 1080;
+
     const ctx = canvas.getContext("2d");
+    const stream = canvas.captureStream(exportFps);
 
-    const stream = canvas.captureStream(30);
-
-    // Instantiate client-side Web Audio mixing pipeline
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const audioDest = audioCtx.createMediaStreamDestination();
 
-    // Merge video track and mixed audio track
     const combinedTracks = [];
     stream.getVideoTracks().forEach(t => combinedTracks.push(t));
     audioDest.stream.getAudioTracks().forEach(t => combinedTracks.push(t));
     const combinedStream = new MediaStream(combinedTracks);
-    
+
     let options = { mimeType: 'video/webm;codecs=vp8,opus' };
-    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-      options = { mimeType: 'video/webm' };
-    }
-    
+    if (!MediaRecorder.isTypeSupported(options.mimeType)) options = { mimeType: 'video/webm' };
+
     const chunks = [];
     const recorder = new MediaRecorder(combinedStream, options);
-    
-    recorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) chunks.push(e.data);
-    };
-    
+
+    recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+
     const activeSources = [];
 
     recorder.onstop = () => {
@@ -512,16 +684,14 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       const url = URL.createObjectURL(blob);
       setExportUrl(url);
       dispatch({ type: "SET_EXPORT_PROGRESS", value: 100 });
-
-      // Clean up AudioContext & source nodes
       activeSources.forEach(s => { try { s.stop(); } catch(e) {} });
       audioCtx.close();
     };
 
     recorder.start();
 
-    const totalDuration = Math.min(state.duration || 60, 60); // cap export to max 60s for speed/memory safety
-    const fps = 20;
+    const totalDuration = Math.min(state.duration || 60, 60);
+    const fps = exportFps;
     const totalFrames = Math.ceil(totalDuration * fps);
     const timeStep = 1 / fps;
 
@@ -529,12 +699,11 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     const videoClips = clips.filter(c => c.type === 'video');
     const imageClips = clips.filter(c => c.type === 'image');
     const audioClips = clips.filter(c => c.type === 'audio');
-    
+
     const loadedImages = {};
     for (const c of imageClips) {
-      if (c.imageEl) {
-        loadedImages[c.id] = c.imageEl;
-      } else {
+      if (c.imageEl) loadedImages[c.id] = c.imageEl;
+      else {
         const img = new Image();
         img.src = c.url;
         await new Promise((res) => { img.onload = res; img.onerror = res; });
@@ -545,19 +714,14 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     const activeVideoElements = {};
     for (const c of videoClips) {
       const v = document.createElement("video");
-      v.src = c.url;
-      v.muted = true;
-      v.playsInline = true;
-      v.crossOrigin = "anonymous";
-      await new Promise((res) => { 
-        v.onloadedmetadata = res; 
-        v.onerror = res;
+      v.src = c.url; v.muted = true; v.playsInline = true; v.crossOrigin = "anonymous";
+      await new Promise((res) => {
+        v.onloadedmetadata = res; v.onerror = res;
         setTimeout(res, 1000);
       });
       activeVideoElements[c.id] = v;
     }
 
-    // Schedule all audio & video files' audio to compile inside the AudioContext
     const allClipsWithAudio = [...audioClips, ...videoClips];
     for (const c of allClipsWithAudio) {
       try {
@@ -565,33 +729,26 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         if (res.ok) {
           const arrayBuf = await res.arrayBuffer();
           const audioBuf = await audioCtx.decodeAudioData(arrayBuf);
-          
           const source = audioCtx.createBufferSource();
           source.buffer = audioBuf;
-          
           const gainNode = audioCtx.createGain();
-          gainNode.gain.value = c.volume ?? 1;
-          
+          gainNode.gain.value = Math.max(0, Math.min(1, c.volume ?? 1));
           source.connect(gainNode);
           gainNode.connect(audioDest);
-          
-          // Connect to destination if you want to preview-hear it during export (muted by default)
-          // gainNode.connect(audioCtx.destination);
-          
           source.start(audioCtx.currentTime + c.start);
           activeSources.push(source);
         }
       } catch (err) {
-        console.warn("Could not decode audio channel for clip:", c.name, err.message);
+        console.warn("Audio channel decode note:", c.name, err.message);
       }
     }
 
-    // Capture frames sequentially
+    // Render frame pipeline
     for (let i = 0; i < totalFrames; i++) {
       const currentTimeCode = i * timeStep;
       dispatch({ type: "SET_EXPORT_PROGRESS", value: (i / totalFrames) * 95 });
 
-      ctx.fillStyle = "#1a0f14";
+      ctx.fillStyle = "#120e12";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const currentActiveClips = clips.filter(c => c.start <= currentTimeCode && c.start + c.duration > currentTimeCode);
@@ -599,29 +756,27 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       for (const c of currentActiveClips) {
         if (c.type === 'image' && loadedImages[c.id]) {
           ctx.save();
-          ctx.filter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%) hue-rotate(${state.hue}deg) opacity(${state.opacity}%) blur(${state.blur}px)`;
+          ctx.filter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%) hue-rotate(${state.hue}deg) opacity(${state.opacity}%) blur(${state.blur}px) sepia(${state.sepia}%)`;
           ctx.drawImage(loadedImages[c.id], 0, 0, canvas.width, canvas.height);
           ctx.restore();
         } else if (c.type === 'video' && activeVideoElements[c.id]) {
           const v = activeVideoElements[c.id];
           const offsetTime = currentTimeCode - c.start;
           v.currentTime = Math.min(v.duration, Math.max(0, offsetTime));
-          await new Promise((res) => {
-            v.onseeked = res;
-            setTimeout(res, 50);
-          });
-          
+          await new Promise((res) => { v.onseeked = res; setTimeout(res, 40); });
+
           ctx.save();
-          ctx.filter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%) hue-rotate(${state.hue}deg) opacity(${state.opacity}%) blur(${state.blur}px)`;
+          ctx.filter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%) hue-rotate(${state.hue}deg) opacity(${state.opacity}%) blur(${state.blur}px) sepia(${state.sepia}%)`;
           ctx.drawImage(v, 0, 0, canvas.width, canvas.height);
           ctx.restore();
         }
       }
 
+      // Render Vignette
       if (state.vignette > 0) {
         const gradient = ctx.createRadialGradient(
           canvas.width / 2, canvas.height / 2, 10,
-          canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 1.5
+          canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 1.4
         );
         gradient.addColorStop(0, 'rgba(0,0,0,0)');
         gradient.addColorStop(1, `rgba(0,0,0,${state.vignette / 100})`);
@@ -629,28 +784,60 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      const activeTextClips = clips.filter(c => c.type === 'text' && c.start <= currentTimeCode && c.start + c.duration > currentTimeCode);
+      // Render Shapes
+      const activeShapeClips = currentActiveClips.filter(c => c.type === 'shape');
+      for (const c of activeShapeClips) {
+        ctx.save();
+        const posX = (c.x ?? 50) / 100 * canvas.width;
+        const posY = (c.y ?? 50) / 100 * canvas.height;
+        ctx.fillStyle = c.fill || "#e1496d";
+        ctx.strokeStyle = c.stroke || "#ffffff";
+        ctx.lineWidth = c.strokeWidth || 0;
+        ctx.beginPath();
+        ctx.arc(posX, posY, 80, 0, Math.PI * 2);
+        ctx.fill();
+        if (c.strokeWidth > 0) ctx.stroke();
+        ctx.restore();
+      }
+
+      // Render Text overlays
+      const activeTextClips = currentActiveClips.filter(c => c.type === 'text');
       for (const c of activeTextClips) {
         ctx.save();
-        ctx.font = `600 32px 'Poppins', sans-serif`;
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#e1496d';
-        ctx.lineWidth = 2;
+        const fontSize = Math.round((c.fontSize || 36) * (canvas.height / 720));
+        ctx.font = `700 ${fontSize}px ${c.fontFamily || "'Syne', sans-serif"}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        
-        const textX = canvas.width / 2;
-        const textY = canvas.height * 0.86;
-        
-        const textWidth = ctx.measureText(c.text).width;
-        ctx.fillStyle = 'rgba(10, 8, 7, 0.88)';
-        ctx.beginPath();
-        ctx.roundRect(textX - textWidth / 2 - 20, textY - 25, textWidth + 40, 50, 8);
-        ctx.fill();
-        ctx.stroke();
 
-        ctx.fillStyle = '#ffffff';
+        const textX = (c.x ?? 50) / 100 * canvas.width;
+        const textY = (c.y ?? 80) / 100 * canvas.height;
+
+        const textWidth = ctx.measureText(c.text).width;
+        if (c.bgColor) {
+          ctx.fillStyle = c.bgColor || 'rgba(10, 8, 7, 0.82)';
+          ctx.strokeStyle = c.borderColor || '#e1496d';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.roundRect(textX - textWidth / 2 - 24, textY - fontSize * 0.7, textWidth + 48, fontSize * 1.4, 12);
+          ctx.fill();
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = c.color || '#ffffff';
         ctx.fillText(c.text, textX, textY);
+        ctx.restore();
+      }
+
+      // Render Emoji / Stickers
+      const activeStickerClips = currentActiveClips.filter(c => c.type === 'sticker');
+      for (const c of activeStickerClips) {
+        ctx.save();
+        ctx.font = `600 72px 'Segoe UI Emoji', sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const stX = (c.x ?? 50) / 100 * canvas.width;
+        const stY = (c.y ?? 50) / 100 * canvas.height;
+        ctx.fillText(c.emoji || "✨", stX, stY);
         ctx.restore();
       }
 
@@ -660,240 +847,447 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     recorder.stop();
   };
 
-  // ── CSS filter string ────────────────────────────────────────────────
-  const cssFilter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%) hue-rotate(${state.hue}deg) opacity(${state.opacity}%) blur(${state.blur}px)`;
+  const cssFilter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%) hue-rotate(${state.hue}deg) opacity(${state.opacity}%) blur(${state.blur}px) sepia(${state.sepia}%)`;
 
-  // ── Tool definitions ────────────────────────────────────────────────
   const tools = [
     { id:"select", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M4 0l16 12-7 1 4 7-2 1-4-7-7 6z"/></svg>, label:"Select (V)" },
     { id:"cut",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>, label:"Cut (C)" },
     { id:"trim",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3l14 9-14 9V3z"/><line x1="19" y1="3" x2="19" y2="21"/></svg>, label:"Trim (T)" },
   ];
 
-  // ── Edit actions (toolbar) ────────────────────────────────────────
   const editActions = [
-    { label:"Split at playhead", icon:"✂", action: onSplitClip,          disabled: !state.selectedClip },
+    { label:"Split clip (S)",    icon:"✂", action: onSplitClip,          disabled: !state.selectedClip },
     { label:"Trim In",           icon:"◁|", action: onTrimInAtPlayhead,   disabled: !state.selectedClip },
     { label:"Trim Out",          icon:"|▷", action: onTrimOutAtPlayhead,  disabled: !state.selectedClip },
     { label:"Duplicate",         icon:"⊕",  action: onDuplicateClip,      disabled: !state.selectedClip },
     { label:"Delete clip",       icon:"✕",  action: onDeleteClip,         disabled: !state.selectedClip, danger: true },
   ];
 
+  // Selected ratio specs
+  const activeRatioObj = ASPECT_RATIOS.find(a => a.id === (state.aspectRatio || "16:9")) || ASPECT_RATIOS[0];
+
   return (
-    <div style={{ background:"#1a0f14", color:"#e5e5e5", fontFamily:"'Instrument Sans',sans-serif", height:"100vh", width:"100vw", display:"flex", flexDirection:"column", overflow:"hidden", userSelect:"none" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Instrument+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <div style={{ background:"#120e12", color:"#e5e5e5", fontFamily:"'Instrument Sans',sans-serif", height:"100vh", width:"100vw", display:"flex", flexDirection:"column", overflow:"hidden", userSelect:"none" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Instrument+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       <style>{`
         *{margin:0;padding:0;box-sizing:border-box}
-        body,html{height:100%;width:100%;overflow:hidden;background:#1a0f14}
+        body,html{height:100%;width:100%;overflow:hidden;background:#120e12}
         ::-webkit-scrollbar{width:5px;height:5px}
-        ::-webkit-scrollbar-track{background:#1a0f14}
-        ::-webkit-scrollbar-thumb{background:rgba(225,73,109,0.18);border-radius:3px}
+        ::-webkit-scrollbar-track{background:#120e12}
+        ::-webkit-scrollbar-thumb{background:rgba(225,73,109,0.22);border-radius:3px}
         ::-webkit-scrollbar-thumb:hover{background:#e1496d}
         .clip-block{cursor:grab;transition:opacity 0.1s,box-shadow 0.1s}
-        .clip-block:hover{opacity:0.88}
-        .clip-block.selected{box-shadow:0 0 0 2px #e1496d,inset 0 0 0 1px rgba(225,73,109,0.3);filter:brightness(1.12)}
-        .tool-btn{background:rgba(225,73,109,0.05);border:1px solid rgba(225,73,109,0.15);color:#e5e5e5;padding:6px 14px;border-radius:7px;cursor:pointer;font-size:12px;font-family:'Poppins',sans-serif;font-weight:400;display:inline-flex;align-items:center;gap:7px;transition:all 0.18s;white-space:nowrap;flex-shrink:0}
-        .tool-btn:hover{background:rgba(225,73,109,0.12);color:#e1496d;border-color:rgba(225,73,109,0.4);transform:translateY(-1px)}
-        .tool-btn:disabled{opacity:0.35;cursor:not-allowed;pointer-events:none;transform:none}
-        .tool-btn.primary{background:linear-gradient(135deg,#942945,#e1496d);border:none;color:#fff;box-shadow:0 2px 10px rgba(148,41,69,0.3);font-weight:500}
-        .tool-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(148,41,69,0.45)}
-        .tool-btn.danger{color:#ef4444;border-color:rgba(239,68,68,0.2);background:rgba(239,68,68,0.04)}
-        .tool-btn.danger:hover{background:rgba(239,68,68,0.14);border-color:#ef4444}
-        .tool-btn.active{background:rgba(225,73,109,0.18);color:#e1496d;border-color:#e1496d}
-        .filter-slider{width:100%;-webkit-appearance:none;appearance:none;height:3px;background:rgba(225,73,109,0.15);border-radius:2px;outline:none;cursor:pointer}
-        .filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:#e1496d;border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(148,41,69,0.35);transition:all 0.1s}
-        .filter-slider::-webkit-slider-thumb:hover{transform:scale(1.2)}
-        .filter-slider::-moz-range-thumb{width:13px;height:13px;background:#e1496d;border:none;border-radius:50%}
-        .track-row{display:flex;align-items:stretch;border-bottom:1px solid rgba(225,73,109,0.07)}
-        .track-label{width:140px;min-width:140px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;background:rgba(14,12,11,0.8);border-right:1px solid rgba(225,73,109,0.08);font-size:11px;gap:4px}
-        .timeline-area{overflow-x:auto;overflow-y:visible;flex:1}
-        .glass-panel{background:rgba(14,12,11,0.85);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(225,73,109,0.14);box-shadow:0 8px 32px rgba(0,0,0,0.4)}
-        .sidebar-panel{background:rgba(14,12,11,0.85);backdrop-filter:blur(20px) saturate(160%)}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}
-        @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
-        .rec-dot{animation:blink 1s infinite}
+        .clip-block:hover{opacity:0.92}
+        .clip-block.selected{box-shadow:0 0 0 2px #e1496d,inset 0 0 0 1px rgba(225,73,109,0.4);filter:brightness(1.15)}
+        .tool-btn{background:rgba(225,73,109,0.06);border:1px solid rgba(225,73,109,0.18);color:#e5e5e5;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'Poppins',sans-serif;font-weight:500;display:inline-flex;align-items:center;gap:7px;transition:all 0.18s;white-space:nowrap;flex-shrink:0}
+        .tool-btn:hover{background:rgba(225,73,109,0.15);color:#ff8da7;border-color:rgba(225,73,109,0.45);transform:translateY(-1px)}
+        .tool-btn:disabled{opacity:0.3;cursor:not-allowed;pointer-events:none;transform:none}
+        .tool-btn.primary{background:linear-gradient(135deg,#a82348,#e1496d);border:none;color:#fff;box-shadow:0 4px 14px rgba(225,73,109,0.35);font-weight:600}
+        .tool-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(225,73,109,0.5)}
+        .tool-btn.danger{color:#ef4444;border-color:rgba(239,68,68,0.25);background:rgba(239,68,68,0.06)}
+        .tool-btn.danger:hover{background:rgba(239,68,68,0.18);border-color:#ef4444}
+        .tool-btn.active{background:rgba(225,73,109,0.22);color:#ff8da7;border-color:#e1496d;box-shadow:0 0 12px rgba(225,73,109,0.25)}
+        .filter-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:rgba(225,73,109,0.18);border-radius:3px;outline:none;cursor:pointer}
+        .filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#e1496d;border-radius:50%;cursor:pointer;box-shadow:0 0 8px rgba(225,73,109,0.5);transition:all 0.15s}
+        .filter-slider::-webkit-slider-thumb:hover{transform:scale(1.25);background:#ff8da7}
+        .filter-slider::-moz-range-thumb{width:14px;height:14px;background:#e1496d;border:none;border-radius:50%}
+        .glass-header{background:rgba(18,14,18,0.92);backdrop-filter:blur(24px);border-bottom:1px solid rgba(225,73,109,0.15);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
+        .sidebar-panel{background:rgba(18,14,18,0.92);backdrop-filter:blur(24px)}
+        .canvas-element{cursor:move;transition:outline 0.15s;border-radius:8px}
+        .canvas-element:hover{outline:1.5px dashed #e1496d}
+        .canvas-element.selected-canvas{outline:2px solid #e1496d;box-shadow:0 0 12px rgba(225,73,109,0.4)}
+        @keyframes pulseGlow{0%,100%{box-shadow:0 0 10px rgba(225,73,109,0.2)}50%{box-shadow:0 0 22px rgba(225,73,109,0.6)}}
       `}</style>
 
       <input ref={fileInputRef} type="file" multiple accept="video/*,image/*,audio/*" style={{ display:"none" }} onChange={handleFileUpload} />
 
+      {/* ── Top Header Navigation Bar ───────────────────────────────── */}
+      <div className="glass-header" style={{ height:"54px", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", flexShrink:0, zIndex:20 }}>
 
+        {/* Left: Back + Title + Cloud Save Status */}
+        <div style={{ display:"flex", alignItems:"center", gap:"14px" }}>
+          <button className="tool-btn danger" onClick={() => setShowLeaveModal(true)} style={{ padding:"5px 12px", gap:"6px", fontSize:"12px" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+            Exit Studio
+          </button>
 
-      {/* ── Main Body ─────────────────────────────────────────────────── */}
-      <div style={{ display:"flex", flex:1, overflow:"hidden", background:"#1a0f14" }}>
+          <div style={{ height:"18px", width:"1px", background:"rgba(225,73,109,0.18)" }} />
 
-        {/* ── Left Sidebar ─────────────────────────────────────────────── */}
+          <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+            <input
+              type="text"
+              value={projectTitle}
+              onChange={e => setProjectTitle(e.target.value)}
+              style={{ background:"transparent", border:"none", borderBottom:"1px dashed rgba(225,73,109,0.3)", color:"#fff", fontFamily:"'Syne', sans-serif", fontWeight:800, fontSize:"14px", outline:"none", padding:"2px 4px", minWidth:"180px", maxWidth:"280px" }}
+              title="Click to rename video project"
+            />
+            <span style={{ fontSize:"10px", background:"rgba(34,197,94,0.12)", color:"#4ade80", border:"1px solid rgba(34,197,94,0.25)", padding:"2px 8px", borderRadius:"12px", display:"inline-flex", alignItems:"center", gap:"4px", fontWeight:600 }}>
+              <span style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#4ade80" }} />
+              Saved
+            </span>
+          </div>
+        </div>
+
+        {/* Center: History + Aspect Ratio + Hotkeys */}
+        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+          {/* Undo / Redo */}
+          <div style={{ display:"flex", background:"rgba(225,73,109,0.06)", borderRadius:"8px", border:"1px solid rgba(225,73,109,0.15)", padding:"2px" }}>
+            <button
+              onClick={() => dispatch({ type: "UNDO" })}
+              disabled={!state.history?.length}
+              title="Undo (Ctrl+Z)"
+              style={{ background:"none", border:"none", color: state.history?.length ? "#e1496d" : "#555", padding:"4px 8px", cursor: state.history?.length ? "pointer" : "not-allowed", fontSize:"13px", borderRadius:"5px" }}
+            >↶</button>
+            <button
+              onClick={() => dispatch({ type: "REDO" })}
+              disabled={!state.future?.length}
+              title="Redo (Ctrl+Y)"
+              style={{ background:"none", border:"none", color: state.future?.length ? "#e1496d" : "#555", padding:"4px 8px", cursor: state.future?.length ? "pointer" : "not-allowed", fontSize:"13px", borderRadius:"5px" }}
+            >↷</button>
+          </div>
+
+          <div style={{ height:"18px", width:"1px", background:"rgba(225,73,109,0.18)" }} />
+
+          {/* Aspect ratio selector */}
+          <div style={{ display:"flex", alignItems:"center", gap:"6px", background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.18)", borderRadius:"8px", padding:"3px 8px" }}>
+            <span style={{ fontSize:"11px", color:"#e1496d", fontWeight:700 }}>ASPECT</span>
+            <select
+              value={state.aspectRatio || "16:9"}
+              onChange={e => dispatch({ type: "SET_ASPECT_RATIO", ratio: e.target.value })}
+              style={{ background:"none", border:"none", color:"#fff", fontSize:"11px", fontFamily:"'Poppins', sans-serif", fontWeight:600, outline:"none", cursor:"pointer" }}
+            >
+              {ASPECT_RATIOS.slice(0, 7).map(ratio => (
+                <option key={ratio.id} value={ratio.id} style={{ background:"#1a0f14", color:"#fff" }}>
+                  {ratio.icon} {ratio.id} ({ratio.name.split("/")[0].trim()})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Hotkeys Modal trigger */}
+          <button className="tool-btn" onClick={() => setShowShortcutsModal(true)} title="Keyboard Shortcuts (?)" style={{ padding:"5px 10px", fontSize:"11px" }}>
+            ⌨️ Hotkeys
+          </button>
+        </div>
+
+        {/* Right: Import/Export JSON + Export Video */}
+        <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+          <input ref={jsonInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={importProjectJson} />
+          <button className="tool-btn" onClick={() => jsonInputRef.current.click()} title="Import Project (.json)" style={{ padding: "5px 10px", fontSize: "11px", gap: "5px" }}>
+            📥 Import JSON
+          </button>
+          <button className="tool-btn" onClick={exportProjectJson} title="Backup Project (.json)" style={{ padding: "5px 10px", fontSize: "11px", gap: "5px" }}>
+            💾 Backup JSON
+          </button>
+
+          <div style={{ height:"18px", width:"1px", background:"rgba(225,73,109,0.18)" }} />
+
+          <button className="tool-btn primary" onClick={performRealExport} style={{ padding:"7px 18px", gap:"7px", fontSize:"13px" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Export Video
+          </button>
+        </div>
+      </div>
+
+      {/* ── Main Workspace Body ───────────────────────────────────────── */}
+      <div style={{ display:"flex", flex:1, overflow:"hidden", background:"#120e12" }}>
+
+        {/* ── Left Multi-Tab Sidebar ───────────────────────────────────── */}
         {!leftSidebarCollapsed ? (
-          <div className="sidebar-panel" style={{ width:"280px", minWidth:"280px", borderRight:"1px solid rgba(225,73,109,0.1)", display:"flex", flexDirection:"column", height:"100%", zIndex:5, flexShrink:0 }}>
-            {/* Tab bar */}
-            <div style={{ display:"flex", borderBottom:"1px solid rgba(225,73,109,0.08)", background:"rgba(10,8,7,0.5)" }}>
+          <div className="sidebar-panel" style={{ width:"300px", minWidth:"300px", borderRight:"1px solid rgba(225,73,109,0.12)", display:"flex", flexDirection:"column", height:"100%", zIndex:5, flexShrink:0 }}>
+            {/* Tab Bar */}
+            <div style={{ display:"flex", borderBottom:"1px solid rgba(225,73,109,0.1)", background:"rgba(10,8,7,0.6)", overflowX:"auto" }}>
               {[
-                { id:"media",   label:"Media",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 2H8l-2 4h12z"/></svg> },
-                { id:"text",    label:"Text",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg> },
-                { id:"presets", label:"LUTs",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg> },
-                { id:"properties", label:"Props", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg> },
+                { id:"media",       label:"Media",       icon:"📹" },
+                { id:"text",        label:"Text",        icon:"T" },
+                { id:"stickers",    label:"Stickers",    icon:"✨" },
+                { id:"audio",       label:"Audio",       icon:"🎵" },
+                { id:"presets",     label:"LUTs",        icon:"🎨" },
+                { id:"transitions", label:"Transitions", icon:"◐" },
+                { id:"properties",  label:"Inspector",   icon:"⚙️" },
               ].map(tab => {
                 const active = leftTab === tab.id;
                 return (
-                  <button key={tab.id} onClick={() => setLeftTab(tab.id)} style={{ flex:1, padding:"10px 0 8px", background:"none", border:"none", borderBottom: active ? "2px solid #e1496d" : "2px solid transparent", color: active ? "#e1496d" : "#5c5650", fontWeight: active ? 600 : 400, fontSize:"10px", fontFamily:"'Poppins',sans-serif", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"5px", transition:"color 0.2s" }}
+                  <button key={tab.id} onClick={() => setLeftTab(tab.id)} style={{ flex:"1 0 auto", padding:"10px 8px", background:"none", border:"none", borderBottom: active ? "2.5px solid #e1496d" : "2.5px solid transparent", color: active ? "#ff8da7" : "#6c6660", fontWeight: active ? 700 : 400, fontSize:"10px", fontFamily:"'Poppins',sans-serif", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"3px", transition:"all 0.18s" }}
                     onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#e1496d"; }}
-                    onMouseLeave={e => { if (!active) e.currentTarget.style.color = "#5c5650"; }}
+                    onMouseLeave={e => { if (!active) e.currentTarget.style.color = "#6c6660"; }}
                   >
-                    {tab.icon} {tab.label}
+                    <span style={{ fontSize:"13px" }}>{tab.icon}</span>
+                    <span>{tab.label}</span>
                   </button>
                 );
               })}
               <button onClick={() => setLeftSidebarCollapsed(true)} style={{ padding:"0 10px", background:"none", border:"none", color:"#5c5650", cursor:"pointer", fontSize:"12px", transition:"color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color="#e1496d"} onMouseLeave={e => e.currentTarget.style.color="#5c5650"}>◀</button>
             </div>
 
-            {/* Tab content */}
+            {/* Sidebar Tab Content */}
             <div style={{ flex:1, overflowY:"auto", padding:"14px" }}>
 
-              {/* ─ Media ─ */}
+              {/* ─ 1. Media Library Tab ─ */}
               {leftTab === "media" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>ASSETS LIBRARY</span>
-                    <div style={{ display:"flex", gap:"6px" }}>
-                      <button className="tool-btn" onClick={onAddVideo} style={{ padding:"4px 9px", fontSize:"10px" }}>📹</button>
-                      <button className="tool-btn" onClick={onAddImage} style={{ padding:"4px 9px", fontSize:"10px" }}>🖼</button>
-                      <button className="tool-btn" onClick={onAddAudio} style={{ padding:"4px 9px", fontSize:"10px" }}>🎵</button>
+                    <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>ASSETS & MEDIA</span>
+                    <div style={{ display:"flex", gap:"5px" }}>
+                      <button className="tool-btn" onClick={onAddVideo} title="Upload Video" style={{ padding:"4px 8px", fontSize:"11px" }}>📹 Video</button>
+                      <button className="tool-btn" onClick={onAddImage} title="Upload Photo" style={{ padding:"4px 8px", fontSize:"11px" }}>🖼 Photo</button>
                     </div>
                   </div>
+
+                  <div style={{ fontSize:"10px", color:"#8c8780", fontWeight:600, letterSpacing:"0.05em" }}>CURATED STOCK MEDIA</div>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
                     {STOCK_MEDIA.map(item => (
                       <div key={item.id} onClick={() => addStockMedia(item)}
-                        style={{ background:"rgba(148,41,69,0.06)", border:"1px solid rgba(148,41,69,0.14)", borderRadius:"9px", padding:"10px", cursor:"pointer", transition:"all 0.18s" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(148,41,69,0.12)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(148,41,69,0.14)"; e.currentTarget.style.background="rgba(148,41,69,0.06)"; }}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px", cursor:"pointer", transition:"all 0.18s" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.15)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
                       >
-                        <div style={{ fontSize:"22px", marginBottom:"6px" }}>{item.thumb}</div>
-                        <div style={{ fontSize:"10px", fontWeight:600, color:"#e5e5e5", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
-                        <div style={{ fontSize:"9px", color:"#5c5650", textTransform:"uppercase", marginTop:"2px" }}>{item.type} · {item.duration}s</div>
+                        <div style={{ fontSize:"24px", marginBottom:"6px" }}>{item.thumb}</div>
+                        <div style={{ fontSize:"11px", fontWeight:600, color:"#e5e5e5", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
+                        <div style={{ fontSize:"9px", color:"#8c8780", textTransform:"uppercase", marginTop:"3px" }}>{item.type} · {item.duration}s</div>
                       </div>
                     ))}
                   </div>
-                  <button className="tool-btn" onClick={() => fileInputRef.current.click()} style={{ justifyContent:"center", padding:"9px", fontSize:"11px", marginTop:"4px" }}>
-                    + Upload your files
+
+                  <button className="tool-btn" onClick={() => fileInputRef.current.click()} style={{ justifyContent:"center", padding:"11px", fontSize:"12px", marginTop:"6px" }}>
+                    + Upload Files from Device
                   </button>
                 </div>
               )}
 
-              {/* ─ Text ─ */}
+              {/* ─ 2. Text Overlays Tab ─ */}
               {leftTab === "text" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-                  <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>TEXT OVERLAYS</span>
-                  <button className="tool-btn" onClick={addTextClip} style={{ justifyContent:"center", padding:"10px", fontSize:"12px", fontWeight:500 }}>+ Add Title Overlay</button>
-                  {selectedTextClip ? (
-                    <div style={{ display:"flex", flexDirection:"column", gap:"10px", padding:"12px", border:"1px solid rgba(34,211,168,0.2)", background:"rgba(34,211,168,0.03)", borderRadius:"10px" }}>
-                      <div style={{ fontSize:"10px", color:"#22d3a8", fontWeight:700 }}>EDIT TEXT</div>
-                      <textarea value={selectedTextClip.text} onChange={e => dispatch({ type:"UPDATE_CLIP_TEXT", clipId:selectedTextClip.id, text:e.target.value })}
-                        style={{ width:"100%", height:"72px", background:"#1a0f14", border:"1px solid rgba(148,41,69,0.2)", borderRadius:"8px", color:"#fff", fontSize:"12px", padding:"8px", outline:"none", fontFamily:"inherit", resize:"none" }}
-                        placeholder="Type overlay text..." />
-                    </div>
-                  ) : (
-                    <div style={{ padding:"12px", border:"1px dashed rgba(148,41,69,0.15)", borderRadius:"10px", color:"#5c5650", fontSize:"11px" }}>
-                      Select a text clip on the timeline to edit it.
-                    </div>
-                  )}
+                <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
+                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>TEXT PRESETS</span>
+                  <button className="tool-btn primary" onClick={() => addTextClip()} style={{ justifyContent:"center", padding:"11px", fontSize:"12.5px" }}>
+                    + Add Custom Title
+                  </button>
+
+                  <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                    {TEXT_PRESETS.map(preset => (
+                      <button key={preset.id} onClick={() => addTextClip(preset)}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px 14px", cursor:"pointer", transition:"all 0.18s", textAlign:"left", display:"flex", justifyContent:"space-between", alignItems:"center" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
+                      >
+                        <div>
+                          <div style={{ fontSize:"12px", fontWeight:700, color:"#fff" }}>{preset.name}</div>
+                          <div style={{ fontSize:"10px", color:"#8c8780" }}>{preset.tag} Preset</div>
+                        </div>
+                        <span style={{ fontSize:"14px", color:"#e1496d" }}>+</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* ─ Presets / LUTs ─ */}
+              {/* ─ 3. Stickers & Shapes Tab ─ */}
+              {leftTab === "stickers" && (
+                <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
+                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>EMOJIS & STICKERS</span>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"8px" }}>
+                    {STICKERS.map(st => (
+                      <button key={st.id} onClick={() => addStickerClip(st)}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px 4px", fontSize:"24px", cursor:"pointer", transition:"all 0.18s" }}
+                        onMouseEnter={e => { e.currentTarget.style.transform="scale(1.15)"; e.currentTarget.style.borderColor="#e1496d"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; }}
+                        title={st.name}
+                      >
+                        {st.emoji}
+                      </button>
+                    ))}
+                  </div>
+
+                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700, marginTop:"8px" }}>GEOMETRIC SHAPES</span>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
+                    {SHAPE_TYPES.map(shape => (
+                      <button key={shape.id} onClick={() => addShapeClip(shape)}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px", cursor:"pointer", transition:"all 0.18s", display:"flex", alignItems:"center", gap:"10px" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
+                      >
+                        <span style={{ fontSize:"20px", color:"#e1496d" }}>{shape.icon}</span>
+                        <span style={{ fontSize:"11px", fontWeight:600, color:"#fff" }}>{shape.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ─ 4. Audio & SFX Tab ─ */}
+              {leftTab === "audio" && (
+                <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
+                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>BACKGROUND MUSIC</span>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                    {BG_MUSIC.map(bgm => (
+                      <div key={bgm.id} onClick={() => addStockMedia(bgm)}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px 12px", cursor:"pointer", transition:"all 0.18s", display:"flex", justifyContent:"space-between", alignItems:"center" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
+                      >
+                        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                          <span style={{ fontSize:"20px" }}>{bgm.thumb}</span>
+                          <div>
+                            <div style={{ fontSize:"11px", fontWeight:600, color:"#fff" }}>{bgm.name}</div>
+                            <div style={{ fontSize:"9px", color:"#8c8780" }}>{bgm.mood} · Audio</div>
+                          </div>
+                        </div>
+                        <span style={{ fontSize:"13px", color:"#e1496d", fontWeight:700 }}>+ Add</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700, marginTop:"8px" }}>SOUND EFFECTS (SFX)</span>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
+                    {SFX_LIBRARY.map(sfx => (
+                      <button key={sfx.id} onClick={() => addStockMedia(sfx)}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"8px", cursor:"pointer", transition:"all 0.18s", textAlign:"left" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
+                      >
+                        <div style={{ fontSize:"18px" }}>{sfx.thumb}</div>
+                        <div style={{ fontSize:"10px", fontWeight:600, color:"#fff" }}>{sfx.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ─ 5. LUTs & Color Grading Tab ─ */}
               {leftTab === "presets" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-                  <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>CINEMATIC LUTS</span>
+                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>CINEMATIC COLOR PRESETS</span>
                   {[
-                    { id:"vintage", name:"Vintage Gold",    desc:"Warm amber, high sat" },
-                    { id:"cyber",   name:"Cyberpunk Mint",  desc:"Neon green hue shift" },
-                    { id:"noir",    name:"Moody Noir",      desc:"High-contrast monochrome" },
-                    { id:"cream",   name:"Dreamy Sunkissed",desc:"Soft warm cream glow" },
-                    { id:"reset",   name:"Reset Grading",   desc:"Restore original colors", danger:true },
+                    { id:"vintage", name:"Vintage Amber", desc:"Warm golden film tone" },
+                    { id:"cyber",   name:"Cyberpunk Neon", desc:"High sat neon cyan/magenta" },
+                    { id:"noir",    name:"Moody Monochrome", desc:"Deep high-contrast B&W" },
+                    { id:"cream",   name:"Sunkissed Glow", desc:"Soft warm pastel cream" },
+                    { id:"hdr",     name:"HDR Vivid Pro", desc:"Punchy contrast & sharpness" },
+                    { id:"warm",    name:"Warm Sunset", desc:"Sepia warm atmosphere" },
+                    { id:"reset",   name:"Reset Colors", desc:"Restore default settings", danger:true },
                   ].map(lut => (
                     <button key={lut.id} onClick={() => applyPreset(lut.id)}
-                      style={{ background: lut.danger ? "rgba(239,68,68,0.05)" : "rgba(148,41,69,0.06)", border: lut.danger ? "1px solid rgba(239,68,68,0.18)" : "1px solid rgba(148,41,69,0.18)", borderRadius:"8px", padding:"10px 12px", cursor:"pointer", transition:"all 0.18s", textAlign:"left", display:"flex", flexDirection:"column", gap:"3px" }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = lut.danger ? "#ef4444" : "#e1496d"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.1)" : "rgba(148,41,69,0.12)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = lut.danger ? "rgba(239,68,68,0.18)" : "rgba(148,41,69,0.18)"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.05)" : "rgba(148,41,69,0.06)"; }}
+                      style={{ background: lut.danger ? "rgba(239,68,68,0.06)" : "rgba(225,73,109,0.06)", border: lut.danger ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(225,73,109,0.15)", borderRadius:"10px", padding:"10px 12px", cursor:"pointer", transition:"all 0.18s", textAlign:"left" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = lut.danger ? "#ef4444" : "#e1496d"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.12)" : "rgba(225,73,109,0.14)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = lut.danger ? "rgba(239,68,68,0.2)" : "rgba(225,73,109,0.15)"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.06)" : "rgba(225,73,109,0.06)"; }}
                     >
-                      <span style={{ fontSize:"11px", fontWeight:600, color: lut.danger ? "#ef4444" : "#e5e5e5" }}>{lut.name}</span>
-                      <span style={{ fontSize:"9px", color:"#5c5650" }}>{lut.desc}</span>
+                      <div style={{ fontSize:"12px", fontWeight:700, color: lut.danger ? "#ef4444" : "#fff" }}>{lut.name}</div>
+                      <div style={{ fontSize:"10px", color:"#8c8780" }}>{lut.desc}</div>
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* ─ Properties ─ */}
+              {/* ─ 6. Transitions Tab ─ */}
+              {leftTab === "transitions" && (
+                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>SCENE TRANSITIONS</span>
+                  <p style={{ fontSize:"11px", color:"#8c8780", marginBottom:"6px" }}>Select a clip on timeline and apply transition:</p>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
+                    {TRANSITIONS.slice(0, 12).map(trans => (
+                      <button key={trans.id}
+                        onClick={() => {
+                          if (state.selectedClip) {
+                            dispatch({ type: "ADD_TRANSITION", clipId: state.selectedClip, transition: trans.id, edge: "in", duration: trans.duration || 0.5 });
+                          } else {
+                            alert("Please select a clip on the timeline first!");
+                          }
+                        }}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px", cursor:"pointer", transition:"all 0.18s", textAlign:"center" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
+                      >
+                        <div style={{ fontSize:"18px", color:"#e1496d" }}>{trans.icon}</div>
+                        <div style={{ fontSize:"10.5px", fontWeight:600, color:"#fff" }}>{trans.name}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ─ 7. Properties & Inspector Tab ─ */}
               {leftTab === "properties" && (
                 <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
-                  <span style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>PROPERTIES</span>
+                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>INSPECTOR & FILTERS</span>
 
                   {/* Playback speed */}
                   <div>
-                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"8px", fontSize:"11px", color:"#8c8780" }}>
-                      <span>Playback speed</span>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px", fontSize:"11px", color:"#8c8780" }}>
+                      <span>Playback Speed</span>
                       <span style={{ color:"#e1496d", fontWeight:600 }}>{state.playbackSpeed}x</span>
                     </div>
-                    <div style={{ display:"flex", gap:"5px", flexWrap:"wrap" }}>
-                      {[0.5,0.75,1,1.25,1.5,2].map(s => (
-                        <button key={s} onClick={() => onSetPlaybackSpeed(s)} className="tool-btn" style={{ flex:"1 1 28%", justifyContent:"center", padding:"5px 2px", fontSize:"10px", background: state.playbackSpeed===s ? "linear-gradient(135deg,#942945,#7c233c)" : "none", borderColor: state.playbackSpeed===s ? "transparent" : "rgba(148,41,69,0.2)", color: state.playbackSpeed===s ? "#fff" : "#e5e5e5" }}>{s}x</button>
+                    <div style={{ display:"flex", gap:"4px" }}>
+                      {[0.5, 0.75, 1, 1.25, 1.5, 2].map(s => (
+                        <button key={s} onClick={() => onSetPlaybackSpeed(s)} className="tool-btn" style={{ flex:1, justifyContent:"center", padding:"5px 0", fontSize:"10px", background: state.playbackSpeed===s ? "linear-gradient(135deg,#a82348,#e1496d)" : "none", borderColor: state.playbackSpeed===s ? "transparent" : "rgba(225,73,109,0.2)", color: state.playbackSpeed===s ? "#fff" : "#e5e5e5" }}>{s}x</button>
                       ))}
                     </div>
                   </div>
 
-                  <div style={{ height:"1px", background:"rgba(225,73,109,0.08)" }} />
+                  <div style={{ height:"1px", background:"rgba(225,73,109,0.12)" }} />
 
-                  {/* Color grade */}
-                  <div style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>COLOR GRADE</div>
+                  {/* Fine Color Adjustments */}
+                  <div style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>GLOBAL COLOR GRADE</div>
                   {[
                     { key:"brightness", label:"Brightness", min:0, max:200, def:100 },
                     { key:"contrast",   label:"Contrast",   min:0, max:300, def:100 },
                     { key:"saturation", label:"Saturation", min:0, max:300, def:100 },
                     { key:"hue",        label:"Hue Shift",  min:-180, max:180, def:0 },
-                    { key:"opacity",    label:"Opacity",    min:0, max:100, def:100 },
+                    { key:"sepia",      label:"Sepia",      min:0, max:100, def:0 },
+                    { key:"vignette",   label:"Vignette",   min:0, max:100, def:0 },
                   ].map(({ key, label, min, max, def }) => (
                     <div key={key}>
-                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px", fontSize:"11px", color:"#8c8780" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"4px", fontSize:"11px", color:"#8c8780" }}>
                         <span>{label}</span>
-                        <span style={{ color: state[key]!==def ? "#e1496d" : "#555", fontVariantNumeric:"tabular-nums", fontWeight:600 }}>{Math.round(state[key])}</span>
+                        <span style={{ color: state[key]!==def ? "#e1496d" : "#666", fontVariantNumeric:"tabular-nums", fontWeight:600 }}>{Math.round(state[key])}</span>
                       </div>
                       <input type="range" min={min} max={max} step="1" value={state[key]} className="filter-slider" onChange={e => dispatch({ type:"SET_FILTER", key, value:parseFloat(e.target.value) })} />
                     </div>
                   ))}
+                  <button className="tool-btn" style={{ justifyContent:"center", fontSize:"11px", color:"#e1496d", marginTop:"4px" }} onClick={onResetFilters}>↺ Reset Color Grade</button>
 
-                  <div style={{ height:"1px", background:"rgba(225,73,109,0.08)" }} />
-
-                  {/* Effects */}
-                  <div style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>EFFECTS</div>
-                  {[
-                    { key:"blur",     label:"Blur",     min:0, max:20  },
-                    { key:"sharpen",  label:"Sharpen",  min:0, max:100 },
-                    { key:"vignette", label:"Vignette", min:0, max:100 },
-                  ].map(({ key, label, min, max }) => (
-                    <div key={key}>
-                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px", fontSize:"11px", color:"#8c8780" }}>
-                        <span>{label}</span>
-                        <span style={{ color: state[key]!==0 ? "#e1496d" : "#555", fontVariantNumeric:"tabular-nums", fontWeight:600 }}>{Math.round(state[key])}</span>
-                      </div>
-                      <input type="range" min={min} max={max} step="1" value={state[key]} className="filter-slider" onChange={e => dispatch({ type:"SET_FILTER", key, value:parseFloat(e.target.value) })} />
-                    </div>
-                  ))}
-                  <button className="tool-btn" style={{ justifyContent:"center", fontSize:"11px", borderColor:"rgba(148,41,69,0.2)", color:"#e1496d" }} onClick={onResetFilters}>↺ Reset all filters</button>
-
-                  {/* Selected clip props */}
+                  {/* Inspector for selected clip */}
                   {selectedClipData && (
-                    <div style={{ marginTop:"8px", paddingTop:"14px", borderTop:"1px solid rgba(225,73,109,0.1)" }}>
-                      <div style={{ fontSize:"10px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700, marginBottom:"10px" }}>SELECTED CLIP</div>
-                      <div style={{ fontSize:"12px", color:"#e5e5e5", fontWeight:600, marginBottom:"10px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{selectedClipData.name}</div>
+                    <div style={{ marginTop:"10px", paddingTop:"14px", borderTop:"1px solid rgba(225,73,109,0.15)" }}>
+                      <div style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700, marginBottom:"10px" }}>SELECTED CLIP</div>
+                      <div style={{ fontSize:"13px", color:"#fff", fontWeight:700, marginBottom:"10px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{selectedClipData.name}</div>
+
                       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px", marginBottom:"12px" }}>
-                        {[{ label:"Start", val:fmtTime(selectedClipData.start) }, { label:"Duration", val:fmtTime(selectedClipData.duration) }].map(x => (
-                          <div key={x.label} style={{ background:"#1a0f14", padding:"8px 10px", borderRadius:"7px", border:"1px solid rgba(148,41,69,0.12)" }}>
-                            <div style={{ color:"#5c5650", fontSize:"9px", fontWeight:500, marginBottom:"3px" }}>{x.label}</div>
-                            <div style={{ color:"#fff", fontVariantNumeric:"tabular-nums", fontWeight:600, fontSize:"12px" }}>{x.val}</div>
-                          </div>
-                        ))}
+                        <div style={{ background:"#1a0f14", padding:"8px", borderRadius:"8px", border:"1px solid rgba(225,73,109,0.15)" }}>
+                          <div style={{ color:"#8c8780", fontSize:"9px" }}>START TIME</div>
+                          <div style={{ color:"#fff", fontWeight:600, fontSize:"12px" }}>{fmtTime(selectedClipData.start)}</div>
+                        </div>
+                        <div style={{ background:"#1a0f14", padding:"8px", borderRadius:"8px", border:"1px solid rgba(225,73,109,0.15)" }}>
+                          <div style={{ color:"#8c8780", fontSize:"9px" }}>DURATION</div>
+                          <div style={{ color:"#fff", fontWeight:600, fontSize:"12px" }}>{fmtTime(selectedClipData.duration)}</div>
+                        </div>
                       </div>
+
+                      {/* Text Clip Controls */}
+                      {selectedClipData.type === "text" && (
+                        <div style={{ display:"flex", flexDirection:"column", gap:"10px", background:"rgba(225,73,109,0.06)", padding:"12px", borderRadius:"10px", border:"1px solid rgba(225,73,109,0.18)" }}>
+                          <div style={{ fontSize:"10px", color:"#e1496d", fontWeight:700 }}>EDIT TEXT CONTENT</div>
+                          <textarea
+                            value={selectedClipData.text || ""}
+                            onChange={e => dispatch({ type:"UPDATE_CLIP_TEXT", clipId:selectedClipData.id, text:e.target.value })}
+                            style={{ width:"100%", height:"60px", background:"#120e12", border:"1px solid rgba(225,73,109,0.25)", borderRadius:"8px", color:"#fff", fontSize:"12px", padding:"8px", outline:"none", fontFamily:"inherit", resize:"none" }}
+                          />
+                          <div style={{ display:"flex", gap:"8px", alignItems:"center" }}>
+                            <div style={{ flex:1 }}>
+                              <label style={{ fontSize:"9px", color:"#8c8780", display:"block", marginBottom:"3px" }}>FONT SIZE</label>
+                              <input type="number" value={selectedClipData.fontSize || 36} onChange={e => dispatch({ type:"UPDATE_CLIP", clipId:selectedClipData.id, patch:{ fontSize: parseInt(e.target.value) || 24 } })} style={{ width:"100%", background:"#120e12", border:"1px solid rgba(225,73,109,0.2)", borderRadius:"6px", color:"#fff", padding:"4px 8px", fontSize:"11px" }} />
+                            </div>
+                            <div style={{ flex:1 }}>
+                              <label style={{ fontSize:"9px", color:"#8c8780", display:"block", marginBottom:"3px" }}>TEXT COLOR</label>
+                              <input type="color" value={selectedClipData.color || "#ffffff"} onChange={e => dispatch({ type:"UPDATE_CLIP", clipId:selectedClipData.id, patch:{ color: e.target.value } })} style={{ width:"100%", height:"28px", background:"none", border:"none", cursor:"pointer" }} />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Audio Clip Controls */}
                       {selectedClipData.type === "audio" && (
-                        <div style={{ marginBottom:"12px" }}>
-                          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px", fontSize:"11px", color:"#8c8780" }}>
+                        <div>
+                          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"4px", fontSize:"11px", color:"#8c8780" }}>
                             <span>Volume</span>
                             <span style={{ color:"#e1496d", fontWeight:600 }}>{Math.round((selectedClipData.volume ?? 1)*100)}%</span>
                           </div>
@@ -907,54 +1301,146 @@ export default function VideoEditor({ onBack, user, initialProject }) {
             </div>
           </div>
         ) : (
-          <div style={{ width:36, borderRight:"1px solid rgba(225,73,109,0.1)", display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(10,8,7,0.85)", flexShrink:0 }}>
+          <div style={{ width:36, borderRight:"1px solid rgba(225,73,109,0.12)", display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(18,14,18,0.92)", flexShrink:0 }}>
             <button onClick={() => setLeftSidebarCollapsed(false)} style={{ background:"none", border:"none", color:"#5c5650", cursor:"pointer", padding:"8px", transition:"color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color="#e1496d"} onMouseLeave={e => e.currentTarget.style.color="#5c5650"}>▶</button>
           </div>
         )}
 
-        {/* ── Center: Preview + Toolbar + Timeline ──────────────────────── */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:"#1a0f14" }}>
+        {/* ── Center Area: Interactive Preview + Toolbar + Timeline ──── */}
+        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:"#120e12" }}>
 
-          {/* Video Preview — takes 60% of center height */}
-          <div style={{ flex:"0 0 58%", position:"relative", background:"#0f070b", borderBottom:"1px solid rgba(225,73,109,0.1)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
-            {/* Preview canvas */}
-            <div style={{ position:"relative", aspectRatio:"16/9", height:"calc(100% - 24px)", maxWidth:"calc(100% - 24px)", background:"#131110", borderRadius:"10px", overflow:"hidden", border:"1px solid rgba(148,41,69,0.18)", boxShadow:"0 12px 48px rgba(0,0,0,0.6)" }}>
+          {/* Video Preview Box Container */}
+          <div style={{ flex:"0 0 58%", position:"relative", background:"#090609", borderBottom:"1px solid rgba(225,73,109,0.15)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", padding:"16px" }}>
 
+            {/* Canvas Container with Dynamic Aspect Ratio */}
+            <div
+              ref={canvasPreviewRef}
+              style={{
+                position:"relative",
+                aspectRatio: activeRatioObj.id.replace(":", "/"),
+                height:"100%",
+                maxHeight:"100%",
+                maxWidth:"100%",
+                background:"#151116",
+                borderRadius:"12px",
+                overflow:"hidden",
+                border:"1px solid rgba(225,73,109,0.25)",
+                boxShadow:"0 16px 50px rgba(0,0,0,0.7), 0 0 30px rgba(225,73,109,0.1)",
+                display:"flex",
+                alignItems:"center",
+                justifyContent:"center"
+              }}
+            >
+              {/* Media element (Video or Image) */}
               {activeClip ? (
-                activeClip.videoEl ? (
+                activeClip.videoEl || activeClip.type === "video" ? (
                   <video ref={videoRef} style={{ width:"100%", height:"100%", objectFit:"contain", filter:cssFilter }} playsInline />
                 ) : (
                   <img src={activeClip.url} alt="" style={{ width:"100%", height:"100%", objectFit:"contain", filter:cssFilter }} />
                 )
               ) : (
                 <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"14px" }}>
-                  <div style={{ width:"56px", height:"56px", borderRadius:"50%", border:"1.5px solid rgba(148,41,69,0.25)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(148,41,69,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"/><path d="M16 2H8l-2 4h12z"/></svg>
+                  <div style={{ width:"60px", height:"60px", borderRadius:"50%", border:"1.5px dashed rgba(225,73,109,0.35)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"24px" }}>
+                    🎬
                   </div>
                   <div style={{ textAlign:"center" }}>
-                    <div style={{ fontSize:"14px", color:"rgba(148,41,69,0.6)", fontWeight:500, marginBottom:"6px" }}>No media on timeline</div>
-                    <div style={{ fontSize:"11px", color:"#3c3834" }}>Upload or choose stock media from the sidebar</div>
+                    <div style={{ fontSize:"14px", color:"rgba(225,73,109,0.7)", fontWeight:600, marginBottom:"4px" }}>Timeline Ready</div>
+                    <div style={{ fontSize:"11px", color:"#5c5650" }}>Add video, text, or stock media to start preview</div>
                   </div>
                 </div>
               )}
 
-              {/* Text overlays */}
+              {/* Canvas Interactive Text Elements */}
               {state.tracks.filter(t => t.type === "text").map(track =>
-                track.clips.filter(c => c.start <= state.playhead && c.start + c.duration > state.playhead).map(clip => (
-                  <div key={clip.id} style={{ position:"absolute", bottom:"14%", left:"50%", transform:"translateX(-50%)", background:"rgba(10,8,7,0.88)", color:"#fff", padding:"7px 18px", borderRadius:"8px", fontSize:"14px", fontFamily:"'Poppins',sans-serif", fontWeight:500, whiteSpace:"nowrap", border:"1px solid #e1496d", boxShadow:"0 4px 16px rgba(148,41,69,0.2)" }}>
-                    {clip.text}
-                  </div>
-                ))
+                track.clips.filter(c => c.start <= state.playhead && c.start + c.duration > state.playhead).map(clip => {
+                  const isSelected = state.selectedClip === clip.id;
+                  return (
+                    <div
+                      key={clip.id}
+                      className={`canvas-element${isSelected ? " selected-canvas" : ""}`}
+                      onMouseDown={(e) => handleCanvasElementMouseDown(e, clip)}
+                      style={{
+                        position: "absolute",
+                        left: `${clip.x ?? 50}%`,
+                        top: `${clip.y ?? 80}%`,
+                        transform: "translate(-50%, -50%)",
+                        background: clip.bgColor || "rgba(10, 8, 7, 0.82)",
+                        color: clip.color || "#ffffff",
+                        padding: "8px 20px",
+                        borderRadius: "10px",
+                        fontSize: `${clip.fontSize || 32}px`,
+                        fontFamily: clip.fontFamily || "'Syne', sans-serif",
+                        fontWeight: 700,
+                        whiteSpace: "nowrap",
+                        border: `1.5px solid ${clip.borderColor || "#e1496d"}`,
+                        boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
+                        zIndex: isSelected ? 30 : 20,
+                      }}
+                    >
+                      {clip.text}
+                    </div>
+                  );
+                })
               )}
 
-              {/* Timecode overlay bottom-left */}
-              <div style={{ position:"absolute", bottom:"10px", left:"12px", background:"rgba(10,8,7,0.82)", color:"#e1496d", fontSize:"11px", padding:"4px 10px", borderRadius:"6px", fontVariantNumeric:"tabular-nums", fontWeight:600, border:"1px solid rgba(148,41,69,0.25)", backdropFilter:"blur(8px)", fontFamily:"'Poppins',sans-serif" }}>
+              {/* Canvas Emoji & Sticker Elements */}
+              {state.tracks.filter(t => t.type === "sticker").map(track =>
+                track.clips.filter(c => c.start <= state.playhead && c.start + c.duration > state.playhead).map(clip => {
+                  const isSelected = state.selectedClip === clip.id;
+                  return (
+                    <div
+                      key={clip.id}
+                      className={`canvas-element${isSelected ? " selected-canvas" : ""}`}
+                      onMouseDown={(e) => handleCanvasElementMouseDown(e, clip)}
+                      style={{
+                        position: "absolute",
+                        left: `${clip.x ?? 50}%`,
+                        top: `${clip.y ?? 50}%`,
+                        transform: "translate(-50%, -50%)",
+                        fontSize: "64px",
+                        zIndex: isSelected ? 30 : 20,
+                        lineHeight: 1,
+                      }}
+                    >
+                      {clip.emoji}
+                    </div>
+                  );
+                })
+              )}
+
+              {/* Canvas Shape Elements */}
+              {state.tracks.filter(t => t.type === "shape").map(track =>
+                track.clips.filter(c => c.start <= state.playhead && c.start + c.duration > state.playhead).map(clip => {
+                  const isSelected = state.selectedClip === clip.id;
+                  return (
+                    <div
+                      key={clip.id}
+                      className={`canvas-element${isSelected ? " selected-canvas" : ""}`}
+                      onMouseDown={(e) => handleCanvasElementMouseDown(e, clip)}
+                      style={{
+                        position: "absolute",
+                        left: `${clip.x ?? 50}%`,
+                        top: `${clip.y ?? 50}%`,
+                        transform: "translate(-50%, -50%)",
+                        fontSize: "54px",
+                        color: clip.fill || "#e1496d",
+                        zIndex: isSelected ? 30 : 20,
+                      }}
+                    >
+                      {clip.shapeIcon || "◆"}
+                    </div>
+                  );
+                })
+              )}
+
+              {/* Timecode overlay */}
+              <div style={{ position:"absolute", bottom:"12px", left:"14px", background:"rgba(18,14,18,0.85)", color:"#ff8da7", fontSize:"11.5px", padding:"4px 12px", borderRadius:"6px", fontVariantNumeric:"tabular-nums", fontWeight:700, border:"1px solid rgba(225,73,109,0.3)", backdropFilter:"blur(8px)", fontFamily:"'Poppins',sans-serif" }}>
                 {fmtTime(state.playhead)} / {fmtTime(state.duration)}
               </div>
 
-              {/* Resolution badge bottom-right */}
-              <div style={{ position:"absolute", bottom:"10px", right:"12px", background:"rgba(10,8,7,0.7)", color:"#5c5650", fontSize:"9px", padding:"3px 8px", borderRadius:"5px", border:"1px solid rgba(225,73,109,0.08)", fontWeight:600, letterSpacing:"0.06em" }}>
-                1920 × 1080 · 30FPS
+              {/* Resolution badge */}
+              <div style={{ position:"absolute", bottom:"12px", right:"14px", background:"rgba(18,14,18,0.85)", color:"#8c8780", fontSize:"10px", padding:"4px 10px", borderRadius:"6px", border:"1px solid rgba(225,73,109,0.12)", fontWeight:600, letterSpacing:"0.06em" }}>
+                {activeRatioObj.id} · {activeRatioObj.w}×{activeRatioObj.h}
               </div>
 
               {/* Vignette effect overlay */}
@@ -963,19 +1449,19 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               )}
             </div>
 
-            {/* Floating vertical transport — now right side of preview, not overlapping */}
-            <div className="glass-panel" style={{ position:"absolute", right:"16px", top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:"3px", padding:"8px 5px", borderRadius:"20px", zIndex:10 }}>
+            {/* Floating Control Transport (Right side of preview canvas) */}
+            <div className="glass-panel" style={{ position:"absolute", right:"24px", top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:"5px", padding:"10px 6px", borderRadius:"24px", zIndex:10, background:"rgba(18,14,18,0.88)", border:"1px solid rgba(225,73,109,0.2)" }}>
               {[
-                { fn:() => dispatch({type:"SET_PLAYHEAD",time:0}),                                                     icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>,         title:"Go to start" },
+                { fn:() => dispatch({type:"SET_PLAYHEAD",time:0}),                                                     icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>,         title:"Jump to start" },
                 { fn:() => dispatch({type:"SET_PLAYHEAD",time:Math.max(0,state.playhead-5)}),                          icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6zm.5-6 8.5 6V6z"/></svg>,         title:"Back 5s" },
-                { fn:onFrameBackward,                                                                                   icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>, title:"Frame back" },
-                { fn:onTogglePlay, primary:true,                                                                        icon: state.isPlaying ? <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> : <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" style={{marginLeft:"1.5px"}}><path d="M8 5v14l11-7z"/></svg>, title:"Play / Pause (Space)" },
-                { fn:onFrameForward,                                                                                    icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>, title:"Frame forward" },
+                { fn:onFrameBackward,                                                                                   icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>, title:"Frame Back" },
+                { fn:onTogglePlay, primary:true,                                                                        icon: state.isPlaying ? <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> : <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style={{marginLeft:"1.5px"}}><path d="M8 5v14l11-7z"/></svg>, title:"Play / Pause (Space)" },
+                { fn:onFrameForward,                                                                                    icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>, title:"Frame Forward" },
                 { fn:() => dispatch({type:"SET_PLAYHEAD",time:Math.min(state.duration,state.playhead+5)}),             icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-6 8.5 6V6z"/></svg>,         title:"Forward 5s" },
-                { fn:() => { dispatch({type:"SET_PLAYING",value:false}); dispatch({type:"SET_PLAYHEAD",time:state.duration}); }, icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm9-12v12h2V6z"/></svg>, title:"Go to end" },
+                { fn:() => { dispatch({type:"SET_PLAYING",value:false}); dispatch({type:"SET_PLAYHEAD",time:state.duration}); }, icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm9-12v12h2V6z"/></svg>, title:"Jump to end" },
               ].map((btn, i) => (
-                <button key={i} onClick={btn.fn} title={btn.title} style={{ width: btn.primary ? "28px" : "24px", height: btn.primary ? "28px" : "24px", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", padding:0, border:"none", background: btn.primary ? "linear-gradient(135deg,#942945,#e1496d)" : "transparent", color: btn.primary ? "#fff" : "#8c8780", cursor:"pointer", transition:"all 0.18s", boxShadow: btn.primary ? "0 2px 10px rgba(148,41,69,0.4)" : "none" }}
-                  onMouseEnter={e => { if (!btn.primary) e.currentTarget.style.color="#e1496d"; }}
+                <button key={i} onClick={btn.fn} title={btn.title} style={{ width: btn.primary ? "32px" : "26px", height: btn.primary ? "32px" : "26px", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", padding:0, border:"none", background: btn.primary ? "linear-gradient(135deg,#a82348,#e1496d)" : "transparent", color: btn.primary ? "#fff" : "#8c8780", cursor:"pointer", transition:"all 0.18s", boxShadow: btn.primary ? "0 4px 14px rgba(225,73,109,0.5)" : "none" }}
+                  onMouseEnter={e => { if (!btn.primary) e.currentTarget.style.color="#ff8da7"; }}
                   onMouseLeave={e => { if (!btn.primary) e.currentTarget.style.color="#8c8780"; }}
                 >
                   {btn.icon}
@@ -984,80 +1470,55 @@ export default function VideoEditor({ onBack, user, initialProject }) {
             </div>
           </div>
 
-          {/* ── Editing Toolbar strip ──────────────────────────────────── */}
-          <div style={{ height:"44px", display:"flex", alignItems:"center", gap:"0", background:"rgba(10,8,7,0.9)", borderBottom:"1px solid rgba(225,73,109,0.1)", flexShrink:0, padding:"0 12px", overflow:"hidden" }}>
-            
-            {/* Exit/Back button */}
-            <button onClick={() => setShowLeaveModal(true)} className="tool-btn danger" style={{ marginRight:"12px", padding:"5px 12px", gap:"6px", fontSize:"11px" }} title="Exit Studio">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
-              Exit
-            </button>
+          {/* ── Editing Toolbar Strip ─────────────────────────────────── */}
+          <div style={{ height:"46px", display:"flex", alignItems:"center", background:"rgba(14,10,14,0.95)", borderBottom:"1px solid rgba(225,73,109,0.12)", flexShrink:0, padding:"0 14px", overflow:"hidden" }}>
 
-            <input ref={jsonInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={importProjectJson} />
-            <button className="tool-btn" onClick={() => jsonInputRef.current.click()} title="Import Project (.json)" style={{ padding: "5px 10px", fontSize: "11px", gap: "5px" }}>
-              📥 Import JSON
-            </button>
-            <button className="tool-btn" onClick={exportProjectJson} title="Backup Project (.json)" style={{ padding: "5px 10px", fontSize: "11px", gap: "5px", marginRight: "8px" }}>
-              💾 Export JSON
-            </button>
-
-            <div style={{ width:"1px", height:"16px", background:"rgba(225,73,109,0.15)", marginRight:"12px" }} />
-
-            {/* Tool selector group */}
-            <div style={{ display:"flex", gap:"2px", padding:"0 8px 0 0", marginRight:"8px", borderRight:"1px solid rgba(225,73,109,0.1)" }}>
+            {/* Tools Selector */}
+            <div style={{ display:"flex", gap:"3px", paddingRight:"10px", marginRight:"10px", borderRight:"1px solid rgba(225,73,109,0.12)" }}>
               {tools.map(t => (
-                <button key={t.id} className={`tool-btn${activeTool===t.id?" active":""}`} onClick={() => setActiveTool(t.id)} title={t.label} style={{ padding:"5px 10px", fontSize:"11px", gap:"5px" }}>
+                <button key={t.id} className={`tool-btn${activeTool===t.id?" active":""}`} onClick={() => setActiveTool(t.id)} title={t.label} style={{ padding:"5px 11px", fontSize:"11px", gap:"6px" }}>
                   {t.icon} {t.label.split(" ")[0]}
                 </button>
               ))}
             </div>
 
-            {/* Edit action buttons */}
-            <div style={{ display:"flex", gap:"4px", padding:"0 8px", borderRight:"1px solid rgba(225,73,109,0.1)", marginRight:"8px" }}>
+            {/* Edit Action Buttons */}
+            <div style={{ display:"flex", gap:"5px", paddingRight:"10px", borderRight:"1px solid rgba(225,73,109,0.12)", marginRight:"10px" }}>
               {editActions.map(a => (
-                <button key={a.label} className={`tool-btn${a.danger?" danger":""}`} onClick={a.action} disabled={a.disabled} title={a.label} style={{ padding:"5px 10px", fontSize:"11px", gap:"5px" }}>
-                  <span>{a.icon}</span> <span style={{ display:"none" }}>{a.label.split(" ")[0]}</span>
+                <button key={a.label} className={`tool-btn${a.danger?" danger":""}`} onClick={a.action} disabled={a.disabled} title={a.label} style={{ padding:"5px 11px", fontSize:"11.5px", gap:"5px" }}>
+                  <span>{a.icon}</span> <span>{a.label.split(" ")[0]}</span>
                 </button>
               ))}
             </div>
 
-            {/* Zoom control */}
-            <div style={{ display:"flex", alignItems:"center", gap:"8px", padding:"0 8px", borderRight:"1px solid rgba(225,73,109,0.1)", marginRight:"8px" }}>
-              <span style={{ fontSize:"10px", color:"#5c5650", fontWeight:500 }}>ZOOM</span>
+            {/* Zoom Controls */}
+            <div style={{ display:"flex", alignItems:"center", gap:"8px", paddingRight:"10px", borderRight:"1px solid rgba(225,73,109,0.12)", marginRight:"10px" }}>
+              <span style={{ fontSize:"10px", color:"#8c8780", fontWeight:600 }}>ZOOM</span>
               <button className="tool-btn" onClick={() => dispatch({ type:"SET_ZOOM", value:Math.max(0.25, state.zoom - 0.25) })} style={{ padding:"3px 8px", fontSize:"12px" }}>−</button>
-              <span style={{ fontSize:"11px", color:"#e1496d", fontWeight:600, minWidth:"40px", textAlign:"center", fontVariantNumeric:"tabular-nums" }}>{Math.round(state.zoom*100)}%</span>
+              <span style={{ fontSize:"11.5px", color:"#ff8da7", fontWeight:700, minWidth:"42px", textAlign:"center", fontVariantNumeric:"tabular-nums" }}>{Math.round(state.zoom*100)}%</span>
               <button className="tool-btn" onClick={() => dispatch({ type:"SET_ZOOM", value:Math.min(4, state.zoom + 0.25) })} style={{ padding:"3px 8px", fontSize:"12px" }}>+</button>
             </div>
 
-            {/* Add track */}
-            <button className="tool-btn" onClick={onAddTrack} style={{ padding:"5px 12px", fontSize:"11px", gap:"6px" }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Add track
+            {/* Add Track */}
+            <button className="tool-btn" onClick={onAddTrack} style={{ padding:"5px 14px", fontSize:"11.5px", gap:"6px" }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              New Track
             </button>
 
-            {/* Spacer */}
             <div style={{ flex: 1 }} />
 
-            {/* Export button */}
-            <button className="tool-btn primary" onClick={performRealExport} style={{ padding:"6px 16px", gap:"6px", fontSize:"12.5px", marginRight:"12px" }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Export
-            </button>
-
-            <div style={{ width:"1px", height:"16px", background:"rgba(225,73,109,0.15)", marginRight:"12px" }} />
-
-            {/* Right side: keyboard shortcut hints */}
-            <div style={{ display:"flex", gap:"12px", alignItems:"center" }}>
-              {[["Space","Play/Pause"], ["S","Split"], ["Del","Delete"]].map(([key, label]) => (
-                <div key={key} style={{ display:"flex", alignItems:"center", gap:"5px", fontSize:"10px", color:"#3c3834" }}>
-                  <span style={{ background:"rgba(225,73,109,0.08)", border:"1px solid rgba(225,73,109,0.12)", borderRadius:"4px", padding:"1px 5px", fontFamily:"monospace", color:"#8c8780", fontWeight:600 }}>{key}</span>
+            {/* Quick Hotkey hints */}
+            <div style={{ display:"flex", gap:"14px", alignItems:"center" }}>
+              {[["Space","Play"], ["S","Split"], ["Del","Delete"], ["?","Help"]].map(([key, label]) => (
+                <div key={key} style={{ display:"flex", alignItems:"center", gap:"5px", fontSize:"10.5px", color:"#5c5650" }}>
+                  <span style={{ background:"rgba(225,73,109,0.12)", border:"1px solid rgba(225,73,109,0.2)", borderRadius:"4px", padding:"1px 6px", fontFamily:"monospace", color:"#e1496d", fontWeight:700 }}>{key}</span>
                   <span>{label}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* ── Timeline ──────────────────────────────────────────────── */}
+          {/* ── Timeline Section ──────────────────────────────────────── */}
           <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:"0" }}>
             <Timeline state={state} dispatch={dispatch} timelineRef={timelineRef} onTimelineClick={handleTimelineClick} onClipMouseDown={handleClipMouseDown} onResizeMouseDown={handleResizeMouseDown} onAddTrack={onAddTrack} />
           </div>
@@ -1066,30 +1527,31 @@ export default function VideoEditor({ onBack, user, initialProject }) {
 
       <ExportModal show={showExport} progress={state.exportProgress} downloadUrl={exportUrl} fileName={`${projectTitle.replace(/\s+/g, "_")}.webm`} onClose={() => { setShowExport(false); dispatch({ type:"SET_EXPORT_PROGRESS", value:null }); }} />
 
+      <ShortcutsModal show={showShortcutsModal} onClose={() => setShowShortcutsModal(false)} />
+
       {/* Leave Confirmation Modal */}
       {showLeaveModal && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.75)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, backdropFilter:"blur(12px)" }}>
-          <div className="glass-panel" style={{ width:"420px", padding:"30px", borderRadius:"24px", textAlign:"center", border:"1px solid rgba(225,73,109,0.25)", background:"#131110" }}>
-            <div style={{ fontSize:"40px", marginBottom:"16px" }}>💾</div>
-            <h3 style={{ fontFamily:"Syne,sans-serif", fontSize:"22px", fontWeight:800, color:"#fff", marginBottom:"10px", letterSpacing:"-0.03em" }}>Save project changes?</h3>
-            <p style={{ fontSize:"13.5px", color:"#8c8780", lineHeight:1.6, marginBottom:"24px", fontWeight:300 }}>
-              Would you like to save this video editing session to your past works, or discard your current edits?
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, backdropFilter:"blur(12px)" }}>
+          <div className="glass-panel" style={{ width:"440px", padding:"32px", borderRadius:"24px", textAlign:"center", border:"1px solid rgba(225,73,109,0.3)", background:"#151116", boxShadow:"0 20px 60px rgba(0,0,0,0.8)" }}>
+            <div style={{ fontSize:"44px", marginBottom:"14px" }}>💾</div>
+            <h3 style={{ fontFamily:"Syne,sans-serif", fontSize:"22px", fontWeight:800, color:"#fff", marginBottom:"10px" }}>Save project changes?</h3>
+            <p style={{ fontSize:"13px", color:"#8c8780", lineHeight:1.6, marginBottom:"24px" }}>
+              Save your current video edits to your past works dashboard, or exit without saving.
             </p>
-            
-            {/* Input field for project title */}
+
             <div style={{ marginBottom: "24px", textAlign: "left" }}>
-              <label style={{ fontSize: "11px", color: "#e1496d", fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Project Name</label>
-              <input 
-                type="text" 
-                value={projectTitle} 
-                onChange={e => setProjectTitle(e.target.value)} 
-                style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.18)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none", transition: "border-color 0.2s" }}
-                placeholder="My Awesome Video"
+              <label style={{ fontSize: "11px", color: "#e1496d", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Project Name</label>
+              <input
+                type="text"
+                value={projectTitle}
+                onChange={e => setProjectTitle(e.target.value)}
+                style={{ width: "100%", background: "#120e12", border: "1px solid rgba(225,73,109,0.25)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none" }}
+                placeholder="My Video Project"
               />
             </div>
 
             <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-              <button className="tool-btn primary" onClick={handleSaveAndExit} style={{ justifyContent:"center", padding:"12px", fontSize:"13px", fontWeight:500 }}>
+              <button className="tool-btn primary" onClick={handleSaveAndExit} style={{ justifyContent:"center", padding:"12px", fontSize:"13.5px" }}>
                 Save & Exit to Dashboard
               </button>
               <div style={{ display:"flex", gap:"10px" }}>

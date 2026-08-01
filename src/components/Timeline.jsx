@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
-import { fmtTime, TRACK_COLORS } from "../constants";
+import { fmtTime } from "../constants";
 import Track from "./Track";
-import THEME from "../theme";
 
 export default function Timeline({
   state, dispatch, timelineRef, onTimelineClick,
@@ -42,7 +41,6 @@ export default function Timeline({
     const container = scrollRef.current;
     if (!container) return;
     const startX = e.clientX;
-    const startY = e.clientY;
     const origScroll = container.scrollLeft;
     const rect = container.getBoundingClientRect();
     const startXLocal = startX - rect.left + origScroll - 156;
@@ -90,56 +88,56 @@ export default function Timeline({
     dispatch({ type: "SET_ZOOM", value: newZoom });
   };
 
-  const btnGhost = (active = false) => ({
-    background: active ? THEME.wineTint : THEME.bg,
-    border: `1px solid ${active ? THEME.wine : "rgba(148,41,69,0.15)"}`,
-    color: active ? THEME.wine : THEME.textMuted,
+  const btnDarkStyle = (active = false) => ({
+    background: active ? "rgba(225, 73, 109, 0.22)" : "rgba(225, 73, 109, 0.06)",
+    border: `1px solid ${active ? "#e1496d" : "rgba(225, 73, 109, 0.18)"}`,
+    color: active ? "#ff8da7" : "#c5c0b8",
   });
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: "'Instrument Sans', sans-serif", background: THEME.editor.panelBg, borderTop: `1px solid ${THEME.editor.border}` }}>
-      {/* ═══ Top bar ═══ */}
+    <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: "'Instrument Sans', sans-serif", background: "#161217", borderTop: "1px solid rgba(225, 73, 109, 0.18)" }}>
+      {/* ═══ Timeline Control Bar ═══ */}
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 18px",
-        borderBottom: `1px solid ${THEME.editor.border}`,
-        background: THEME.panel, flexShrink: 0,
+        padding: "8px 16px",
+        borderBottom: "1px solid rgba(225, 73, 109, 0.15)",
+        background: "#181318", flexShrink: 0,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{
-            fontSize: 11, letterSpacing: "0.14em", color: THEME.wine,
+            fontSize: 11, letterSpacing: "0.14em", color: "#e1496d",
             fontWeight: 700, fontFamily: "'Poppins', sans-serif",
           }}>⏱ TIMELINE</span>
 
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             <span style={{
-              fontSize: 13, color: THEME.wine, fontVariantNumeric: "tabular-nums",
+              fontSize: 12, color: "#ff8da7", fontVariantNumeric: "tabular-nums",
               fontWeight: 700, fontFamily: "'Poppins', sans-serif",
-              background: THEME.wineTint, padding: "2px 10px", borderRadius: 6,
-              border: `1px solid ${THEME.hexA(THEME.wine, 0.2)}`,
+              background: "rgba(225, 73, 109, 0.15)", padding: "2px 8px", borderRadius: 6,
+              border: "1px solid rgba(225, 73, 109, 0.25)",
             }}>{fmtTime(state.playhead)}</span>
-            <span style={{ fontSize: 12, color: THEME.textSoft }}>／</span>
+            <span style={{ fontSize: 11, color: "#5c5650" }}>/</span>
             <span style={{
-              fontSize: 13, color: THEME.textMuted, fontVariantNumeric: "tabular-nums",
+              fontSize: 12, color: "#8c8780", fontVariantNumeric: "tabular-nums",
               fontWeight: 500, fontFamily: "'Poppins', sans-serif",
             }}>{fmtTime(state.duration)}</span>
             {(state.inPoint !== null || state.outPoint !== null) && (
               <>
-                <span style={{ fontSize: 11, color: THEME.textSoft }}>｜</span>
+                <span style={{ fontSize: 11, color: "#5c5650" }}>|</span>
                 <span style={{
-                  fontSize: 11, padding: "2px 8px", borderRadius: 4,
-                  background: "rgba(59,130,246,0.08)", color: "#3b82f6",
-                  fontWeight: 600, border: "1px solid rgba(59,130,246,0.2)",
+                  fontSize: 10, padding: "2px 6px", borderRadius: 4,
+                  background: "rgba(59,130,246,0.12)", color: "#60a5fa",
+                  fontWeight: 600, border: "1px solid rgba(59,130,246,0.3)",
                 }}>I{state.inPoint !== null ? " " + fmtTime(state.inPoint) : ""}</span>
                 <span style={{
-                  fontSize: 11, padding: "2px 8px", borderRadius: 4,
-                  background: THEME.wineTint, color: THEME.wine,
-                  fontWeight: 600, border: `1px solid ${THEME.hexA(THEME.wine, 0.25)}`,
+                  fontSize: 10, padding: "2px 6px", borderRadius: 4,
+                  background: "rgba(225,73,109,0.15)", color: "#ff8da7",
+                  fontWeight: 600, border: "1px solid rgba(225,73,109,0.3)",
                 }}>O{state.outPoint !== null ? " " + fmtTime(state.outPoint) : ""}</span>
                 <button
                   title="Clear in/out"
                   style={{
-                    padding: "2px 8px", fontSize: 11, color: THEME.textSoft,
+                    padding: "2px 6px", fontSize: 10, color: "#8c8780",
                     background: "transparent", border: "none", cursor: "pointer", borderRadius: 4,
                   }}
                   onClick={() => { dispatch({ type: "SET_IN_POINT", value: null }); dispatch({ type: "SET_OUT_POINT", value: null }); }}
@@ -149,15 +147,15 @@ export default function Timeline({
           </div>
         </div>
 
-        {/* ═══ Right controls ═══ */}
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+        {/* ═══ Right Controls ═══ */}
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           <button
             title={state.snap ? "Snap: ON (magnetic edges)" : "Snap: OFF"}
             onClick={() => dispatch({ type: "SET_SNAP", value: !state.snap })}
             style={{
-              padding: "5px 12px", borderRadius: 8, cursor: "pointer", fontSize: 11,
+              padding: "4px 10px", borderRadius: 6, cursor: "pointer", fontSize: 11,
               fontWeight: 600, fontFamily: "'Poppins',sans-serif",
-              ...btnGhost(state.snap),
+              ...btnDarkStyle(state.snap),
               transition: "all 0.18s",
             }}
           >🧲 Snap {state.snap ? "ON" : "OFF"}</button>
@@ -165,112 +163,85 @@ export default function Timeline({
           <button
             title="Add marker at playhead"
             style={{
-              padding: "5px 12px", fontSize: 11, color: THEME.textMuted,
-              background: THEME.bg, border: `1px solid ${THEME.borderSoft}`,
-              borderRadius: 8, cursor: "pointer", fontFamily: "'Poppins',sans-serif",
+              padding: "4px 10px", fontSize: 11, color: "#c5c0b8",
+              background: "rgba(225, 73, 109, 0.06)", border: "1px solid rgba(225, 73, 109, 0.18)",
+              borderRadius: 6, cursor: "pointer", fontFamily: "'Poppins',sans-serif",
               fontWeight: 500,
             }}
             onClick={() => {
               const l = prompt("Marker label (optional):", "");
-              dispatch({ type: "ADD_MARKER", time: state.playhead, label: l ?? "", color: THEME.wine });
+              dispatch({ type: "ADD_MARKER", time: state.playhead, label: l ?? "", color: "#e1496d" });
             }}
           >🔖 Marker</button>
 
-          <div style={{ display: "flex", gap: 4 }}>
+          <div style={{ display: "flex", gap: 3 }}>
             <button
               title="Set In point (I)"
               onClick={() => dispatch({ type: "SET_IN_POINT", value: state.playhead })}
               style={{
-                padding: "5px 9px", fontSize: 11, color: "#3b82f6",
-                background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.2)",
-                borderRadius: 6, cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontWeight: 600,
+                padding: "4px 8px", fontSize: 11, color: "#60a5fa",
+                background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.25)",
+                borderRadius: 5, cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontWeight: 600,
               }}
             >[ I ]</button>
             <button
               title="Set Out point (O)"
               onClick={() => dispatch({ type: "SET_OUT_POINT", value: state.playhead })}
               style={{
-                padding: "5px 9px", fontSize: 11, color: THEME.wine,
-                background: THEME.wineTint, border: `1px solid ${THEME.hexA(THEME.wine, 0.25)}`,
-                borderRadius: 6, cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontWeight: 600,
+                padding: "4px 8px", fontSize: 11, color: "#ff8da7",
+                background: "rgba(225,73,109,0.15)", border: "1px solid rgba(225,73,109,0.25)",
+                borderRadius: 5, cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontWeight: 600,
               }}
             >[ O ]</button>
           </div>
 
-          <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
-            <button
-              title="Undo (Ctrl+Z)"
-              onClick={() => dispatch({ type: "UNDO" })}
-              disabled={!state.history?.length}
-              style={{
-                opacity: state.history?.length ? 1 : 0.35, padding: "5px 9px", borderRadius: 6,
-                background: THEME.wineTint, border: `1px solid ${THEME.hexA(THEME.wine, 0.2)}`,
-                color: THEME.wine, cursor: state.history?.length ? "pointer" : "not-allowed",
-                fontSize: 14,
-              }}
-            >↶</button>
-            <button
-              title="Redo (Ctrl+Shift+Z)"
-              onClick={() => dispatch({ type: "REDO" })}
-              disabled={!state.future?.length}
-              style={{
-                opacity: state.future?.length ? 1 : 0.35, padding: "5px 9px", borderRadius: 6,
-                background: THEME.wineTint, border: `1px solid ${THEME.hexA(THEME.wine, 0.2)}`,
-                color: THEME.wine, cursor: state.future?.length ? "pointer" : "not-allowed",
-                fontSize: 14,
-              }}
-            >↷</button>
-          </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <button
               onClick={zoomToFit}
               title="Zoom to fit all clips (Shift+F)"
               style={{
-                padding: "5px 10px", fontSize: 11, color: THEME.textMuted,
-                background: THEME.bg, border: `1px solid ${THEME.borderSoft}`,
-                borderRadius: 6, cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontWeight: 500,
+                padding: "4px 8px", fontSize: 11, color: "#c5c0b8",
+                background: "rgba(225, 73, 109, 0.06)", border: "1px solid rgba(225, 73, 109, 0.18)",
+                borderRadius: 5, cursor: "pointer", fontFamily: "'Poppins',sans-serif", fontWeight: 500,
               }}
             >⊡ Fit</button>
             <input
               type="range" min="0.2" max="6" step="0.05" value={state.zoom}
               onChange={(e) => dispatch({ type: "SET_ZOOM", value: parseFloat(e.target.value) })}
               style={{
-                width: 90, height: 4, borderRadius: 2, accentColor: THEME.wine,
-                background: THEME.wineBg, outline: "none", cursor: "pointer",
+                width: 76, height: 3, borderRadius: 2, accentColor: "#e1496d",
+                background: "rgba(225,73,109,0.2)", outline: "none", cursor: "pointer",
               }}
             />
             <span style={{
-              fontSize: 11, color: THEME.wine, fontWeight: 700, minWidth: 42,
+              fontSize: 10, color: "#ff8da7", fontWeight: 700, minWidth: 36,
               textAlign: "center", fontVariantNumeric: "tabular-nums",
               fontFamily: "'Poppins',sans-serif",
             }}>{Math.round(state.zoom * 100)}%</span>
           </div>
 
-          <div style={{ width: 1, height: 18, background: THEME.border }} />
+          <div style={{ width: 1, height: 16, background: "rgba(225,73,109,0.18)" }} />
 
           <button
             onClick={onAddTrack}
             style={{
-              padding: "7px 16px", fontSize: 12, fontFamily: "'Poppins', sans-serif",
-              fontWeight: 600, borderRadius: 8, cursor: "pointer", transition: "all 0.2s",
-              background: THEME.btn.primaryBg,
+              padding: "5px 12px", fontSize: 11, fontFamily: "'Poppins', sans-serif",
+              fontWeight: 600, borderRadius: 6, cursor: "pointer", transition: "all 0.2s",
+              background: "linear-gradient(135deg,#a82348,#e1496d)",
               border: "none", color: "#fff",
-              boxShadow: THEME.shadow.chip,
+              boxShadow: "0 2px 8px rgba(225,73,109,0.3)",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.08)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.filter = "none"; e.currentTarget.style.transform = "none"; }}
-          >＋ New Track</button>
+          >＋ Track</button>
         </div>
       </div>
 
-      {/* ═══ Scroll area ═══ */}
+      {/* ═══ Scroll Area ═══ */}
       <div
         ref={scrollRef}
         className="timeline-scroll-container"
         style={{
           flex: 1, overflowX: "auto", overflowY: "auto",
-          background: THEME.editor.panelDark, position: "relative",
+          background: "#120e12", position: "relative",
         }}
         onMouseDown={onAreaMouseDown}
         onWheel={(e) => {
@@ -291,10 +262,10 @@ export default function Timeline({
           {state.markers.length > 0 && (
             <div style={{
               position: "sticky", top: 0, zIndex: 13, height: 18,
-              display: "flex", borderBottom: `1px solid ${THEME.borderSoft}`,
-              background: THEME.panel,
+              display: "flex", borderBottom: "1px solid rgba(225,73,109,0.15)",
+              background: "#181318",
             }}>
-              <div style={{ width: 156, minWidth: 156, borderRight: `1px solid ${THEME.borderSoft}`, position: "sticky", left: 0, background: THEME.panel }} />
+              <div style={{ width: 156, minWidth: 156, borderRight: "1px solid rgba(225,73,109,0.15)", position: "sticky", left: 0, background: "#181318" }} />
               <div style={{ flex: 1, position: "relative" }}>
                 {state.markers.map((m) => (
                   <div
@@ -311,13 +282,13 @@ export default function Timeline({
                       width: 0, height: 0,
                       borderLeft: "6px solid transparent",
                       borderRight: "6px solid transparent",
-                      borderTop: `8px solid ${m.color || THEME.wine}`,
-                      filter: "drop-shadow(0 1px 2px rgba(102,23,46,0.4))",
+                      borderTop: `8px solid ${m.color || "#e1496d"}`,
+                      filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))",
                     }} />
                     {m.label && (
                       <span style={{
                         position: "absolute", top: 9, left: 6,
-                        fontSize: 9, fontWeight: 600, color: m.color || THEME.wine,
+                        fontSize: 9, fontWeight: 600, color: m.color || "#e1496d",
                         fontFamily: "'Poppins',sans-serif", whiteSpace: "nowrap",
                       }}>{m.label}</span>
                     )}
@@ -331,22 +302,22 @@ export default function Timeline({
           <div style={{
             display: "flex", flexShrink: 0,
             position: "sticky", top: state.markers.length > 0 ? 18 : 0,
-            zIndex: 15, background: THEME.panel,
-            borderBottom: `1px solid ${THEME.border}`,
+            zIndex: 15, background: "#181318",
+            borderBottom: "1px solid rgba(225,73,109,0.18)",
           }}>
             <div style={{
-              width: 156, minWidth: 156, background: THEME.panel,
-              borderRight: `1px solid ${THEME.border}`,
+              width: 156, minWidth: 156, background: "#181318",
+              borderRight: "1px solid rgba(225,73,109,0.18)",
               position: "sticky", left: 0, zIndex: 16,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 10, color: THEME.textSoft, letterSpacing: "0.08em",
+              fontSize: 10, color: "#8c8780", letterSpacing: "0.08em",
               fontFamily: "'Poppins',sans-serif", fontWeight: 600,
             }}>
               {state.tracks.length} TRACK{state.tracks.length === 1 ? "" : "S"}
             </div>
             <div
               ref={timelineRef}
-              style={{ flex: 1, position: "relative", height: 34, cursor: "crosshair", background: THEME.bg }}
+              style={{ flex: 1, position: "relative", height: 32, cursor: "crosshair", background: "#120e12" }}
               onClick={onTimelineClick}
             >
               {state.inPoint !== null && state.outPoint !== null && state.inPoint < state.outPoint && (
@@ -355,9 +326,9 @@ export default function Timeline({
                   left: state.inPoint * PX_PER_SEC,
                   width: Math.max(0, (state.outPoint - state.inPoint) * PX_PER_SEC),
                   top: 0, bottom: 0,
-                  background: "linear-gradient(180deg, rgba(59,130,246,0.1), rgba(59,130,246,0.02))",
-                  borderLeft: `1px dashed #3b82f6`,
-                  borderRight: `1px dashed ${THEME.wine}`,
+                  background: "linear-gradient(180deg, rgba(59,130,246,0.12), rgba(59,130,246,0.03))",
+                  borderLeft: `1px dashed #60a5fa`,
+                  borderRight: `1px dashed #e1496d`,
                   pointerEvents: "none",
                 }} />
               )}
@@ -372,12 +343,12 @@ export default function Timeline({
                     }}>
                       <div style={{
                         width: 1,
-                        height: major ? 14 : 7,
-                        background: major ? THEME.hexA(THEME.wine, 0.35) : THEME.hexA(THEME.wine, 0.18),
+                        height: major ? 12 : 6,
+                        background: major ? "rgba(225,73,109,0.4)" : "rgba(225,73,109,0.2)",
                       }} />
                       {major && (
                         <span style={{
-                          fontSize: 9, color: THEME.textMuted, paddingLeft: 3, marginTop: 1,
+                          fontSize: 9, color: "#8c8780", paddingLeft: 3, marginTop: 1,
                           fontFamily: "'Poppins', sans-serif", fontVariantNumeric: "tabular-nums",
                         }}>{fmtTime(t)}</span>
                       )}
@@ -395,11 +366,11 @@ export default function Timeline({
               style={{
                 position: "absolute",
                 left: 156 + selBox.x,
-                top: (state.markers.length > 0 ? 18 : 0) + 34 + selBox.y,
+                top: (state.markers.length > 0 ? 18 : 0) + 32 + selBox.y,
                 width: selBox.w,
                 height: selBox.h,
-                border: `1px dashed ${THEME.wine}`,
-                background: THEME.hexA(THEME.wine, 0.08),
+                border: "1px dashed #e1496d",
+                background: "rgba(225,73,109,0.12)",
                 pointerEvents: "none",
                 zIndex: 20,
                 borderRadius: 3,
@@ -411,7 +382,7 @@ export default function Timeline({
             <EmptyTimelineState onAddTrack={onAddTrack} />
           )}
 
-          {/* ═══ Tracks ═══ */}
+          {/* Tracks */}
           {state.tracks.map((track, i) => (
             <Track
               key={track.id}
@@ -445,24 +416,24 @@ function PlayheadOverlay({ state, PX_PER_SEC, markersTop }) {
         position: "absolute",
         left: 156 + state.playhead * PX_PER_SEC,
         top: 0, bottom: 0, width: 2,
-        background: `linear-gradient(180deg, ${THEME.wineLight}, ${THEME.wineDeep})`,
+        background: "linear-gradient(180deg, #ff8da7, #e1496d)",
         zIndex: 14, pointerEvents: "none",
-        boxShadow: `0 0 8px ${THEME.hexA(THEME.wine, 0.5)}`,
+        boxShadow: "0 0 10px rgba(225, 73, 109, 0.6)",
       }}
     >
       <div style={{
         position: "absolute", top: markersTop + 0, left: -7,
-        width: 16, height: 14, background: THEME.wine,
+        width: 16, height: 14, background: "#e1496d",
         clipPath: "polygon(50% 100%, 0 0, 100% 0)",
-        filter: "drop-shadow(0 1px 3px rgba(102,23,46,0.55))",
+        filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.6))",
       }} />
       <div style={{
         position: "absolute", top: markersTop + 15, left: -28,
         fontSize: 10, padding: "2px 6px", borderRadius: 4,
-        background: THEME.wine, color: "#fff", fontWeight: 700,
+        background: "#e1496d", color: "#fff", fontWeight: 700,
         fontFamily: "'Poppins',sans-serif", whiteSpace: "nowrap",
         fontVariantNumeric: "tabular-nums",
-        boxShadow: "0 2px 8px rgba(102,23,46,0.3)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
       }}>{fmtTime(state.playhead)}</div>
     </div>
   );
@@ -472,39 +443,35 @@ function EmptyTimelineState({ onAddTrack }) {
   return (
     <div style={{
       display: "flex", flexDirection: "column", alignItems: "center",
-      justifyContent: "center", padding: "60px 20px", gap: 16,
-      background: THEME.panel,
+      justifyContent: "center", padding: "40px 20px", gap: 14,
+      background: "#161217",
     }}>
       <div style={{
-        width: 72, height: 72, borderRadius: 20,
-        background: THEME.wineTint,
-        border: `1px dashed ${THEME.hexA(THEME.wine, 0.4)}`,
+        width: 60, height: 60, borderRadius: 16,
+        background: "rgba(225,73,109,0.12)",
+        border: "1px dashed rgba(225,73,109,0.35)",
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 32,
+        fontSize: 28,
       }}>🎬</div>
-      <div style={{ textAlign: "center", maxWidth: 500 }}>
+      <div style={{ textAlign: "center", maxWidth: 440 }}>
         <div style={{
-          fontSize: 15, color: THEME.text, fontWeight: 600,
-          marginBottom: 6, fontFamily: "'Poppins', sans-serif",
-        }}>Your timeline is empty — let’s start creating!</div>
-        <div style={{ fontSize: 12, color: THEME.textMuted, lineHeight: 1.6 }}>
-          Drag & drop videos, images, audio, or text from the left sidebar onto any track,
-          or click <span style={{ color: THEME.wine, fontWeight: 600 }}>＋ New Track</span> to add a layer.
+          fontSize: 14, color: "#fff", fontWeight: 600,
+          marginBottom: 4, fontFamily: "'Poppins', sans-serif",
+        }}>Your timeline is empty</div>
+        <div style={{ fontSize: 11, color: "#8c8780", lineHeight: 1.5 }}>
+          Add clips from the left sidebar or click <span style={{ color: "#e1496d", fontWeight: 600 }}>＋ Track</span> to add a layer.
         </div>
       </div>
       <button
         onClick={onAddTrack}
         style={{
-          padding: "10px 22px", borderRadius: 10, cursor: "pointer",
-          background: THEME.btn.primaryBg,
-          border: "none", color: "#fff", fontSize: 13, fontWeight: 600,
-          fontFamily: "'Poppins',sans-serif", letterSpacing: "0.02em",
-          boxShadow: THEME.shadow.md,
-          marginTop: 4,
+          padding: "8px 18px", borderRadius: 8, cursor: "pointer",
+          background: "linear-gradient(135deg,#a82348,#e1496d)",
+          border: "none", color: "#fff", fontSize: 12, fontWeight: 600,
+          fontFamily: "'Poppins',sans-serif",
+          boxShadow: "0 4px 14px rgba(225,73,109,0.3)",
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.filter = "brightness(1.08)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-        onMouseLeave={(e) => { e.currentTarget.style.filter = "none"; e.currentTarget.style.transform = "none"; }}
-      >＋ Create First Track</button>
+      >＋ Add First Track</button>
     </div>
   );
 }

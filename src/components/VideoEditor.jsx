@@ -3,7 +3,7 @@ import { useEditorState } from "../hooks/useEditorState";
 import {
   uid, fmtTime, ASPECT_RATIOS, EFFECT_PRESETS, TEXT_PRESETS,
   FONT_FAMILIES, SHAPE_TYPES, STICKERS, BG_MUSIC, STOCK_MEDIA,
-  TRANSITIONS, ANIMATIONS, GRADIENTS
+  TRANSITIONS, ANIMATIONS
 } from "../constants";
 import Timeline from "./Timeline";
 import ExportModal from "./ExportModal";
@@ -22,17 +22,21 @@ export default function VideoEditor({ onBack, user, initialProject }) {
   const [state, dispatch] = useEditorState();
   const [showExport, setShowExport]               = useState(false);
   const [exportUrl, setExportUrl]                 = useState(null);
-  const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
+  
+  // Sidebar state: drawerOpen (true/false) & active tab
+  const [drawerOpen, setDrawerOpen]               = useState(true);
   const [leftTab, setLeftTab]                     = useState("media");
-  const [activeTool, setActiveTool]               = useState("select"); // select | cut | trim
+  
+  // Resizable timeline height state (in px)
+  const [timelineHeight, setTimelineHeight]       = useState(260);
+  const isResizingTimelineRef                     = useRef(false);
+
+  const [activeTool, setActiveTool]               = useState("select");
   const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal]       = useState(false);
-  const [draggingCanvasClip, setDraggingCanvasClip] = useState(null);
-  const [exportResolution, setExportResolution]   = useState("1080p");
-  const [exportFps, setExportFps]                 = useState(30);
 
   const [projectTitle, setProjectTitle]           = useState(() => {
-    return initialProject ? initialProject.title : "Cinematic Video Studio";
+    return initialProject ? initialProject.title : "Cinematic Studio";
   });
 
   const timelineRef      = useRef(null);
@@ -49,7 +53,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       dispatch({ type: "LOAD_PROJECT", projectState: initialProject.data });
       if (initialProject.title) setProjectTitle(initialProject.title);
     } else if (state.tracks.length === 0) {
-      // Add standard initial tracks for instant user editing
       const vTrack = { id: uid(), type: "video", name: "Video Layer 1", clips: [] };
       const tTrack = { id: uid(), type: "text", name: "Titles & Text", clips: [] };
       const aTrack = { id: uid(), type: "audio", name: "Background Music", clips: [] };
@@ -57,7 +60,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       dispatch({ type: "ADD_TRACK", track: tTrack });
       dispatch({ type: "ADD_TRACK", track: aTrack });
 
-      // Add a starter stock video & title text
       const starterVideo = STOCK_MEDIA[0];
       dispatch({
         type: "ADD_CLIP",
@@ -83,10 +85,10 @@ export default function VideoEditor({ onBack, user, initialProject }) {
           type: "text",
           x: 50,
           y: 50,
-          fontSize: 42,
+          fontSize: 40,
           fontFamily: "'Syne', sans-serif",
           color: "#ffffff",
-          bgColor: "rgba(10, 8, 7, 0.82)",
+          bgColor: "rgba(18, 14, 18, 0.85)",
           borderColor: "#e1496d",
           animation: "slideUp",
         }
@@ -106,10 +108,10 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       tool: "Video Editor",
       year: new Date().getFullYear().toString(),
       accent: "#e1496d",
-      gradient: "linear-gradient(135deg, #23141b 0%, #3a0c19 50%, #1a0f14 100%)",
+      gradient: "linear-gradient(135deg, #181318 0%, #2a1520 50%, #120e12 100%)",
       icon: "🎬",
       tags: [state.aspectRatio || "16:9", `${state.tracks.reduce((acc, t) => acc + t.clips.length, 0)} Clips`],
-      desc: `Edited project with ${state.tracks.length} tracks in ${state.aspectRatio} format.`,
+      desc: `Edited project with ${state.tracks.length} tracks.`,
       data: {
         tracks: state.tracks,
         duration: state.duration,
@@ -127,11 +129,8 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       }
     };
 
-    if (existingIdx > -1) {
-      savedWorks[existingIdx] = projectData;
-    } else {
-      savedWorks.unshift(projectData);
-    }
+    if (existingIdx > -1) savedWorks[existingIdx] = projectData;
+    else savedWorks.unshift(projectData);
 
     localStorage.setItem("creatify_past_works", JSON.stringify(savedWorks));
 
@@ -139,11 +138,8 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       const userKey = `creatify_video_projects_${user.email}`;
       const userProjects = JSON.parse(localStorage.getItem(userKey) || "[]");
       const uIdx = userProjects.findIndex(p => p.id === projectId);
-      if (uIdx > -1) {
-        userProjects[uIdx] = projectData;
-      } else {
-        userProjects.unshift(projectData);
-      }
+      if (uIdx > -1) userProjects[uIdx] = projectData;
+      else userProjects.unshift(projectData);
       localStorage.setItem(userKey, JSON.stringify(userProjects));
     }
 
@@ -151,36 +147,25 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     if (token) {
       fetch((window.API_URL || "http://localhost:3001") + "/api/projects", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(projectData)
       })
-      .then(res => {
-        if (!res.ok) throw new Error("Server rejected save");
-      })
-      .catch(err => {
-        console.error("DB save error:", err.message);
-      })
-      .finally(() => {
-        onBack();
-      });
+      .then(res => { if (!res.ok) throw new Error("Server rejected save"); })
+      .catch(err => console.error("DB save error:", err.message))
+      .finally(() => onBack());
     } else {
       onBack();
     }
   };
 
-  const handleDiscardAndExit = () => {
-    onBack();
-  };
+  const handleDiscardAndExit = () => onBack();
 
-  // ── Active video clip at playhead ────────────────────────────────────────
+  // Active clip at playhead
   const activeClip = state.tracks.flatMap(t => t.clips).find(c =>
     c.start <= state.playhead && c.start + c.duration > state.playhead && (c.videoEl || c.url) && (c.type === "video" || c.type === "image")
   );
 
-  // ── Sync video element with timeline ────────────────────────────────────
+  // Sync video element
   useEffect(() => {
     if (!videoRef.current) return;
     const video = videoRef.current;
@@ -200,7 +185,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [state.isPlaying, activeClip, dispatch]);
 
-  // ── Dynamic duration ──────────────────────────────────────────────────
+  // Dynamic duration
   useEffect(() => {
     let maxEnd = 0;
     state.tracks.forEach(t => t.clips.forEach(c => { if (c.start + c.duration > maxEnd) maxEnd = c.start + c.duration; }));
@@ -208,7 +193,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     if (Math.abs(nd - state.duration) > 1) dispatch({ type: "SET_DURATION", value: nd });
   }, [state.tracks, state.duration, dispatch]);
 
-  // ── Playback interval for non-video clips ────────────────────────────
+  // Playback loop for image/text only
   useEffect(() => {
     const hasVideo = state.tracks.some(t => t.clips.some(c => c.type === "video" && c.start <= state.playhead && c.start + c.duration > state.playhead));
     if (state.isPlaying && !hasVideo) {
@@ -220,29 +205,22 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     return () => clearInterval(playIntervalRef.current);
   }, [state.isPlaying, state.playhead, state.duration, dispatch, state.tracks, state.playbackSpeed]);
 
-  // ── Audio playback engine ──────────────────────────────────────────
+  // Audio elements engine
   const audioElementsRef = useRef({});
-
   useEffect(() => {
     return () => {
-      Object.values(audioElementsRef.current).forEach(audio => {
-        audio.pause();
-        audio.src = "";
-      });
+      Object.values(audioElementsRef.current).forEach(audio => { audio.pause(); audio.src = ""; });
     };
   }, []);
 
   useEffect(() => {
-    const audioClips = state.tracks
-      .filter(t => t.type === "audio")
-      .flatMap(t => t.clips);
-
+    const audioClips = state.tracks.filter(t => t.type === "audio").flatMap(t => t.clips);
     const activeClipIds = new Set(audioClips.map(c => c.id));
+
     Object.keys(audioElementsRef.current).forEach(id => {
       if (!activeClipIds.has(id)) {
         const audio = audioElementsRef.current[id];
-        audio.pause();
-        audio.src = "";
+        audio.pause(); audio.src = "";
         delete audioElementsRef.current[id];
       }
     });
@@ -254,19 +232,13 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         audio.crossOrigin = "anonymous";
         audioElementsRef.current[clip.id] = audio;
       }
-
       audio.volume = Math.max(0, Math.min(1, clip.volume ?? 1));
-
       const offsetTime = state.playhead - clip.start;
       const isWithinClipRange = offsetTime >= 0 && offsetTime < clip.duration;
 
       if (state.isPlaying && isWithinClipRange) {
-        if (Math.abs(audio.currentTime - offsetTime) > 0.15) {
-          audio.currentTime = offsetTime;
-        }
-        if (audio.paused) {
-          audio.play().catch(e => console.warn("Audio play blocked:", e.message));
-        }
+        if (Math.abs(audio.currentTime - offsetTime) > 0.15) audio.currentTime = offsetTime;
+        if (audio.paused) audio.play().catch(e => console.warn("Audio play blocked:", e.message));
       } else {
         if (!audio.paused) audio.pause();
         if (isWithinClipRange) audio.currentTime = offsetTime;
@@ -275,7 +247,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     });
   }, [state.isPlaying, state.playhead, state.tracks]);
 
-  // ── Keyboard shortcuts ───────────────────────────────────────────────
+  // Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
@@ -324,14 +296,53 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [state.selectedClip, state.playhead, state.duration, state.isPlaying, state.tracks, dispatch]);
 
-  // ── Selected clip data & properties ──────────────────────────────────
+  // Selected clip data
   const selectedClipData = state.selectedClip
     ? state.tracks.flatMap(t => t.clips).find(c => c.id === state.selectedClip)
     : null;
 
-  useEffect(() => { if (state.selectedClip) setLeftTab("properties"); }, [state.selectedClip]);
+  useEffect(() => {
+    if (state.selectedClip) {
+      setLeftTab("properties");
+      setDrawerOpen(true);
+    }
+  }, [state.selectedClip]);
 
-  // ── Clip Adders ──────────────────────────────────────────────────────
+  // Tab Icon Click Handler: Toggle Drawer if clicking same active tab
+  const handleTabIconClick = (tabId) => {
+    if (leftTab === tabId && drawerOpen) {
+      setDrawerOpen(false);
+    } else {
+      setLeftTab(tabId);
+      setDrawerOpen(true);
+    }
+  };
+
+  // Timeline Mouse Resizing Handler
+  const handleTimelineResizeMouseDown = (e) => {
+    e.preventDefault();
+    isResizingTimelineRef.current = true;
+    const startY = e.clientY;
+    const startH = timelineHeight;
+
+    const onMouseMove = (me) => {
+      if (!isResizingTimelineRef.current) return;
+      const deltaY = startY - me.clientY;
+      const newHeight = Math.max(140, Math.min(520, startH + deltaY));
+      setTimelineHeight(newHeight);
+    };
+
+    const onMouseUp = () => {
+      isResizingTimelineRef.current = false;
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  // Add Clips
   const addTextClip = (preset = null) => {
     let track = state.tracks.find(t => t.type === "text");
     if (!track) {
@@ -341,24 +352,26 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     const maxStart = track.clips.reduce((m, c) => Math.max(m, c.start + c.duration), 0);
     const start = Math.max(state.playhead, maxStart);
 
-    const clipData = {
-      id: uid(),
-      name: preset ? preset.name : "Title Text",
-      text: preset ? (preset.name === "Big Heading" ? "MAIN HEADLINE" : preset.name) : "Your Title Here",
-      start,
-      duration: 4,
-      type: "text",
-      x: 50,
-      y: 50,
-      fontSize: preset ? Math.round(preset.fontSize / 2.5) : 36,
-      fontFamily: preset?.neon ? "'Syne', sans-serif" : "'Poppins', sans-serif",
-      color: preset?.color || "#ffffff",
-      bgColor: preset?.neon ? "rgba(255, 107, 138, 0.15)" : "rgba(10, 8, 7, 0.8)",
-      borderColor: preset?.stroke || "#e1496d",
-      animation: preset?.neon ? "pulse" : "slideUp",
-    };
-
-    dispatch({ type: "ADD_CLIP", trackId: track.id, clip: clipData });
+    dispatch({
+      type: "ADD_CLIP",
+      trackId: track.id,
+      clip: {
+        id: uid(),
+        name: preset ? preset.name : "Title Text",
+        text: preset ? (preset.name === "Big Heading" ? "MAIN HEADLINE" : preset.name) : "Your Title Here",
+        start,
+        duration: 4,
+        type: "text",
+        x: 50,
+        y: 50,
+        fontSize: preset ? Math.round(preset.fontSize / 2.5) : 36,
+        fontFamily: preset?.neon ? "'Syne', sans-serif" : "'Poppins', sans-serif",
+        color: preset?.color || "#ffffff",
+        bgColor: preset?.neon ? "rgba(225, 73, 109, 0.2)" : "rgba(18, 14, 18, 0.85)",
+        borderColor: preset?.stroke || "#e1496d",
+        animation: preset?.neon ? "pulse" : "slideUp",
+      }
+    });
   };
 
   const addStickerClip = (sticker) => {
@@ -516,7 +529,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     window.addEventListener("mousemove", onMove); window.addEventListener("mouseup", onUp);
   };
 
-  // Canvas element dragging
+  // Canvas Element Dragging
   const handleCanvasElementMouseDown = (e, clip) => {
     e.stopPropagation();
     dispatch({ type: "SELECT_CLIP", clipId: clip.id });
@@ -594,7 +607,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
 
   const onAddVideo  = () => { fileInputTypeRef.current = "video"; fileInputRef.current.click(); };
   const onAddImage  = () => { fileInputTypeRef.current = "image"; fileInputRef.current.click(); };
-  const onAddAudio  = () => { fileInputTypeRef.current = "audio"; fileInputRef.current.click(); };
 
   const applyPreset = (name) => {
     if (EFFECT_PRESETS[name]) {
@@ -647,7 +659,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     e.target.value = "";
   };
 
-  // Advanced Client-Side Multi-Track Exporter
+  // Real Export pipeline
   const performRealExport = async () => {
     setShowExport(true);
     dispatch({ type: "SET_EXPORT_PROGRESS", value: 0 });
@@ -655,11 +667,11 @@ export default function VideoEditor({ onBack, user, initialProject }) {
 
     const canvas = document.createElement("canvas");
     const aspectObj = ASPECT_RATIOS.find(a => a.id === state.aspectRatio) || ASPECT_RATIOS[0];
-    canvas.width = exportResolution === "4K" ? 3840 : exportResolution === "720p" ? 1280 : aspectObj.w || 1920;
-    canvas.height = exportResolution === "4K" ? 2160 : exportResolution === "720p" ? 720 : aspectObj.h || 1080;
+    canvas.width = aspectObj.w || 1920;
+    canvas.height = aspectObj.h || 1080;
 
     const ctx = canvas.getContext("2d");
-    const stream = canvas.captureStream(exportFps);
+    const stream = canvas.captureStream(30);
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const audioDest = audioCtx.createMediaStreamDestination();
@@ -691,7 +703,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
     recorder.start();
 
     const totalDuration = Math.min(state.duration || 60, 60);
-    const fps = exportFps;
+    const fps = 30;
     const totalFrames = Math.ceil(totalDuration * fps);
     const timeStep = 1 / fps;
 
@@ -743,7 +755,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
       }
     }
 
-    // Render frame pipeline
     for (let i = 0; i < totalFrames; i++) {
       const currentTimeCode = i * timeStep;
       dispatch({ type: "SET_EXPORT_PROGRESS", value: (i / totalFrames) * 95 });
@@ -772,7 +783,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         }
       }
 
-      // Render Vignette
       if (state.vignette > 0) {
         const gradient = ctx.createRadialGradient(
           canvas.width / 2, canvas.height / 2, 10,
@@ -784,23 +794,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
-      // Render Shapes
-      const activeShapeClips = currentActiveClips.filter(c => c.type === 'shape');
-      for (const c of activeShapeClips) {
-        ctx.save();
-        const posX = (c.x ?? 50) / 100 * canvas.width;
-        const posY = (c.y ?? 50) / 100 * canvas.height;
-        ctx.fillStyle = c.fill || "#e1496d";
-        ctx.strokeStyle = c.stroke || "#ffffff";
-        ctx.lineWidth = c.strokeWidth || 0;
-        ctx.beginPath();
-        ctx.arc(posX, posY, 80, 0, Math.PI * 2);
-        ctx.fill();
-        if (c.strokeWidth > 0) ctx.stroke();
-        ctx.restore();
-      }
-
-      // Render Text overlays
       const activeTextClips = currentActiveClips.filter(c => c.type === 'text');
       for (const c of activeTextClips) {
         ctx.save();
@@ -814,7 +807,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
 
         const textWidth = ctx.measureText(c.text).width;
         if (c.bgColor) {
-          ctx.fillStyle = c.bgColor || 'rgba(10, 8, 7, 0.82)';
+          ctx.fillStyle = c.bgColor || 'rgba(18, 14, 18, 0.85)';
           ctx.strokeStyle = c.borderColor || '#e1496d';
           ctx.lineWidth = 2;
           ctx.beginPath();
@@ -828,7 +821,6 @@ export default function VideoEditor({ onBack, user, initialProject }) {
         ctx.restore();
       }
 
-      // Render Emoji / Stickers
       const activeStickerClips = currentActiveClips.filter(c => c.type === 'sticker');
       for (const c of activeStickerClips) {
         ctx.save();
@@ -850,246 +842,261 @@ export default function VideoEditor({ onBack, user, initialProject }) {
   const cssFilter = `brightness(${state.brightness}%) contrast(${state.contrast}%) saturate(${state.saturation}%) hue-rotate(${state.hue}deg) opacity(${state.opacity}%) blur(${state.blur}px) sepia(${state.sepia}%)`;
 
   const tools = [
-    { id:"select", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M4 0l16 12-7 1 4 7-2 1-4-7-7 6z"/></svg>, label:"Select (V)" },
-    { id:"cut",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>, label:"Cut (C)" },
-    { id:"trim",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3l14 9-14 9V3z"/><line x1="19" y1="3" x2="19" y2="21"/></svg>, label:"Trim (T)" },
+    { id:"select", icon:<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M4 0l16 12-7 1 4 7-2 1-4-7-7 6z"/></svg>, label:"Select (V)" },
+    { id:"cut",    icon:<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.12 15.88M14.47 14.48L20 20M8.12 8.12L12 12"/></svg>, label:"Cut (C)" },
+    { id:"trim",   icon:<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 3l14 9-14 9V3z"/><line x1="19" y1="3" x2="19" y2="21"/></svg>, label:"Trim (T)" },
   ];
 
   const editActions = [
-    { label:"Split clip (S)",    icon:"✂", action: onSplitClip,          disabled: !state.selectedClip },
-    { label:"Trim In",           icon:"◁|", action: onTrimInAtPlayhead,   disabled: !state.selectedClip },
-    { label:"Trim Out",          icon:"|▷", action: onTrimOutAtPlayhead,  disabled: !state.selectedClip },
-    { label:"Duplicate",         icon:"⊕",  action: onDuplicateClip,      disabled: !state.selectedClip },
-    { label:"Delete clip",       icon:"✕",  action: onDeleteClip,         disabled: !state.selectedClip, danger: true },
+    { label:"Split (S)",  icon:"✂", action: onSplitClip,          disabled: !state.selectedClip },
+    { label:"Trim In",    icon:"◁|", action: onTrimInAtPlayhead,   disabled: !state.selectedClip },
+    { label:"Trim Out",   icon:"|▷", action: onTrimOutAtPlayhead,  disabled: !state.selectedClip },
+    { label:"Duplicate",  icon:"⊕",  action: onDuplicateClip,      disabled: !state.selectedClip },
+    { label:"Delete",     icon:"✕",  action: onDeleteClip,         disabled: !state.selectedClip, danger: true },
   ];
 
-  // Selected ratio specs
   const activeRatioObj = ASPECT_RATIOS.find(a => a.id === (state.aspectRatio || "16:9")) || ASPECT_RATIOS[0];
 
+  const tabsConfig = [
+    { id: "media", label: "Media", icon: "📹" },
+    { id: "text", label: "Text", icon: "T" },
+    { id: "stickers", label: "Stickers", icon: "✨" },
+    { id: "audio", label: "Audio", icon: "🎵" },
+    { id: "presets", label: "LUTs", icon: "🎨" },
+    { id: "transitions", label: "FX", icon: "◐" },
+    { id: "properties", label: "Props", icon: "⚙️" },
+  ];
+
   return (
-    <div style={{ background:"#120e12", color:"#e5e5e5", fontFamily:"'Instrument Sans',sans-serif", height:"100vh", width:"100vw", display:"flex", flexDirection:"column", overflow:"hidden", userSelect:"none" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Instrument+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <div style={{ background:"#0e0d11", color:"#e5e5e5", fontFamily:"'Instrument Sans',sans-serif", height:"100vh", width:"100vw", display:"flex", flexDirection:"column", overflow:"hidden", userSelect:"none" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Instrument+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet" />
       <style>{`
         *{margin:0;padding:0;box-sizing:border-box}
-        body,html{height:100%;width:100%;overflow:hidden;background:#120e12}
-        ::-webkit-scrollbar{width:5px;height:5px}
-        ::-webkit-scrollbar-track{background:#120e12}
+        body,html{height:100%;width:100%;overflow:hidden;background:#0e0d11}
+        ::-webkit-scrollbar{width:4px;height:4px}
+        ::-webkit-scrollbar-track{background:#0e0d11}
         ::-webkit-scrollbar-thumb{background:rgba(225,73,109,0.22);border-radius:3px}
         ::-webkit-scrollbar-thumb:hover{background:#e1496d}
         .clip-block{cursor:grab;transition:opacity 0.1s,box-shadow 0.1s}
         .clip-block:hover{opacity:0.92}
         .clip-block.selected{box-shadow:0 0 0 2px #e1496d,inset 0 0 0 1px rgba(225,73,109,0.4);filter:brightness(1.15)}
-        .tool-btn{background:rgba(225,73,109,0.06);border:1px solid rgba(225,73,109,0.18);color:#e5e5e5;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'Poppins',sans-serif;font-weight:500;display:inline-flex;align-items:center;gap:7px;transition:all 0.18s;white-space:nowrap;flex-shrink:0}
-        .tool-btn:hover{background:rgba(225,73,109,0.15);color:#ff8da7;border-color:rgba(225,73,109,0.45);transform:translateY(-1px)}
+        .tool-btn{background:rgba(225,73,109,0.06);border:1px solid rgba(225,73,109,0.18);color:#e5e5e5;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11.5px;font-family:'Poppins',sans-serif;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;white-space:nowrap;flex-shrink:0}
+        .tool-btn:hover{background:rgba(225,73,109,0.15);color:#ff8da7;border-color:rgba(225,73,109,0.4);transform:translateY(-1px)}
         .tool-btn:disabled{opacity:0.3;cursor:not-allowed;pointer-events:none;transform:none}
-        .tool-btn.primary{background:linear-gradient(135deg,#a82348,#e1496d);border:none;color:#fff;box-shadow:0 4px 14px rgba(225,73,109,0.35);font-weight:600}
-        .tool-btn.primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(225,73,109,0.5)}
+        .tool-btn.primary{background:linear-gradient(135deg,#a82348,#e1496d);border:none;color:#fff;box-shadow:0 3px 12px rgba(225,73,109,0.35);font-weight:600}
+        .tool-btn.primary:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(225,73,109,0.5)}
         .tool-btn.danger{color:#ef4444;border-color:rgba(239,68,68,0.25);background:rgba(239,68,68,0.06)}
         .tool-btn.danger:hover{background:rgba(239,68,68,0.18);border-color:#ef4444}
-        .tool-btn.active{background:rgba(225,73,109,0.22);color:#ff8da7;border-color:#e1496d;box-shadow:0 0 12px rgba(225,73,109,0.25)}
+        .tool-btn.active{background:rgba(225,73,109,0.22);color:#ff8da7;border-color:#e1496d;box-shadow:0 0 10px rgba(225,73,109,0.25)}
         .filter-slider{width:100%;-webkit-appearance:none;appearance:none;height:4px;background:rgba(225,73,109,0.18);border-radius:3px;outline:none;cursor:pointer}
-        .filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#e1496d;border-radius:50%;cursor:pointer;box-shadow:0 0 8px rgba(225,73,109,0.5);transition:all 0.15s}
+        .filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:#e1496d;border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(225,73,109,0.5);transition:all 0.15s}
         .filter-slider::-webkit-slider-thumb:hover{transform:scale(1.25);background:#ff8da7}
-        .filter-slider::-moz-range-thumb{width:14px;height:14px;background:#e1496d;border:none;border-radius:50%}
-        .glass-header{background:rgba(18,14,18,0.92);backdrop-filter:blur(24px);border-bottom:1px solid rgba(225,73,109,0.15);box-shadow:0 4px 20px rgba(0,0,0,0.5)}
-        .sidebar-panel{background:rgba(18,14,18,0.92);backdrop-filter:blur(24px)}
         .canvas-element{cursor:move;transition:outline 0.15s;border-radius:8px}
         .canvas-element:hover{outline:1.5px dashed #e1496d}
         .canvas-element.selected-canvas{outline:2px solid #e1496d;box-shadow:0 0 12px rgba(225,73,109,0.4)}
-        @keyframes pulseGlow{0%,100%{box-shadow:0 0 10px rgba(225,73,109,0.2)}50%{box-shadow:0 0 22px rgba(225,73,109,0.6)}}
+        .nav-icon-btn{width:52px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:#6c6660;cursor:pointer;font-family:'Poppins',sans-serif;font-size:10px;transition:all 0.18s;border-left:3px solid transparent}
+        .nav-icon-btn:hover{color:#ff8da7;background:rgba(225,73,109,0.08)}
+        .nav-icon-btn.active{color:#ff8da7;background:rgba(225,73,109,0.15);border-left-color:#e1496d;font-weight:700}
       `}</style>
 
       <input ref={fileInputRef} type="file" multiple accept="video/*,image/*,audio/*" style={{ display:"none" }} onChange={handleFileUpload} />
 
-      {/* ── Top Header Navigation Bar ───────────────────────────────── */}
-      <div className="glass-header" style={{ height:"54px", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px", flexShrink:0, zIndex:20 }}>
+      {/* ── Top Header Navigation Bar (Responsive & Compact) ─────────── */}
+      <div style={{ height:"48px", background:"#141117", borderBottom:"1px solid rgba(225,73,109,0.18)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 14px", flexShrink:0, zIndex:20, overflow:"hidden", whiteSpace:"nowrap" }}>
 
-        {/* Left: Back + Title + Cloud Save Status */}
-        <div style={{ display:"flex", alignItems:"center", gap:"14px" }}>
-          <button className="tool-btn danger" onClick={() => setShowLeaveModal(true)} style={{ padding:"5px 12px", gap:"6px", fontSize:"12px" }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
-            Exit Studio
+        {/* Left: Exit + Project Title */}
+        <div style={{ display:"flex", alignItems:"center", gap:"10px", flexShrink:0 }}>
+          <button className="tool-btn danger" onClick={() => setShowLeaveModal(true)} style={{ padding:"4px 10px", gap:"5px", fontSize:"11.5px" }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M5 12l7 7M5 12l7-7"/></svg>
+            Exit
           </button>
 
-          <div style={{ height:"18px", width:"1px", background:"rgba(225,73,109,0.18)" }} />
+          <div style={{ height:"16px", width:"1px", background:"rgba(225,73,109,0.18)" }} />
 
-          <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-            <input
-              type="text"
-              value={projectTitle}
-              onChange={e => setProjectTitle(e.target.value)}
-              style={{ background:"transparent", border:"none", borderBottom:"1px dashed rgba(225,73,109,0.3)", color:"#fff", fontFamily:"'Syne', sans-serif", fontWeight:800, fontSize:"14px", outline:"none", padding:"2px 4px", minWidth:"180px", maxWidth:"280px" }}
-              title="Click to rename video project"
-            />
-            <span style={{ fontSize:"10px", background:"rgba(34,197,94,0.12)", color:"#4ade80", border:"1px solid rgba(34,197,94,0.25)", padding:"2px 8px", borderRadius:"12px", display:"inline-flex", alignItems:"center", gap:"4px", fontWeight:600 }}>
-              <span style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#4ade80" }} />
-              Saved
-            </span>
-          </div>
+          <input
+            type="text"
+            value={projectTitle}
+            onChange={e => setProjectTitle(e.target.value)}
+            style={{ background:"transparent", border:"none", borderBottom:"1px dashed rgba(225,73,109,0.3)", color:"#fff", fontFamily:"'Syne', sans-serif", fontWeight:800, fontSize:"13px", outline:"none", padding:"1px 4px", width:"160px", overflow:"hidden", textOverflow:"ellipsis" }}
+            title="Click to rename project"
+          />
+
+          <span style={{ fontSize:"9.5px", background:"rgba(34,197,94,0.12)", color:"#4ade80", border:"1px solid rgba(34,197,94,0.25)", padding:"2px 6px", borderRadius:"10px", fontWeight:600, display:"inline-flex", alignItems:"center", gap:"3px" }}>
+            <span style={{ width:"5px", height:"5px", borderRadius:"50%", background:"#4ade80" }} />
+            Saved
+          </span>
         </div>
 
-        {/* Center: History + Aspect Ratio + Hotkeys */}
-        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-          {/* Undo / Redo */}
-          <div style={{ display:"flex", background:"rgba(225,73,109,0.06)", borderRadius:"8px", border:"1px solid rgba(225,73,109,0.15)", padding:"2px" }}>
-            <button
-              onClick={() => dispatch({ type: "UNDO" })}
-              disabled={!state.history?.length}
-              title="Undo (Ctrl+Z)"
-              style={{ background:"none", border:"none", color: state.history?.length ? "#e1496d" : "#555", padding:"4px 8px", cursor: state.history?.length ? "pointer" : "not-allowed", fontSize:"13px", borderRadius:"5px" }}
-            >↶</button>
-            <button
-              onClick={() => dispatch({ type: "REDO" })}
-              disabled={!state.future?.length}
-              title="Redo (Ctrl+Y)"
-              style={{ background:"none", border:"none", color: state.future?.length ? "#e1496d" : "#555", padding:"4px 8px", cursor: state.future?.length ? "pointer" : "not-allowed", fontSize:"13px", borderRadius:"5px" }}
-            >↷</button>
-          </div>
-
-          <div style={{ height:"18px", width:"1px", background:"rgba(225,73,109,0.18)" }} />
-
-          {/* Aspect ratio selector */}
-          <div style={{ display:"flex", alignItems:"center", gap:"6px", background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.18)", borderRadius:"8px", padding:"3px 8px" }}>
-            <span style={{ fontSize:"11px", color:"#e1496d", fontWeight:700 }}>ASPECT</span>
+        {/* Center: Aspect Ratio + History + Hotkeys */}
+        <div style={{ display:"flex", alignItems:"center", gap:"8px", flexShrink:0 }}>
+          {/* Aspect Ratio Selector */}
+          <div style={{ display:"flex", alignItems:"center", gap:"5px", background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.18)", borderRadius:"6px", padding:"2px 8px" }}>
+            <span style={{ fontSize:"10px", color:"#e1496d", fontWeight:700 }}>ASPECT</span>
             <select
               value={state.aspectRatio || "16:9"}
               onChange={e => dispatch({ type: "SET_ASPECT_RATIO", ratio: e.target.value })}
               style={{ background:"none", border:"none", color:"#fff", fontSize:"11px", fontFamily:"'Poppins', sans-serif", fontWeight:600, outline:"none", cursor:"pointer" }}
             >
-              {ASPECT_RATIOS.slice(0, 7).map(ratio => (
-                <option key={ratio.id} value={ratio.id} style={{ background:"#1a0f14", color:"#fff" }}>
-                  {ratio.icon} {ratio.id} ({ratio.name.split("/")[0].trim()})
+              {ASPECT_RATIOS.slice(0, 5).map(ratio => (
+                <option key={ratio.id} value={ratio.id} style={{ background:"#181318", color:"#fff" }}>
+                  {ratio.icon} {ratio.id}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Hotkeys Modal trigger */}
-          <button className="tool-btn" onClick={() => setShowShortcutsModal(true)} title="Keyboard Shortcuts (?)" style={{ padding:"5px 10px", fontSize:"11px" }}>
+          {/* Undo / Redo */}
+          <div style={{ display:"flex", background:"rgba(225,73,109,0.06)", borderRadius:"6px", border:"1px solid rgba(225,73,109,0.18)", padding:"1px" }}>
+            <button
+              onClick={() => dispatch({ type: "UNDO" })}
+              disabled={!state.history?.length}
+              title="Undo (Ctrl+Z)"
+              style={{ background:"none", border:"none", color: state.history?.length ? "#ff8da7" : "#555", padding:"3px 7px", cursor: state.history?.length ? "pointer" : "not-allowed", fontSize:"12px", borderRadius:"4px" }}
+            >↶</button>
+            <button
+              onClick={() => dispatch({ type: "REDO" })}
+              disabled={!state.future?.length}
+              title="Redo (Ctrl+Y)"
+              style={{ background:"none", border:"none", color: state.future?.length ? "#ff8da7" : "#555", padding:"3px 7px", cursor: state.future?.length ? "pointer" : "not-allowed", fontSize:"12px", borderRadius:"4px" }}
+            >↷</button>
+          </div>
+
+          <button className="tool-btn" onClick={() => setShowShortcutsModal(true)} title="Hotkeys (?)" style={{ padding:"4px 8px", fontSize:"11px" }}>
             ⌨️ Hotkeys
           </button>
         </div>
 
         {/* Right: Import/Export JSON + Export Video */}
-        <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:"6px", flexShrink:0 }}>
           <input ref={jsonInputRef} type="file" accept=".json" style={{ display: "none" }} onChange={importProjectJson} />
-          <button className="tool-btn" onClick={() => jsonInputRef.current.click()} title="Import Project (.json)" style={{ padding: "5px 10px", fontSize: "11px", gap: "5px" }}>
-            📥 Import JSON
+          <button className="tool-btn" onClick={() => jsonInputRef.current.click()} title="Import JSON" style={{ padding: "4px 8px", fontSize: "11px" }}>
+            📥
           </button>
-          <button className="tool-btn" onClick={exportProjectJson} title="Backup Project (.json)" style={{ padding: "5px 10px", fontSize: "11px", gap: "5px" }}>
-            💾 Backup JSON
+          <button className="tool-btn" onClick={exportProjectJson} title="Backup JSON" style={{ padding: "4px 8px", fontSize: "11px" }}>
+            💾
           </button>
 
-          <div style={{ height:"18px", width:"1px", background:"rgba(225,73,109,0.18)" }} />
+          <div style={{ height:"16px", width:"1px", background:"rgba(225,73,109,0.18)" }} />
 
-          <button className="tool-btn primary" onClick={performRealExport} style={{ padding:"7px 18px", gap:"7px", fontSize:"13px" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Export Video
+          <button className="tool-btn primary" onClick={performRealExport} style={{ padding:"6px 14px", gap:"6px", fontSize:"12px" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Export
           </button>
         </div>
       </div>
 
-      {/* ── Main Workspace Body ───────────────────────────────────────── */}
-      <div style={{ display:"flex", flex:1, overflow:"hidden", background:"#120e12" }}>
+      {/* ── Main Workspace ────────────────────────────────────────────── */}
+      <div style={{ display:"flex", flex:1, overflow:"hidden", background:"#0e0d11" }}>
 
-        {/* ── Left Multi-Tab Sidebar ───────────────────────────────────── */}
-        {!leftSidebarCollapsed ? (
-          <div className="sidebar-panel" style={{ width:"300px", minWidth:"300px", borderRight:"1px solid rgba(225,73,109,0.12)", display:"flex", flexDirection:"column", height:"100%", zIndex:5, flexShrink:0 }}>
-            {/* Tab Bar */}
-            <div style={{ display:"flex", borderBottom:"1px solid rgba(225,73,109,0.1)", background:"rgba(10,8,7,0.6)", overflowX:"auto" }}>
-              {[
-                { id:"media",       label:"Media",       icon:"📹" },
-                { id:"text",        label:"Text",        icon:"T" },
-                { id:"stickers",    label:"Stickers",    icon:"✨" },
-                { id:"audio",       label:"Audio",       icon:"🎵" },
-                { id:"presets",     label:"LUTs",        icon:"🎨" },
-                { id:"transitions", label:"Transitions", icon:"◐" },
-                { id:"properties",  label:"Inspector",   icon:"⚙️" },
-              ].map(tab => {
-                const active = leftTab === tab.id;
-                return (
-                  <button key={tab.id} onClick={() => setLeftTab(tab.id)} style={{ flex:"1 0 auto", padding:"10px 8px", background:"none", border:"none", borderBottom: active ? "2.5px solid #e1496d" : "2.5px solid transparent", color: active ? "#ff8da7" : "#6c6660", fontWeight: active ? 700 : 400, fontSize:"10px", fontFamily:"'Poppins',sans-serif", cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", gap:"3px", transition:"all 0.18s" }}
-                    onMouseEnter={e => { if (!active) e.currentTarget.style.color = "#e1496d"; }}
-                    onMouseLeave={e => { if (!active) e.currentTarget.style.color = "#6c6660"; }}
-                  >
-                    <span style={{ fontSize:"13px" }}>{tab.icon}</span>
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
-              <button onClick={() => setLeftSidebarCollapsed(true)} style={{ padding:"0 10px", background:"none", border:"none", color:"#5c5650", cursor:"pointer", fontSize:"12px", transition:"color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color="#e1496d"} onMouseLeave={e => e.currentTarget.style.color="#5c5650"}>◀</button>
+        {/* ── 1. Vertical Icon Strip (Always visible on far left, 52px wide) ── */}
+        <div style={{ width:"52px", minWidth:"52px", background:"#141117", borderRight:"1px solid rgba(225,73,109,0.15)", display:"flex", flexDirection:"column", alignItems:"center", padding:"8px 0", zIndex:10, flexShrink:0 }}>
+          {tabsConfig.map(t => {
+            const active = leftTab === t.id && drawerOpen;
+            return (
+              <button
+                key={t.id}
+                className={`nav-icon-btn${active ? " active" : ""}`}
+                onClick={() => handleTabIconClick(t.id)}
+                title={t.label}
+              >
+                <span style={{ fontSize:"16px" }}>{t.icon}</span>
+                <span>{t.label}</span>
+              </button>
+            );
+          })}
+
+          <div style={{ flex:1 }} />
+
+          {/* Toggle drawer open/close button */}
+          <button
+            onClick={() => setDrawerOpen(prev => !prev)}
+            style={{ width:"36px", height:"36px", borderRadius:"50%", background:"rgba(225,73,109,0.1)", border:"1px solid rgba(225,73,109,0.2)", color:"#ff8da7", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"12px", transition:"all 0.18s" }}
+            title={drawerOpen ? "Collapse Drawer (Close)" : "Expand Drawer (Open)"}
+          >
+            {drawerOpen ? "◀" : "▶"}
+          </button>
+        </div>
+
+        {/* ── 2. Collapsible Drawer Flyout Panel (260px wide) ──────────── */}
+        {drawerOpen && (
+          <div style={{ width:"260px", minWidth:"260px", background:"#161217", borderRight:"1px solid rgba(225,73,109,0.15)", display:"flex", flexDirection:"column", height:"100%", zIndex:9, flexShrink:0 }}>
+            {/* Drawer Panel Header */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 14px", borderBottom:"1px solid rgba(225,73,109,0.15)", background:"#181318" }}>
+              <span style={{ fontSize:"11px", letterSpacing:"0.12em", color:"#e1496d", fontWeight:700, fontFamily:"'Poppins',sans-serif" }}>
+                {tabsConfig.find(t => t.id === leftTab)?.label.toUpperCase()} LIBRARY
+              </span>
+              <button
+                onClick={() => setDrawerOpen(false)}
+                style={{ background:"none", border:"none", color:"#8c8780", cursor:"pointer", fontSize:"14px", padding:"2px 6px" }}
+                title="Close Drawer"
+              >✕</button>
             </div>
 
-            {/* Sidebar Tab Content */}
-            <div style={{ flex:1, overflowY:"auto", padding:"14px" }}>
+            {/* Drawer Panel Content */}
+            <div style={{ flex:1, overflowY:"auto", padding:"12px" }}>
 
-              {/* ─ 1. Media Library Tab ─ */}
+              {/* ─ Media ─ */}
               {leftTab === "media" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                    <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>ASSETS & MEDIA</span>
-                    <div style={{ display:"flex", gap:"5px" }}>
-                      <button className="tool-btn" onClick={onAddVideo} title="Upload Video" style={{ padding:"4px 8px", fontSize:"11px" }}>📹 Video</button>
-                      <button className="tool-btn" onClick={onAddImage} title="Upload Photo" style={{ padding:"4px 8px", fontSize:"11px" }}>🖼 Photo</button>
-                    </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                  <div style={{ display:"flex", gap:"6px" }}>
+                    <button className="tool-btn" onClick={onAddVideo} style={{ flex:1, justifyContent:"center", fontSize:"11px" }}>📹 Video</button>
+                    <button className="tool-btn" onClick={onAddImage} style={{ flex:1, justifyContent:"center", fontSize:"11px" }}>🖼 Photo</button>
                   </div>
 
                   <div style={{ fontSize:"10px", color:"#8c8780", fontWeight:600, letterSpacing:"0.05em" }}>CURATED STOCK MEDIA</div>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
                     {STOCK_MEDIA.map(item => (
                       <div key={item.id} onClick={() => addStockMedia(item)}
-                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px", cursor:"pointer", transition:"all 0.18s" }}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"8px", padding:"8px", cursor:"pointer", transition:"all 0.15s" }}
                         onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.15)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
                       >
-                        <div style={{ fontSize:"24px", marginBottom:"6px" }}>{item.thumb}</div>
-                        <div style={{ fontSize:"11px", fontWeight:600, color:"#e5e5e5", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
-                        <div style={{ fontSize:"9px", color:"#8c8780", textTransform:"uppercase", marginTop:"3px" }}>{item.type} · {item.duration}s</div>
+                        <div style={{ fontSize:"22px", marginBottom:"4px" }}>{item.thumb}</div>
+                        <div style={{ fontSize:"10.5px", fontWeight:600, color:"#fff", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{item.name}</div>
+                        <div style={{ fontSize:"9px", color:"#8c8780", marginTop:"2px" }}>{item.type} · {item.duration}s</div>
                       </div>
                     ))}
                   </div>
 
-                  <button className="tool-btn" onClick={() => fileInputRef.current.click()} style={{ justifyContent:"center", padding:"11px", fontSize:"12px", marginTop:"6px" }}>
-                    + Upload Files from Device
+                  <button className="tool-btn" onClick={() => fileInputRef.current.click()} style={{ justifyContent:"center", padding:"10px", fontSize:"11.5px", marginTop:"4px" }}>
+                    + Upload Local Files
                   </button>
                 </div>
               )}
 
-              {/* ─ 2. Text Overlays Tab ─ */}
+              {/* ─ Text ─ */}
               {leftTab === "text" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
-                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>TEXT PRESETS</span>
-                  <button className="tool-btn primary" onClick={() => addTextClip()} style={{ justifyContent:"center", padding:"11px", fontSize:"12.5px" }}>
+                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                  <button className="tool-btn primary" onClick={() => addTextClip()} style={{ justifyContent:"center", padding:"10px", fontSize:"12px" }}>
                     + Add Custom Title
                   </button>
-
-                  <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"6px" }}>
                     {TEXT_PRESETS.map(preset => (
                       <button key={preset.id} onClick={() => addTextClip(preset)}
-                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px 14px", cursor:"pointer", transition:"all 0.18s", textAlign:"left", display:"flex", justifyContent:"space-between", alignItems:"center" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"8px", padding:"8px 12px", cursor:"pointer", transition:"all 0.15s", textAlign:"left", display:"flex", justifyContent:"space-between", alignItems:"center" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.15)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
                       >
                         <div>
-                          <div style={{ fontSize:"12px", fontWeight:700, color:"#fff" }}>{preset.name}</div>
-                          <div style={{ fontSize:"10px", color:"#8c8780" }}>{preset.tag} Preset</div>
+                          <div style={{ fontSize:"11.5px", fontWeight:700, color:"#fff" }}>{preset.name}</div>
+                          <div style={{ fontSize:"9.5px", color:"#8c8780" }}>{preset.tag} Preset</div>
                         </div>
-                        <span style={{ fontSize:"14px", color:"#e1496d" }}>+</span>
+                        <span style={{ fontSize:"13px", color:"#e1496d" }}>+</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* ─ 3. Stickers & Shapes Tab ─ */}
+              {/* ─ Stickers ─ */}
               {leftTab === "stickers" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
-                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>EMOJIS & STICKERS</span>
-                  <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"8px" }}>
+                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                  <span style={{ fontSize:"10px", color:"#e1496d", fontWeight:700 }}>EMOJIS & STICKERS</span>
+                  <div style={{ display:"grid", gridTemplateColumns:"repeat(4, 1fr)", gap:"6px" }}>
                     {STICKERS.map(st => (
                       <button key={st.id} onClick={() => addStickerClip(st)}
-                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px 4px", fontSize:"24px", cursor:"pointer", transition:"all 0.18s" }}
-                        onMouseEnter={e => { e.currentTarget.style.transform="scale(1.15)"; e.currentTarget.style.borderColor="#e1496d"; }}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"8px", padding:"8px 2px", fontSize:"22px", cursor:"pointer", transition:"all 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.transform="scale(1.18)"; e.currentTarget.style.borderColor="#e1496d"; }}
                         onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; }}
                         title={st.name}
                       >
@@ -1098,54 +1105,54 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                     ))}
                   </div>
 
-                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700, marginTop:"8px" }}>GEOMETRIC SHAPES</span>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
+                  <span style={{ fontSize:"10px", color:"#e1496d", fontWeight:700, marginTop:"6px" }}>GEOMETRIC SHAPES</span>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"6px" }}>
                     {SHAPE_TYPES.map(shape => (
                       <button key={shape.id} onClick={() => addShapeClip(shape)}
-                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px", cursor:"pointer", transition:"all 0.18s", display:"flex", alignItems:"center", gap:"10px" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"8px", padding:"8px", cursor:"pointer", transition:"all 0.15s", display:"flex", alignItems:"center", gap:"8px" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.15)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
                       >
-                        <span style={{ fontSize:"20px", color:"#e1496d" }}>{shape.icon}</span>
-                        <span style={{ fontSize:"11px", fontWeight:600, color:"#fff" }}>{shape.name}</span>
+                        <span style={{ fontSize:"18px", color:"#e1496d" }}>{shape.icon}</span>
+                        <span style={{ fontSize:"10.5px", fontWeight:600, color:"#fff" }}>{shape.name}</span>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* ─ 4. Audio & SFX Tab ─ */}
+              {/* ─ Audio ─ */}
               {leftTab === "audio" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
-                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>BACKGROUND MUSIC</span>
-                  <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                  <span style={{ fontSize:"10px", color:"#e1496d", fontWeight:700 }}>BACKGROUND MUSIC</span>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"6px" }}>
                     {BG_MUSIC.map(bgm => (
                       <div key={bgm.id} onClick={() => addStockMedia(bgm)}
-                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px 12px", cursor:"pointer", transition:"all 0.18s", display:"flex", justifyContent:"space-between", alignItems:"center" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"8px", padding:"8px 10px", cursor:"pointer", transition:"all 0.15s", display:"flex", justifyContent:"space-between", alignItems:"center" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.15)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
                       >
-                        <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                          <span style={{ fontSize:"20px" }}>{bgm.thumb}</span>
+                        <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                          <span style={{ fontSize:"18px" }}>{bgm.thumb}</span>
                           <div>
                             <div style={{ fontSize:"11px", fontWeight:600, color:"#fff" }}>{bgm.name}</div>
-                            <div style={{ fontSize:"9px", color:"#8c8780" }}>{bgm.mood} · Audio</div>
+                            <div style={{ fontSize:"9px", color:"#8c8780" }}>{bgm.mood}</div>
                           </div>
                         </div>
-                        <span style={{ fontSize:"13px", color:"#e1496d", fontWeight:700 }}>+ Add</span>
+                        <span style={{ fontSize:"12px", color:"#e1496d", fontWeight:700 }}>+</span>
                       </div>
                     ))}
                   </div>
 
-                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700, marginTop:"8px" }}>SOUND EFFECTS (SFX)</span>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
+                  <span style={{ fontSize:"10px", color:"#e1496d", fontWeight:700, marginTop:"6px" }}>SOUND EFFECTS (SFX)</span>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"6px" }}>
                     {SFX_LIBRARY.map(sfx => (
                       <button key={sfx.id} onClick={() => addStockMedia(sfx)}
-                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"8px", cursor:"pointer", transition:"all 0.18s", textAlign:"left" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"8px", padding:"8px", cursor:"pointer", transition:"all 0.15s", textAlign:"left" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.15)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
                       >
-                        <div style={{ fontSize:"18px" }}>{sfx.thumb}</div>
+                        <div style={{ fontSize:"16px" }}>{sfx.thumb}</div>
                         <div style={{ fontSize:"10px", fontWeight:600, color:"#fff" }}>{sfx.name}</div>
                       </button>
                     ))}
@@ -1153,10 +1160,10 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                 </div>
               )}
 
-              {/* ─ 5. LUTs & Color Grading Tab ─ */}
+              {/* ─ LUTs ─ */}
               {leftTab === "presets" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>CINEMATIC COLOR PRESETS</span>
+                <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
+                  <span style={{ fontSize:"10px", color:"#e1496d", fontWeight:700 }}>CINEMATIC COLOR PRESETS</span>
                   {[
                     { id:"vintage", name:"Vintage Amber", desc:"Warm golden film tone" },
                     { id:"cyber",   name:"Cyberpunk Neon", desc:"High sat neon cyan/magenta" },
@@ -1167,66 +1174,48 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                     { id:"reset",   name:"Reset Colors", desc:"Restore default settings", danger:true },
                   ].map(lut => (
                     <button key={lut.id} onClick={() => applyPreset(lut.id)}
-                      style={{ background: lut.danger ? "rgba(239,68,68,0.06)" : "rgba(225,73,109,0.06)", border: lut.danger ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(225,73,109,0.15)", borderRadius:"10px", padding:"10px 12px", cursor:"pointer", transition:"all 0.18s", textAlign:"left" }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = lut.danger ? "#ef4444" : "#e1496d"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.12)" : "rgba(225,73,109,0.14)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = lut.danger ? "rgba(239,68,68,0.2)" : "rgba(225,73,109,0.15)"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.06)" : "rgba(225,73,109,0.06)"; }}
+                      style={{ background: lut.danger ? "rgba(239,68,68,0.06)" : "rgba(225,73,109,0.06)", border: lut.danger ? "1px solid rgba(239,68,68,0.2)" : "1px solid rgba(225,73,109,0.14)", borderRadius:"8px", padding:"8px 10px", cursor:"pointer", transition:"all 0.15s", textAlign:"left" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = lut.danger ? "#ef4444" : "#e1496d"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.12)" : "rgba(225,73,109,0.15)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = lut.danger ? "rgba(239,68,68,0.2)" : "rgba(225,73,109,0.14)"; e.currentTarget.style.background = lut.danger ? "rgba(239,68,68,0.06)" : "rgba(225,73,109,0.06)"; }}
                     >
-                      <div style={{ fontSize:"12px", fontWeight:700, color: lut.danger ? "#ef4444" : "#fff" }}>{lut.name}</div>
-                      <div style={{ fontSize:"10px", color:"#8c8780" }}>{lut.desc}</div>
+                      <div style={{ fontSize:"11.5px", fontWeight:700, color: lut.danger ? "#ef4444" : "#fff" }}>{lut.name}</div>
+                      <div style={{ fontSize:"9.5px", color:"#8c8780" }}>{lut.desc}</div>
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* ─ 6. Transitions Tab ─ */}
+              {/* ─ Transitions ─ */}
               {leftTab === "transitions" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>SCENE TRANSITIONS</span>
-                  <p style={{ fontSize:"11px", color:"#8c8780", marginBottom:"6px" }}>Select a clip on timeline and apply transition:</p>
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px" }}>
-                    {TRANSITIONS.slice(0, 12).map(trans => (
+                <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
+                  <span style={{ fontSize:"10px", color:"#e1496d", fontWeight:700 }}>SCENE TRANSITIONS</span>
+                  <p style={{ fontSize:"10.5px", color:"#8c8780", marginBottom:"4px" }}>Select a timeline clip to apply:</p>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"6px" }}>
+                    {TRANSITIONS.slice(0, 10).map(trans => (
                       <button key={trans.id}
                         onClick={() => {
                           if (state.selectedClip) {
                             dispatch({ type: "ADD_TRANSITION", clipId: state.selectedClip, transition: trans.id, edge: "in", duration: trans.duration || 0.5 });
                           } else {
-                            alert("Please select a clip on the timeline first!");
+                            alert("Select a clip on timeline first!");
                           }
                         }}
-                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"10px", padding:"10px", cursor:"pointer", transition:"all 0.18s", textAlign:"center" }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.14)"; }}
+                        style={{ background:"rgba(225,73,109,0.06)", border:"1px solid rgba(225,73,109,0.14)", borderRadius:"8px", padding:"8px", cursor:"pointer", transition:"all 0.15s", textAlign:"center" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor="#e1496d"; e.currentTarget.style.background="rgba(225,73,109,0.15)"; }}
                         onMouseLeave={e => { e.currentTarget.style.borderColor="rgba(225,73,109,0.14)"; e.currentTarget.style.background="rgba(225,73,109,0.06)"; }}
                       >
-                        <div style={{ fontSize:"18px", color:"#e1496d" }}>{trans.icon}</div>
-                        <div style={{ fontSize:"10.5px", fontWeight:600, color:"#fff" }}>{trans.name}</div>
+                        <div style={{ fontSize:"16px", color:"#e1496d" }}>{trans.icon}</div>
+                        <div style={{ fontSize:"10px", fontWeight:600, color:"#fff" }}>{trans.name}</div>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* ─ 7. Properties & Inspector Tab ─ */}
+              {/* ─ Inspector / Properties ─ */}
               {leftTab === "properties" && (
-                <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
-                  <span style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>INSPECTOR & FILTERS</span>
-
-                  {/* Playback speed */}
-                  <div>
-                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"6px", fontSize:"11px", color:"#8c8780" }}>
-                      <span>Playback Speed</span>
-                      <span style={{ color:"#e1496d", fontWeight:600 }}>{state.playbackSpeed}x</span>
-                    </div>
-                    <div style={{ display:"flex", gap:"4px" }}>
-                      {[0.5, 0.75, 1, 1.25, 1.5, 2].map(s => (
-                        <button key={s} onClick={() => onSetPlaybackSpeed(s)} className="tool-btn" style={{ flex:1, justifyContent:"center", padding:"5px 0", fontSize:"10px", background: state.playbackSpeed===s ? "linear-gradient(135deg,#a82348,#e1496d)" : "none", borderColor: state.playbackSpeed===s ? "transparent" : "rgba(225,73,109,0.2)", color: state.playbackSpeed===s ? "#fff" : "#e5e5e5" }}>{s}x</button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div style={{ height:"1px", background:"rgba(225,73,109,0.12)" }} />
-
-                  {/* Fine Color Adjustments */}
-                  <div style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700 }}>GLOBAL COLOR GRADE</div>
+                <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                  <span style={{ fontSize:"10px", color:"#e1496d", fontWeight:700 }}>GLOBAL COLOR GRADE</span>
                   {[
                     { key:"brightness", label:"Brightness", min:0, max:200, def:100 },
                     { key:"contrast",   label:"Contrast",   min:0, max:300, def:100 },
@@ -1236,62 +1225,28 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                     { key:"vignette",   label:"Vignette",   min:0, max:100, def:0 },
                   ].map(({ key, label, min, max, def }) => (
                     <div key={key}>
-                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"4px", fontSize:"11px", color:"#8c8780" }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"3px", fontSize:"10.5px", color:"#8c8780" }}>
                         <span>{label}</span>
-                        <span style={{ color: state[key]!==def ? "#e1496d" : "#666", fontVariantNumeric:"tabular-nums", fontWeight:600 }}>{Math.round(state[key])}</span>
+                        <span style={{ color: state[key]!==def ? "#e1496d" : "#5c5650", fontVariantNumeric:"tabular-nums", fontWeight:600 }}>{Math.round(state[key])}</span>
                       </div>
                       <input type="range" min={min} max={max} step="1" value={state[key]} className="filter-slider" onChange={e => dispatch({ type:"SET_FILTER", key, value:parseFloat(e.target.value) })} />
                     </div>
                   ))}
-                  <button className="tool-btn" style={{ justifyContent:"center", fontSize:"11px", color:"#e1496d", marginTop:"4px" }} onClick={onResetFilters}>↺ Reset Color Grade</button>
+                  <button className="tool-btn" style={{ justifyContent:"center", fontSize:"10.5px", color:"#e1496d", marginTop:"2px" }} onClick={onResetFilters}>↺ Reset Color Grade</button>
 
-                  {/* Inspector for selected clip */}
                   {selectedClipData && (
-                    <div style={{ marginTop:"10px", paddingTop:"14px", borderTop:"1px solid rgba(225,73,109,0.15)" }}>
-                      <div style={{ fontSize:"11px", letterSpacing:"0.1em", color:"#e1496d", fontWeight:700, marginBottom:"10px" }}>SELECTED CLIP</div>
-                      <div style={{ fontSize:"13px", color:"#fff", fontWeight:700, marginBottom:"10px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{selectedClipData.name}</div>
+                    <div style={{ marginTop:"8px", paddingTop:"10px", borderTop:"1px solid rgba(225,73,109,0.15)" }}>
+                      <div style={{ fontSize:"10px", color:"#e1496d", fontWeight:700, marginBottom:"6px" }}>SELECTED CLIP</div>
+                      <div style={{ fontSize:"12px", color:"#fff", fontWeight:700, marginBottom:"8px", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{selectedClipData.name}</div>
 
-                      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"8px", marginBottom:"12px" }}>
-                        <div style={{ background:"#1a0f14", padding:"8px", borderRadius:"8px", border:"1px solid rgba(225,73,109,0.15)" }}>
-                          <div style={{ color:"#8c8780", fontSize:"9px" }}>START TIME</div>
-                          <div style={{ color:"#fff", fontWeight:600, fontSize:"12px" }}>{fmtTime(selectedClipData.start)}</div>
-                        </div>
-                        <div style={{ background:"#1a0f14", padding:"8px", borderRadius:"8px", border:"1px solid rgba(225,73,109,0.15)" }}>
-                          <div style={{ color:"#8c8780", fontSize:"9px" }}>DURATION</div>
-                          <div style={{ color:"#fff", fontWeight:600, fontSize:"12px" }}>{fmtTime(selectedClipData.duration)}</div>
-                        </div>
-                      </div>
-
-                      {/* Text Clip Controls */}
                       {selectedClipData.type === "text" && (
-                        <div style={{ display:"flex", flexDirection:"column", gap:"10px", background:"rgba(225,73,109,0.06)", padding:"12px", borderRadius:"10px", border:"1px solid rgba(225,73,109,0.18)" }}>
-                          <div style={{ fontSize:"10px", color:"#e1496d", fontWeight:700 }}>EDIT TEXT CONTENT</div>
+                        <div style={{ display:"flex", flexDirection:"column", gap:"8px", background:"rgba(225,73,109,0.06)", padding:"10px", borderRadius:"8px", border:"1px solid rgba(225,73,109,0.15)" }}>
+                          <div style={{ fontSize:"9.5px", color:"#e1496d", fontWeight:700 }}>TEXT CONTENT</div>
                           <textarea
                             value={selectedClipData.text || ""}
                             onChange={e => dispatch({ type:"UPDATE_CLIP_TEXT", clipId:selectedClipData.id, text:e.target.value })}
-                            style={{ width:"100%", height:"60px", background:"#120e12", border:"1px solid rgba(225,73,109,0.25)", borderRadius:"8px", color:"#fff", fontSize:"12px", padding:"8px", outline:"none", fontFamily:"inherit", resize:"none" }}
+                            style={{ width:"100%", height:"50px", background:"#120e12", border:"1px solid rgba(225,73,109,0.25)", borderRadius:"6px", color:"#fff", fontSize:"11.5px", padding:"6px", outline:"none", fontFamily:"inherit", resize:"none" }}
                           />
-                          <div style={{ display:"flex", gap:"8px", alignItems:"center" }}>
-                            <div style={{ flex:1 }}>
-                              <label style={{ fontSize:"9px", color:"#8c8780", display:"block", marginBottom:"3px" }}>FONT SIZE</label>
-                              <input type="number" value={selectedClipData.fontSize || 36} onChange={e => dispatch({ type:"UPDATE_CLIP", clipId:selectedClipData.id, patch:{ fontSize: parseInt(e.target.value) || 24 } })} style={{ width:"100%", background:"#120e12", border:"1px solid rgba(225,73,109,0.2)", borderRadius:"6px", color:"#fff", padding:"4px 8px", fontSize:"11px" }} />
-                            </div>
-                            <div style={{ flex:1 }}>
-                              <label style={{ fontSize:"9px", color:"#8c8780", display:"block", marginBottom:"3px" }}>TEXT COLOR</label>
-                              <input type="color" value={selectedClipData.color || "#ffffff"} onChange={e => dispatch({ type:"UPDATE_CLIP", clipId:selectedClipData.id, patch:{ color: e.target.value } })} style={{ width:"100%", height:"28px", background:"none", border:"none", cursor:"pointer" }} />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Audio Clip Controls */}
-                      {selectedClipData.type === "audio" && (
-                        <div>
-                          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:"4px", fontSize:"11px", color:"#8c8780" }}>
-                            <span>Volume</span>
-                            <span style={{ color:"#e1496d", fontWeight:600 }}>{Math.round((selectedClipData.volume ?? 1)*100)}%</span>
-                          </div>
-                          <input type="range" min={0} max={1} step={0.01} value={selectedClipData.volume ?? 1} className="filter-slider" onChange={e => onSetClipVolume(selectedClipData.id, parseFloat(e.target.value))} />
                         </div>
                       )}
                     </div>
@@ -1300,17 +1255,13 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               )}
             </div>
           </div>
-        ) : (
-          <div style={{ width:36, borderRight:"1px solid rgba(225,73,109,0.12)", display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(18,14,18,0.92)", flexShrink:0 }}>
-            <button onClick={() => setLeftSidebarCollapsed(false)} style={{ background:"none", border:"none", color:"#5c5650", cursor:"pointer", padding:"8px", transition:"color 0.2s" }} onMouseEnter={e => e.currentTarget.style.color="#e1496d"} onMouseLeave={e => e.currentTarget.style.color="#5c5650"}>▶</button>
-          </div>
         )}
 
-        {/* ── Center Area: Interactive Preview + Toolbar + Timeline ──── */}
-        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:"#120e12" }}>
+        {/* ── Center Area: Preview + Resizer + Timeline ────────────────── */}
+        <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", background:"#0e0d11" }}>
 
-          {/* Video Preview Box Container */}
-          <div style={{ flex:"0 0 58%", position:"relative", background:"#090609", borderBottom:"1px solid rgba(225,73,109,0.15)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", padding:"16px" }}>
+          {/* Video Preview Box Container (Flex 1 to fill available top height) */}
+          <div style={{ flex:1, position:"relative", background:"#080609", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", padding:"12px" }}>
 
             {/* Canvas Container with Dynamic Aspect Ratio */}
             <div
@@ -1321,11 +1272,11 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                 height:"100%",
                 maxHeight:"100%",
                 maxWidth:"100%",
-                background:"#151116",
-                borderRadius:"12px",
+                background:"#141015",
+                borderRadius:"10px",
                 overflow:"hidden",
-                border:"1px solid rgba(225,73,109,0.25)",
-                boxShadow:"0 16px 50px rgba(0,0,0,0.7), 0 0 30px rgba(225,73,109,0.1)",
+                border:"1px solid rgba(225,73,109,0.2)",
+                boxShadow:"0 14px 40px rgba(0,0,0,0.8)",
                 display:"flex",
                 alignItems:"center",
                 justifyContent:"center"
@@ -1339,13 +1290,13 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                   <img src={activeClip.url} alt="" style={{ width:"100%", height:"100%", objectFit:"contain", filter:cssFilter }} />
                 )
               ) : (
-                <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"14px" }}>
-                  <div style={{ width:"60px", height:"60px", borderRadius:"50%", border:"1.5px dashed rgba(225,73,109,0.35)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"24px" }}>
+                <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:"10px" }}>
+                  <div style={{ width:"50px", height:"50px", borderRadius:"50%", border:"1px dashed rgba(225,73,109,0.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"20px" }}>
                     🎬
                   </div>
                   <div style={{ textAlign:"center" }}>
-                    <div style={{ fontSize:"14px", color:"rgba(225,73,109,0.7)", fontWeight:600, marginBottom:"4px" }}>Timeline Ready</div>
-                    <div style={{ fontSize:"11px", color:"#5c5650" }}>Add video, text, or stock media to start preview</div>
+                    <div style={{ fontSize:"13px", color:"rgba(225,73,109,0.7)", fontWeight:600 }}>Timeline Ready</div>
+                    <div style={{ fontSize:"10.5px", color:"#5c5650" }}>Add media from sidebar to preview</div>
                   </div>
                 </div>
               )}
@@ -1364,16 +1315,16 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                         left: `${clip.x ?? 50}%`,
                         top: `${clip.y ?? 80}%`,
                         transform: "translate(-50%, -50%)",
-                        background: clip.bgColor || "rgba(10, 8, 7, 0.82)",
+                        background: clip.bgColor || "rgba(18, 14, 18, 0.85)",
                         color: clip.color || "#ffffff",
-                        padding: "8px 20px",
-                        borderRadius: "10px",
+                        padding: "6px 16px",
+                        borderRadius: "8px",
                         fontSize: `${clip.fontSize || 32}px`,
                         fontFamily: clip.fontFamily || "'Syne', sans-serif",
                         fontWeight: 700,
                         whiteSpace: "nowrap",
                         border: `1.5px solid ${clip.borderColor || "#e1496d"}`,
-                        boxShadow: "0 6px 20px rgba(0,0,0,0.4)",
+                        boxShadow: "0 4px 16px rgba(0,0,0,0.5)",
                         zIndex: isSelected ? 30 : 20,
                       }}
                     >
@@ -1397,7 +1348,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                         left: `${clip.x ?? 50}%`,
                         top: `${clip.y ?? 50}%`,
                         transform: "translate(-50%, -50%)",
-                        fontSize: "64px",
+                        fontSize: "56px",
                         zIndex: isSelected ? 30 : 20,
                         lineHeight: 1,
                       }}
@@ -1422,7 +1373,7 @@ export default function VideoEditor({ onBack, user, initialProject }) {
                         left: `${clip.x ?? 50}%`,
                         top: `${clip.y ?? 50}%`,
                         transform: "translate(-50%, -50%)",
-                        fontSize: "54px",
+                        fontSize: "48px",
                         color: clip.fill || "#e1496d",
                         zIndex: isSelected ? 30 : 20,
                       }}
@@ -1434,12 +1385,12 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               )}
 
               {/* Timecode overlay */}
-              <div style={{ position:"absolute", bottom:"12px", left:"14px", background:"rgba(18,14,18,0.85)", color:"#ff8da7", fontSize:"11.5px", padding:"4px 12px", borderRadius:"6px", fontVariantNumeric:"tabular-nums", fontWeight:700, border:"1px solid rgba(225,73,109,0.3)", backdropFilter:"blur(8px)", fontFamily:"'Poppins',sans-serif" }}>
+              <div style={{ position:"absolute", bottom:"10px", left:"12px", background:"rgba(18,14,18,0.85)", color:"#ff8da7", fontSize:"11px", padding:"3px 10px", borderRadius:"5px", fontVariantNumeric:"tabular-nums", fontWeight:700, border:"1px solid rgba(225,73,109,0.25)", backdropFilter:"blur(6px)", fontFamily:"'Poppins',sans-serif" }}>
                 {fmtTime(state.playhead)} / {fmtTime(state.duration)}
               </div>
 
               {/* Resolution badge */}
-              <div style={{ position:"absolute", bottom:"12px", right:"14px", background:"rgba(18,14,18,0.85)", color:"#8c8780", fontSize:"10px", padding:"4px 10px", borderRadius:"6px", border:"1px solid rgba(225,73,109,0.12)", fontWeight:600, letterSpacing:"0.06em" }}>
+              <div style={{ position:"absolute", bottom:"10px", right:"12px", background:"rgba(18,14,18,0.85)", color:"#8c8780", fontSize:"9.5px", padding:"3px 8px", borderRadius:"5px", border:"1px solid rgba(225,73,109,0.12)", fontWeight:600 }}>
                 {activeRatioObj.id} · {activeRatioObj.w}×{activeRatioObj.h}
               </div>
 
@@ -1449,18 +1400,18 @@ export default function VideoEditor({ onBack, user, initialProject }) {
               )}
             </div>
 
-            {/* Floating Control Transport (Right side of preview canvas) */}
-            <div className="glass-panel" style={{ position:"absolute", right:"24px", top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:"5px", padding:"10px 6px", borderRadius:"24px", zIndex:10, background:"rgba(18,14,18,0.88)", border:"1px solid rgba(225,73,109,0.2)" }}>
+            {/* Floating Transport Controls (Right side of canvas) */}
+            <div style={{ position:"absolute", right:"20px", top:"50%", transform:"translateY(-50%)", display:"flex", flexDirection:"column", alignItems:"center", gap:"4px", padding:"8px 5px", borderRadius:"20px", zIndex:10, background:"rgba(18,14,18,0.88)", border:"1px solid rgba(225,73,109,0.2)" }}>
               {[
-                { fn:() => dispatch({type:"SET_PLAYHEAD",time:0}),                                                     icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>,         title:"Jump to start" },
-                { fn:() => dispatch({type:"SET_PLAYHEAD",time:Math.max(0,state.playhead-5)}),                          icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6zm.5-6 8.5 6V6z"/></svg>,         title:"Back 5s" },
-                { fn:onFrameBackward,                                                                                   icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>, title:"Frame Back" },
-                { fn:onTogglePlay, primary:true,                                                                        icon: state.isPlaying ? <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> : <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" style={{marginLeft:"1.5px"}}><path d="M8 5v14l11-7z"/></svg>, title:"Play / Pause (Space)" },
-                { fn:onFrameForward,                                                                                    icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>, title:"Frame Forward" },
-                { fn:() => dispatch({type:"SET_PLAYHEAD",time:Math.min(state.duration,state.playhead+5)}),             icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-6 8.5 6V6z"/></svg>,         title:"Forward 5s" },
-                { fn:() => { dispatch({type:"SET_PLAYING",value:false}); dispatch({type:"SET_PLAYHEAD",time:state.duration}); }, icon:<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm9-12v12h2V6z"/></svg>, title:"Jump to end" },
+                { fn:() => dispatch({type:"SET_PLAYHEAD",time:0}),                                                     icon:<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>,         title:"Start" },
+                { fn:() => dispatch({type:"SET_PLAYHEAD",time:Math.max(0,state.playhead-5)}),                          icon:<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M11 18V6l-8.5 6zm.5-6 8.5 6V6z"/></svg>,         title:"Back 5s" },
+                { fn:onFrameBackward,                                                                                   icon:<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>, title:"Frame Back" },
+                { fn:onTogglePlay, primary:true,                                                                        icon: state.isPlaying ? <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg> : <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{marginLeft:"1px"}}><path d="M8 5v14l11-7z"/></svg>, title:"Play / Pause" },
+                { fn:onFrameForward,                                                                                    icon:<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59 10 18l6-6-6-6-1.41 1.41L13.17 12z"/></svg>, title:"Frame Forward" },
+                { fn:() => dispatch({type:"SET_PLAYHEAD",time:Math.min(state.duration,state.playhead+5)}),             icon:<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6zm9-6 8.5 6V6z"/></svg>,         title:"Forward 5s" },
+                { fn:() => { dispatch({type:"SET_PLAYING",value:false}); dispatch({type:"SET_PLAYHEAD",time:state.duration}); }, icon:<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6zm9-12v12h2V6z"/></svg>, title:"End" },
               ].map((btn, i) => (
-                <button key={i} onClick={btn.fn} title={btn.title} style={{ width: btn.primary ? "32px" : "26px", height: btn.primary ? "32px" : "26px", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", padding:0, border:"none", background: btn.primary ? "linear-gradient(135deg,#a82348,#e1496d)" : "transparent", color: btn.primary ? "#fff" : "#8c8780", cursor:"pointer", transition:"all 0.18s", boxShadow: btn.primary ? "0 4px 14px rgba(225,73,109,0.5)" : "none" }}
+                <button key={i} onClick={btn.fn} title={btn.title} style={{ width: btn.primary ? "28px" : "24px", height: btn.primary ? "28px" : "24px", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", padding:0, border:"none", background: btn.primary ? "linear-gradient(135deg,#a82348,#e1496d)" : "transparent", color: btn.primary ? "#fff" : "#8c8780", cursor:"pointer", transition:"all 0.15s" }}
                   onMouseEnter={e => { if (!btn.primary) e.currentTarget.style.color="#ff8da7"; }}
                   onMouseLeave={e => { if (!btn.primary) e.currentTarget.style.color="#8c8780"; }}
                 >
@@ -1471,55 +1422,77 @@ export default function VideoEditor({ onBack, user, initialProject }) {
           </div>
 
           {/* ── Editing Toolbar Strip ─────────────────────────────────── */}
-          <div style={{ height:"46px", display:"flex", alignItems:"center", background:"rgba(14,10,14,0.95)", borderBottom:"1px solid rgba(225,73,109,0.12)", flexShrink:0, padding:"0 14px", overflow:"hidden" }}>
-
-            {/* Tools Selector */}
-            <div style={{ display:"flex", gap:"3px", paddingRight:"10px", marginRight:"10px", borderRight:"1px solid rgba(225,73,109,0.12)" }}>
+          <div style={{ height:"40px", display:"flex", alignItems:"center", background:"#141117", borderTop:"1px solid rgba(225,73,109,0.15)", borderBottom:"1px solid rgba(225,73,109,0.15)", flexShrink:0, padding:"0 12px", overflow:"hidden" }}>
+            
+            {/* Tool selector */}
+            <div style={{ display:"flex", gap:"3px", paddingRight:"8px", marginRight:"8px", borderRight:"1px solid rgba(225,73,109,0.15)" }}>
               {tools.map(t => (
-                <button key={t.id} className={`tool-btn${activeTool===t.id?" active":""}`} onClick={() => setActiveTool(t.id)} title={t.label} style={{ padding:"5px 11px", fontSize:"11px", gap:"6px" }}>
+                <button key={t.id} className={`tool-btn${activeTool===t.id?" active":""}`} onClick={() => setActiveTool(t.id)} title={t.label} style={{ padding:"4px 9px", fontSize:"11px", gap:"5px" }}>
                   {t.icon} {t.label.split(" ")[0]}
                 </button>
               ))}
             </div>
 
-            {/* Edit Action Buttons */}
-            <div style={{ display:"flex", gap:"5px", paddingRight:"10px", borderRight:"1px solid rgba(225,73,109,0.12)", marginRight:"10px" }}>
+            {/* Edit action buttons */}
+            <div style={{ display:"flex", gap:"4px", paddingRight:"8px", borderRight:"1px solid rgba(225,73,109,0.15)", marginRight:"8px" }}>
               {editActions.map(a => (
-                <button key={a.label} className={`tool-btn${a.danger?" danger":""}`} onClick={a.action} disabled={a.disabled} title={a.label} style={{ padding:"5px 11px", fontSize:"11.5px", gap:"5px" }}>
+                <button key={a.label} className={`tool-btn${a.danger?" danger":""}`} onClick={a.action} disabled={a.disabled} title={a.label} style={{ padding:"4px 9px", fontSize:"11px", gap:"4px" }}>
                   <span>{a.icon}</span> <span>{a.label.split(" ")[0]}</span>
                 </button>
               ))}
             </div>
 
             {/* Zoom Controls */}
-            <div style={{ display:"flex", alignItems:"center", gap:"8px", paddingRight:"10px", borderRight:"1px solid rgba(225,73,109,0.12)", marginRight:"10px" }}>
-              <span style={{ fontSize:"10px", color:"#8c8780", fontWeight:600 }}>ZOOM</span>
-              <button className="tool-btn" onClick={() => dispatch({ type:"SET_ZOOM", value:Math.max(0.25, state.zoom - 0.25) })} style={{ padding:"3px 8px", fontSize:"12px" }}>−</button>
-              <span style={{ fontSize:"11.5px", color:"#ff8da7", fontWeight:700, minWidth:"42px", textAlign:"center", fontVariantNumeric:"tabular-nums" }}>{Math.round(state.zoom*100)}%</span>
-              <button className="tool-btn" onClick={() => dispatch({ type:"SET_ZOOM", value:Math.min(4, state.zoom + 0.25) })} style={{ padding:"3px 8px", fontSize:"12px" }}>+</button>
+            <div style={{ display:"flex", alignItems:"center", gap:"6px", paddingRight:"8px", borderRight:"1px solid rgba(225,73,109,0.15)", marginRight:"8px" }}>
+              <span style={{ fontSize:"9.5px", color:"#8c8780", fontWeight:600 }}>ZOOM</span>
+              <button className="tool-btn" onClick={() => dispatch({ type:"SET_ZOOM", value:Math.max(0.25, state.zoom - 0.25) })} style={{ padding:"2px 6px", fontSize:"11px" }}>−</button>
+              <span style={{ fontSize:"10.5px", color:"#ff8da7", fontWeight:700, minWidth:"36px", textAlign:"center", fontVariantNumeric:"tabular-nums" }}>{Math.round(state.zoom*100)}%</span>
+              <button className="tool-btn" onClick={() => dispatch({ type:"SET_ZOOM", value:Math.min(4, state.zoom + 0.25) })} style={{ padding:"2px 6px", fontSize:"11px" }}>+</button>
             </div>
 
             {/* Add Track */}
-            <button className="tool-btn" onClick={onAddTrack} style={{ padding:"5px 14px", fontSize:"11.5px", gap:"6px" }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              New Track
+            <button className="tool-btn" onClick={onAddTrack} style={{ padding:"4px 10px", fontSize:"11px", gap:"5px" }}>
+              ＋ Track
             </button>
 
             <div style={{ flex: 1 }} />
 
-            {/* Quick Hotkey hints */}
-            <div style={{ display:"flex", gap:"14px", alignItems:"center" }}>
-              {[["Space","Play"], ["S","Split"], ["Del","Delete"], ["?","Help"]].map(([key, label]) => (
-                <div key={key} style={{ display:"flex", alignItems:"center", gap:"5px", fontSize:"10.5px", color:"#5c5650" }}>
-                  <span style={{ background:"rgba(225,73,109,0.12)", border:"1px solid rgba(225,73,109,0.2)", borderRadius:"4px", padding:"1px 6px", fontFamily:"monospace", color:"#e1496d", fontWeight:700 }}>{key}</span>
+            {/* Hotkey hints */}
+            <div style={{ display:"flex", gap:"10px", alignItems:"center" }}>
+              {[["Space","Play"], ["S","Split"], ["Del","Delete"]].map(([key, label]) => (
+                <div key={key} style={{ display:"flex", alignItems:"center", gap:"4px", fontSize:"10px", color:"#5c5650" }}>
+                  <span style={{ background:"rgba(225,73,109,0.12)", border:"1px solid rgba(225,73,109,0.2)", borderRadius:"3px", padding:"1px 4px", fontFamily:"monospace", color:"#ff8da7", fontWeight:700 }}>{key}</span>
                   <span>{label}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* ── Timeline Section ──────────────────────────────────────── */}
-          <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden", minHeight:"0" }}>
+          {/* ── 3. Mouse-Resizable Height Divider Handle ───────────────── */}
+          <div
+            onMouseDown={handleTimelineResizeMouseDown}
+            style={{
+              height: "6px",
+              background: "rgba(225, 73, 109, 0.15)",
+              borderTop: "1px solid rgba(225, 73, 109, 0.25)",
+              borderBottom: "1px solid rgba(225, 73, 109, 0.25)",
+              cursor: "row-resize",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              zIndex: 18,
+              transition: "background 0.15s",
+            }}
+            title="Drag up or down to adjust timeline height"
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(225, 73, 109, 0.4)"}
+            onMouseLeave={e => e.currentTarget.style.background = "rgba(225, 73, 109, 0.15)"}
+          >
+            <div style={{ width: "36px", height: "2px", borderRadius: "1px", background: "#ff8da7" }} />
+          </div>
+
+          {/* ── Timeline Container (Mouse Resizable Height) ─────────────── */}
+          <div style={{ height:`${timelineHeight}px`, display:"flex", flexDirection:"column", overflow:"hidden", flexShrink:0 }}>
             <Timeline state={state} dispatch={dispatch} timelineRef={timelineRef} onTimelineClick={handleTimelineClick} onClipMouseDown={handleClipMouseDown} onResizeMouseDown={handleResizeMouseDown} onAddTrack={onAddTrack} />
           </div>
         </div>
@@ -1529,36 +1502,35 @@ export default function VideoEditor({ onBack, user, initialProject }) {
 
       <ShortcutsModal show={showShortcutsModal} onClose={() => setShowShortcutsModal(false)} />
 
-      {/* Leave Confirmation Modal */}
+      {/* Leave Modal */}
       {showLeaveModal && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, backdropFilter:"blur(12px)" }}>
-          <div className="glass-panel" style={{ width:"440px", padding:"32px", borderRadius:"24px", textAlign:"center", border:"1px solid rgba(225,73,109,0.3)", background:"#151116", boxShadow:"0 20px 60px rgba(0,0,0,0.8)" }}>
-            <div style={{ fontSize:"44px", marginBottom:"14px" }}>💾</div>
-            <h3 style={{ fontFamily:"Syne,sans-serif", fontSize:"22px", fontWeight:800, color:"#fff", marginBottom:"10px" }}>Save project changes?</h3>
-            <p style={{ fontSize:"13px", color:"#8c8780", lineHeight:1.6, marginBottom:"24px" }}>
-              Save your current video edits to your past works dashboard, or exit without saving.
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.8)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, backdropFilter:"blur(10px)" }}>
+          <div style={{ width:"400px", padding:"28px", borderRadius:"20px", textAlign:"center", border:"1px solid rgba(225,73,109,0.3)", background:"#161217", boxShadow:"0 20px 50px rgba(0,0,0,0.8)", color:"#fff" }}>
+            <div style={{ fontSize:"38px", marginBottom:"12px" }}>💾</div>
+            <h3 style={{ fontFamily:"Syne,sans-serif", fontSize:"20px", fontWeight:800, color:"#fff", marginBottom:"8px" }}>Save project changes?</h3>
+            <p style={{ fontSize:"12.5px", color:"#8c8780", lineHeight:1.5, marginBottom:"20px" }}>
+              Save your current video edits or exit without saving.
             </p>
 
-            <div style={{ marginBottom: "24px", textAlign: "left" }}>
-              <label style={{ fontSize: "11px", color: "#e1496d", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "8px" }}>Project Name</label>
+            <div style={{ marginBottom: "20px", textAlign: "left" }}>
+              <label style={{ fontSize: "10.5px", color: "#e1496d", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", display: "block", marginBottom: "6px" }}>Project Name</label>
               <input
                 type="text"
                 value={projectTitle}
                 onChange={e => setProjectTitle(e.target.value)}
-                style={{ width: "100%", background: "#120e12", border: "1px solid rgba(225,73,109,0.25)", borderRadius: "8px", color: "#fff", padding: "10px 14px", fontSize: "13px", outline: "none" }}
-                placeholder="My Video Project"
+                style={{ width: "100%", background: "#120e12", border: "1px solid rgba(225,73,109,0.25)", borderRadius: "8px", color: "#fff", padding: "8px 12px", fontSize: "12.5px", outline: "none" }}
               />
             </div>
 
-            <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
-              <button className="tool-btn primary" onClick={handleSaveAndExit} style={{ justifyContent:"center", padding:"12px", fontSize:"13.5px" }}>
+            <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+              <button className="tool-btn primary" onClick={handleSaveAndExit} style={{ justifyContent:"center", padding:"11px", fontSize:"13px" }}>
                 Save & Exit to Dashboard
               </button>
-              <div style={{ display:"flex", gap:"10px" }}>
-                <button className="tool-btn danger" onClick={handleDiscardAndExit} style={{ flex:1, justifyContent:"center", padding:"10px", fontSize:"12.5px" }}>
+              <div style={{ display:"flex", gap:"8px" }}>
+                <button className="tool-btn danger" onClick={handleDiscardAndExit} style={{ flex:1, justifyContent:"center", padding:"9px", fontSize:"12px" }}>
                   Discard Edits
                 </button>
-                <button className="tool-btn" onClick={() => setShowLeaveModal(false)} style={{ flex:1, justifyContent:"center", padding:"10px", fontSize:"12.5px" }}>
+                <button className="tool-btn" onClick={() => setShowLeaveModal(false)} style={{ flex:1, justifyContent:"center", padding:"9px", fontSize:"12px" }}>
                   Cancel
                 </button>
               </div>

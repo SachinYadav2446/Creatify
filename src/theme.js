@@ -101,24 +101,24 @@ const THEME = {
 
   // Sidebar / editor / video studio
   editor: {
-    bg:          CREAM[50],      // video editor outermost
-    panelBg:     "#ffffff",      // panels, sidebar, inspector
-    panelDark:   "#fdf4f7",      // timeline background
-    border:      CREAM[200],
-    borderBold:  WINE[200],
-    accent:      WINE[700],      // playhead, primary accents
-    accentHover: WINE[800],
-    accentSoft:  WINE[100],      // selected item chip
-    accentText:  WINE[700],
-    playhead:    WINE[700],
-    playheadTip: WINE[800],
-    selectedRing:WINE[600],
-    text:        GRAY_NEUTRAL[800],
-    textMuted:   GRAY_NEUTRAL[500],
-    textSoft:    GRAY_NEUTRAL[400],
-    sliderTrack: WINE[200],
-    sliderThumb: WINE[700],
-    danger:      "#dc2626",
+    bg:          "#120e12",      // video editor outermost
+    panelBg:     "#181318",      // panels, sidebar, inspector
+    panelDark:   "#0f0b0f",      // timeline background
+    border:      "rgba(225,73,109,0.15)",
+    borderBold:  "rgba(225,73,109,0.35)",
+    accent:      "#e1496d",      // playhead, primary accents
+    accentHover: "#ff8da7",
+    accentSoft:  "rgba(225,73,109,0.15)",      // selected item chip
+    accentText:  "#ff8da7",
+    playhead:    "#e1496d",
+    playheadTip: "#ff8da7",
+    selectedRing:"#e1496d",
+    text:        "#e5e5e5",
+    textMuted:   "#8c8780",
+    textSoft:    "#5c5650",
+    sliderTrack: "rgba(225,73,109,0.2)",
+    sliderThumb: "#e1496d",
+    danger:      "#ef4444",
   },
 
   // Dark variant (editor inner dark mode optional)

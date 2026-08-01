@@ -1,6 +1,5 @@
-import { useRef, useMemo } from "react";
-import { TRACK_COLORS, uid } from "../constants";
-import THEME from "../theme";
+import { useMemo } from "react";
+import { TRACK_COLORS } from "../constants";
 
 function Waveform({ clip, PX_PER_SEC, colors }) {
   const bars = useMemo(() => {
@@ -14,6 +13,7 @@ function Waveform({ clip, PX_PER_SEC, colors }) {
     }
     return arr;
   }, [clip.id, clip.duration, PX_PER_SEC]);
+
   return (
     <div style={{
       position: "absolute", inset: 0, padding: "6px 10px",
@@ -24,8 +24,8 @@ function Waveform({ clip, PX_PER_SEC, colors }) {
           width: 2,
           height: `${Math.max(6, h * 100)}%`,
           borderRadius: 1,
-          background: colors.border,
-          opacity: 0.75,
+          background: "#ff8da7",
+          opacity: 0.8,
         }} />
       ))}
     </div>
@@ -37,7 +37,7 @@ function pseudoRand(n) {
   return x - Math.floor(x);
 }
 
-function DrawFadeHandles({ clip, PX_PER_SEC, colors }) {
+function DrawFadeHandles({ clip, PX_PER_SEC }) {
   const w = clip.duration * PX_PER_SEC;
   const fadeInW = Math.min((clip.audio?.fadeIn || clip.fadeIn || 0) * PX_PER_SEC, w / 2);
   const fadeOutW = Math.min((clip.audio?.fadeOut || clip.fadeOut || 0) * PX_PER_SEC, w / 2);
@@ -46,20 +46,20 @@ function DrawFadeHandles({ clip, PX_PER_SEC, colors }) {
       {fadeInW > 4 && (
         <svg width={fadeInW} height="100%" viewBox={`0 0 ${fadeInW} 40`} preserveAspectRatio="none"
           style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none" }}>
-          <path d={`M0 40 L${fadeInW} 40 L${fadeInW} 0 Z`} fill={colors.accent} opacity="0.3" />
+          <path d={`M0 40 L${fadeInW} 40 L${fadeInW} 0 Z`} fill="#e1496d" opacity="0.3" />
         </svg>
       )}
       {fadeOutW > 4 && (
         <svg width={fadeOutW} height="100%" viewBox={`0 0 ${fadeOutW} 40`} preserveAspectRatio="none"
           style={{ position: "absolute", right: 0, top: 0, pointerEvents: "none" }}>
-          <path d={`M0 0 L0 40 L${fadeOutW} 40 Z`} fill={colors.accent} opacity="0.3" />
+          <path d={`M0 0 L0 40 L${fadeOutW} 40 Z`} fill="#e1496d" opacity="0.3" />
         </svg>
       )}
     </>
   );
 }
 
-function TransitionBadge({ clip, PX_PER_SEC, colors, side }) {
+function TransitionBadge({ clip, PX_PER_SEC, side }) {
   const key = side === "in" ? "transitionIn" : "transitionOut";
   const durKey = side === "in" ? "transitionInDur" : "transitionOutDur";
   const t = clip[key];
@@ -80,11 +80,11 @@ function TransitionBadge({ clip, PX_PER_SEC, colors, side }) {
     : `M${w} 0 L0 0 L${w * 0.8} 50% L0 100% L${w} 100% Z`;
   return (
     <svg style={style} width={w} height="100%" viewBox={`0 0 ${w} 40`} preserveAspectRatio="none">
-      <path d={d} fill={colors.accent} opacity="0.35" />
-      <path d={d} fill="none" stroke={colors.border} strokeWidth="1" opacity="0.7" />
+      <path d={d} fill="#e1496d" opacity="0.35" />
+      <path d={d} fill="none" stroke="#ff8da7" strokeWidth="1" opacity="0.7" />
       <text x={side === "in" ? 4 : w - 4} y="20" fontSize="9"
         textAnchor={side === "in" ? "start" : "end"}
-        fill={colors.label} fontFamily="'Poppins',sans-serif" fontWeight="700">
+        fill="#ff8da7" fontFamily="'Poppins',sans-serif" fontWeight="700">
         {side === "in" ? "◁" : "▷"}
       </text>
     </svg>
@@ -109,13 +109,13 @@ export default function Track({
       onDragOver={(e) => onTrackDragOver?.(e, index)}
       onDrop={(e) => onTrackDrop?.(e, index)}
       style={{
-        minHeight: 58,
+        minHeight: 52,
         display: "flex",
         alignItems: "stretch",
-        borderBottom: `1px solid ${THEME.borderSoft}`,
+        borderBottom: "1px solid rgba(225, 73, 109, 0.12)",
         width: "100%",
         position: "relative",
-        background: state.selectedTrack === track.id ? THEME.wineTint : "transparent",
+        background: state.selectedTrack === track.id ? "rgba(225,73,109,0.1)" : "transparent",
         opacity: muted ? 0.5 : 1,
       }}
       onClickCapture={(e) => {
@@ -128,10 +128,10 @@ export default function Track({
       <div
         className="track-label"
         style={{
-          width: 156, minWidth: 156, padding: "0 10px 0 12px",
+          width: 156, minWidth: 156, padding: "0 8px 0 10px",
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: THEME.panel,
-          borderRight: `1px solid ${THEME.border}`,
+          background: "#181318",
+          borderRight: "1px solid rgba(225, 73, 109, 0.18)",
           fontSize: 11, gap: 4,
           fontFamily: "'Instrument Sans', sans-serif",
           position: "sticky", left: 0, zIndex: 12,
@@ -139,19 +139,19 @@ export default function Track({
       >
         <div style={{ display: "flex", flexDirection: "column", minWidth: 0, gap: 2 }}>
           <div style={{
-            fontSize: 9, color: colors.label, letterSpacing: "0.08em",
+            fontSize: 9, color: "#ff8da7", letterSpacing: "0.08em",
             textTransform: "uppercase", marginBottom: 0, fontWeight: 700,
-            fontFamily: "'Poppins', sans-serif",
+            fontFamily: "'Poppins', sans-serif", display:"flex", alignItems:"center", gap:"4px"
           }}>
-            <span style={{ marginRight: 4 }}>{trackIconFor(track.type)}</span>
-            {track.type}
+            <span>{trackIconFor(track.type)}</span>
+            <span>{track.type}</span>
           </div>
           <input
             value={track.name || ""}
             onChange={(e) => dispatch({ type: "RENAME_TRACK", trackId: track.id, name: e.target.value })}
             onClick={(e) => e.stopPropagation()}
             style={{
-              fontSize: 11, color: THEME.text, background: "transparent",
+              fontSize: 11, color: "#e5e5e5", background: "transparent",
               border: "none", outline: "none", padding: 0,
               fontFamily: "'Instrument Sans',sans-serif", fontWeight: 500,
               width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
@@ -166,25 +166,25 @@ export default function Track({
           <IconBtn
             title={track.muted ? "Unmute" : "Mute"}
             active={track.muted}
-            color={track.muted ? "#dc2626" : THEME.textSoft}
+            color={track.muted ? "#ef4444" : "#8c8780"}
             onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_TRACK_MUTE", trackId: track.id }); }}
           >{track.muted ? "🔇" : "🔊"}</IconBtn>
           <IconBtn
             title={track.solo ? "Unsolo" : "Solo"}
             active={track.solo}
-            color={track.solo ? THEME.gold : THEME.textSoft}
+            color={track.solo ? "#f59e0b" : "#8c8780"}
             onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_TRACK_SOLO", trackId: track.id }); }}
           >S</IconBtn>
           <IconBtn
             title={track.locked ? "Unlock" : "Lock"}
             active={track.locked}
-            color={track.locked ? "#f97316" : THEME.textSoft}
+            color={track.locked ? "#f97316" : "#8c8780"}
             onClick={(e) => { e.stopPropagation(); dispatch({ type: "TOGGLE_TRACK_LOCK", trackId: track.id }); }}
           >{track.locked ? "🔒" : "🔓"}</IconBtn>
           <IconBtn
             title="Remove track"
-            color={THEME.textSoft}
-            hoverColor="#dc2626"
+            color="#8c8780"
+            hoverColor="#ef4444"
             onClick={(e) => { e.stopPropagation(); dispatch({ type: "REMOVE_TRACK", trackId: track.id }); }}
           >✕</IconBtn>
         </div>
@@ -194,28 +194,9 @@ export default function Track({
       <div
         style={{
           flex: 1, position: "relative", cursor: "crosshair",
-          background: track.locked ? THEME.hexA("#000", 0.02) : "transparent",
+          background: track.locked ? "rgba(0,0,0,0.2)" : "transparent",
         }}
         onClick={onTimelineClick}
-        onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}
-        onDrop={(e) => {
-          e.preventDefault();
-          const data = safeGetDropData(e, ["application/vnd.clip", "application/vnd.asset", "Files"]);
-          if (!data) return;
-          if (data.type === "file") {
-            window.__dropFileOnTrack?.({
-              files: data.files, trackId: track.id,
-              xOffsetPx: e.clientX - (e.currentTarget.getBoundingClientRect().left),
-              PX_PER_SEC,
-            });
-          } else if (data.asset) {
-            window.__dropAssetOnTrack?.({
-              asset: data.asset, trackId: track.id,
-              xOffsetPx: e.clientX - (e.currentTarget.getBoundingClientRect().left),
-              PX_PER_SEC,
-            });
-          }
-        }}
       >
         {track.clips.map((clip) => {
           const isSelected = selectedIds.has(clip.id);
@@ -225,207 +206,101 @@ export default function Track({
               key={clip.id}
               className={`clip-block${isSelected ? " selected" : ""}`}
               draggable={!track.locked}
-              onDragStart={(e) => {
-                if (track.locked) return;
-                e.stopPropagation();
-                try {
-                  e.dataTransfer.setData("application/vnd.clip",
-                    JSON.stringify({ clipId: clip.id, fromTrackId: track.id }));
-                  e.dataTransfer.effectAllowed = "move";
-                } catch {}
-              }}
-              onDragOver={(e) => { e.stopPropagation(); e.preventDefault(); }}
-              onDrop={(e) => {
-                e.stopPropagation(); e.preventDefault();
-                const data = safeGetDropData(e, ["application/vnd.clip", "application/vnd.asset"]);
-                if (!data) return;
-                if (data.type === "clip" && data.clipId && data.clipId !== clip.id) {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const localX = e.clientX - rect.left;
-                  const dropBefore = localX < rect.width / 2;
-                  const newStart = dropBefore ? clip.start - 0.01 : clip.start + clip.duration + 0.01;
-                  dispatch({
-                    type: "MOVE_CLIP_BETWEEN_TRACKS",
-                    fromTrackId: data.fromTrackId, toTrackId: track.id,
-                    clipId: data.clipId, start: newStart,
-                  });
-                }
-              }}
+              onMouseDown={(e) => onClipMouseDown(e, track.id, clip, track.locked)}
               style={{
                 position: "absolute",
                 left: clip.start * PX_PER_SEC,
                 width: clipW,
-                top: 7,
-                height: 44,
-                background: colors.bg,
-                border: isSelected ? `2px solid ${THEME.wine}` : `1px solid ${colors.border}`,
-                borderRadius: 8,
+                top: 6,
+                height: 40,
+                background: isSelected ? "rgba(225,73,109,0.25)" : "rgba(35, 26, 35, 0.95)",
+                border: isSelected ? "2px solid #e1496d" : "1px solid rgba(225, 73, 109, 0.25)",
+                borderRadius: 7,
                 overflow: "hidden",
                 display: "flex",
                 alignItems: "center",
                 zIndex: isSelected ? 11 : 10,
-                boxShadow: isSelected
-                  ? `0 0 0 2px ${THEME.hexA(THEME.wine, 0.4)},0 6px 18px ${THEME.hexA(THEME.wine, 0.22)}`
-                  : `0 1px 3px ${THEME.hexA("#000", 0.06)}`,
+                boxShadow: isSelected ? "0 0 12px rgba(225, 73, 109, 0.5)" : "0 2px 6px rgba(0,0,0,0.4)",
                 cursor: track.locked ? "not-allowed" : "grab",
                 transition: "box-shadow 0.1s, border-color 0.1s",
               }}
-              onMouseDown={(e) => onClipMouseDown(e, track.id, clip, track.locked)}
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                if (clip.type === "text") {
-                  const txt = prompt("Edit text:", clip.text || "");
-                  if (txt !== null) dispatch({ type: "UPDATE_CLIP_TEXT", clipId: clip.id, text: txt });
-                }
-              }}
-              onContextMenu={(e) => {
-                e.preventDefault(); e.stopPropagation();
-                const action = prompt(
-                  "Clip menu:\n1 = Split at playhead\n2 = Delete\n3 = Duplicate\n4 = Ripple delete\n5 = Fade in 1s\n6 = Fade out 1s\n7 = Clear fades\n8 = Loop (toggle)\n(Type 1-8):",
-                  "1"
-                );
-                if (!action) return;
-                switch (action.trim()) {
-                  case "1": dispatch({ type: "SPLIT_CLIP", trackId: track.id, clipId: clip.id, time: state.playhead }); break;
-                  case "2": dispatch({ type: "REMOVE_CLIP", clipId: clip.id }); break;
-                  case "3": dispatch({ type: "DUPLICATE_CLIP", clipId: clip.id }); break;
-                  case "4": dispatch({ type: "RIPPLE_DELETE", clipId: clip.id }); break;
-                  case "5": dispatch({ type: "UPDATE_CLIP_AUDIO", clipId: clip.id, audio: { fadeIn: 1, fadeOut: clip.audio?.fadeOut || 0 } }); break;
-                  case "6": dispatch({ type: "UPDATE_CLIP_AUDIO", clipId: clip.id, audio: { fadeIn: clip.audio?.fadeIn || 0, fadeOut: 1 } }); break;
-                  case "7": dispatch({ type: "UPDATE_CLIP_AUDIO", clipId: clip.id, audio: { fadeIn: 0, fadeOut: 0 } }); break;
-                  case "8": dispatch({ type: "SET_CLIP_LOOP", clipId: clip.id, loop: !clip.loop }); break;
-                }
-              }}
             >
-              {/* Thumbnail / visual */}
               {clip.imageEl && (
                 <img
                   src={clip.url} alt=""
                   style={{
-                    height: "100%", width: "auto", minWidth: "40%",
-                    objectFit: "cover", opacity: 0.78, pointerEvents: "none",
-                    filter: `saturate(${clip.filters?.saturation ?? 100}%) brightness(${clip.filters?.brightness ?? 100}%)`,
+                    height: "100%", width: "auto", minWidth: "35%",
+                    objectFit: "cover", opacity: 0.8, pointerEvents: "none",
                   }}
                   crossOrigin="anonymous"
                 />
-              )}
-              {clip.videoEl && (
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: `linear-gradient(90deg, ${colors.bg}, ${THEME.hexA(colors.accent, 0.18)}, ${colors.bg})`,
-                  pointerEvents: "none",
-                }} />
               )}
               {clip.type === "audio" && <Waveform clip={clip} PX_PER_SEC={PX_PER_SEC} colors={colors} />}
               {clip.type === "text" && (
                 <div style={{
                   position: "absolute", inset: 0, display: "flex", alignItems: "center",
-                  padding: "0 10px", fontWeight: 700, fontSize: 12,
-                  color: colors.label, fontFamily: "'Poppins',sans-serif",
+                  padding: "0 8px", fontWeight: 700, fontSize: 11,
+                  color: "#ff8da7", fontFamily: "'Poppins',sans-serif",
                   textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden",
                 }}>
-                  <span style={{
-                    padding: "2px 8px", borderRadius: 5,
-                    background: THEME.wineTint,
-                    border: `1px solid ${THEME.hexA(THEME.wine, 0.3)}`,
-                    color: THEME.wine,
-                  }}>
+                  <span style={{ padding: "1px 6px", borderRadius: 4, background: "rgba(225,73,109,0.2)", border: "1px solid rgba(225,73,109,0.3)", color: "#ff8da7", marginRight: 6 }}>
                     T
                   </span>
-                  <span style={{ marginLeft: 8, overflow: "hidden", textOverflow: "ellipsis" }}>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
                     “{clip.text || ""}”
                   </span>
                 </div>
               )}
-              {clip.type === "shape" && (
-                <div style={{
-                  position: "absolute", inset: 0, display: "flex", alignItems: "center",
-                  justifyContent: "center", fontSize: 20, color: colors.label,
-                }}>
-                  {clip.shapeIcon || "◆"}
-                </div>
-              )}
               {clip.type === "sticker" && (
-                <div style={{
-                  position: "absolute", inset: 0, display: "flex", alignItems: "center",
-                  justifyContent: "center", fontSize: 22,
-                }}>
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>
                   {clip.emoji || "✨"}
                 </div>
               )}
+              {clip.type === "shape" && (
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#e1496d" }}>
+                  {clip.shapeIcon || "◆"}
+                </div>
+              )}
 
-              {/* Transitions */}
-              <TransitionBadge clip={clip} PX_PER_SEC={PX_PER_SEC} colors={colors} side="in" />
-              <TransitionBadge clip={clip} PX_PER_SEC={PX_PER_SEC} colors={colors} side="out" />
-              <DrawFadeHandles clip={clip} PX_PER_SEC={PX_PER_SEC} colors={colors} />
+              <TransitionBadge clip={clip} PX_PER_SEC={PX_PER_SEC} side="in" />
+              <TransitionBadge clip={clip} PX_PER_SEC={PX_PER_SEC} side="out" />
+              <DrawFadeHandles clip={clip} PX_PER_SEC={PX_PER_SEC} />
 
-              {/* Label / name */}
               <div style={{
                 position: "absolute", left: 0, right: 0,
-                padding: "2px 8px", display: "flex", alignItems: "flex-end",
-                justifyContent: "space-between", bottom: 0,
+                padding: "2px 6px", display: "flex", alignItems: "flex-end",
+                justifyContent: "space-between", bottom: 0, pointerEvents: "none",
               }}>
                 <span style={{
-                  fontSize: 10, color: colors.label,
+                  fontSize: 10, color: "#e5e5e5",
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                  maxWidth: "60%", fontWeight: 600,
+                  maxWidth: "70%", fontWeight: 600,
                   fontFamily: "'Poppins',sans-serif",
                 }}>
                   {clip.type === "text" ? "" : clip.name}
                 </span>
-                <div style={{ display: "flex", gap: 2 }}>
-                  {clip.speed && clip.speed !== 100 && (
-                    <span style={{
-                      fontSize: 9, padding: "1px 5px", borderRadius: 4,
-                      background: THEME.wine, color: "#fff", fontWeight: 700,
-                      fontFamily: "'Poppins',sans-serif",
-                    }}>
-                      {clip.speed}%
-                    </span>
-                  )}
-                  {clip.loop && (
-                    <span style={{
-                      fontSize: 9, padding: "1px 5px", borderRadius: 4, marginLeft: 2,
-                      background: THEME.hexA(THEME.wine, 0.1), color: THEME.wine, fontWeight: 700,
-                      border: `1px solid ${THEME.hexA(THEME.wine, 0.25)}`,
-                    }}>
-                      ⟳
-                    </span>
-                  )}
-                </div>
               </div>
 
-              {/* Left resize handle */}
+              {/* Left trim handle */}
               <div
-                title="Trim (left edge)"
+                title="Trim Left"
                 style={{
-                  position: "absolute", left: 0, top: 0, width: 10, height: "100%",
+                  position: "absolute", left: 0, top: 0, width: 8, height: "100%",
                   cursor: track.locked ? "not-allowed" : "ew-resize",
-                  background: isSelected ? THEME.hexA(THEME.wine, 0.28) : "transparent",
-                  opacity: 0.9,
+                  background: isSelected ? "rgba(225, 73, 109, 0.4)" : "transparent",
                 }}
                 onMouseDown={(e) => onResizeMouseDown(e, track.id, clip, "left", track.locked)}
-              >
-                <div style={{
-                  position: "absolute", left: 2, top: "50%", transform: "translateY(-50%)",
-                  width: 2, height: 16, borderRadius: 1, background: isSelected ? THEME.wine : colors.accent, opacity: 0.8,
-                }} />
-              </div>
-              {/* Right resize handle */}
+              />
+              {/* Right trim handle */}
               <div
-                title="Trim (right edge)"
+                title="Trim Right"
                 style={{
-                  position: "absolute", right: 0, top: 0, width: 10, height: "100%",
+                  position: "absolute", right: 0, top: 0, width: 8, height: "100%",
                   cursor: track.locked ? "not-allowed" : "ew-resize",
-                  background: isSelected ? THEME.hexA(THEME.wine, 0.28) : "transparent",
+                  background: isSelected ? "rgba(225, 73, 109, 0.4)" : "transparent",
                 }}
                 onMouseDown={(e) => onResizeMouseDown(e, track.id, clip, "right", track.locked)}
-              >
-                <div style={{
-                  position: "absolute", right: 2, top: "50%", transform: "translateY(-50%)",
-                  width: 2, height: 16, borderRadius: 1, background: isSelected ? THEME.wine : colors.accent, opacity: 0.8,
-                }} />
-              </div>
+              />
             </div>
           );
         })}
@@ -452,44 +327,24 @@ function IconBtn({ children, onClick, title, active, color, hoverColor }) {
       title={title}
       onClick={onClick}
       style={{
-        width: 20, height: 20, borderRadius: 5, border: "none",
-        background: active ? THEME.wineTint : "transparent",
-        color: color || THEME.textSoft,
+        width: 18, height: 18, borderRadius: 4, border: "none",
+        background: active ? "rgba(225, 73, 109, 0.2)" : "transparent",
+        color: color || "#8c8780",
         cursor: "pointer", fontSize: 10, fontWeight: 700,
         display: "flex", alignItems: "center", justifyContent: "center",
         fontFamily: "'Poppins',sans-serif",
-        transition: "background 0.15s,color 0.15s",
+        transition: "background 0.15s, color 0.15s",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.background = THEME.wineTint;
+        e.currentTarget.style.background = "rgba(225, 73, 109, 0.2)";
         if (hoverColor) e.currentTarget.style.color = hoverColor;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.background = active ? THEME.wineTint : "transparent";
-        if (hoverColor) e.currentTarget.style.color = color || THEME.textSoft;
+        e.currentTarget.style.background = active ? "rgba(225, 73, 109, 0.2)" : "transparent";
+        if (hoverColor) e.currentTarget.style.color = color || "#8c8780";
       }}
     >
       {children}
     </button>
   );
-}
-
-function safeGetDropData(e, types) {
-  for (const t of types) {
-    try {
-      if (t === "Files") {
-        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-          return { type: "file", files: Array.from(e.dataTransfer.files) };
-        }
-        continue;
-      }
-      const raw = e.dataTransfer.getData(t);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (t === "application/vnd.clip") return { type: "clip", ...parsed };
-        if (t === "application/vnd.asset") return { type: "asset", asset: parsed };
-      }
-    } catch {}
-  }
-  return null;
 }

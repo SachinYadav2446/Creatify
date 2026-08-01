@@ -12,6 +12,7 @@ import PrintDesign from "./components/PrintDesign";
 import AiMagic from "./components/AiMagic";
 import ProjectsDetail from "./components/ProjectsDetail";
 import Whiteboard from "./components/Whiteboard";
+import InfiniteStudio from "./components/InfiniteStudio";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -26,6 +27,7 @@ export default function App() {
   const [activeDocProject, setActiveDocProject] = useState(null);
   const [activePrintProject, setActivePrintProject] = useState(null);
   const [activeWhiteboardProject, setActiveWhiteboardProject] = useState(null);
+  const [activeStudioProject, setActiveStudioProject] = useState(null);
 
   // Sync theme setting to body/root styles for seamless app-wide integration
   useEffect(() => {
@@ -139,6 +141,9 @@ export default function App() {
     } else if (page === "whiteboard") {
       setActiveWhiteboardProject(null);
       setCurrentPage("whiteboard");
+    } else if (page === "infinite_studio") {
+      setActiveStudioProject(data || null);
+      setCurrentPage("infinite_studio");
     } else {
       setCurrentPage(page);
     }
@@ -262,6 +267,15 @@ export default function App() {
         onBack={() => setCurrentPage("home")}
         user={user}
         initialProject={activeWhiteboardProject}
+      />
+    );
+  }
+
+  if (currentPage === "infinite_studio") {
+    return (
+      <InfiniteStudio
+        onBack={() => setCurrentPage("home")}
+        user={user}
       />
     );
   }

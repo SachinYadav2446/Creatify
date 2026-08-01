@@ -1084,12 +1084,13 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
   // ── Tool definitions (ordered for Bento layout) ──────────────────────────
   // Grid: 3 columns × 2 rows. All tools equally sized to fit in one studio without gaps
   const tools = [
-    { id:"video",  name:"Video Editor",    desc:"Full multi-track timeline with WebGL color grading, audio mixing & in-browser rendering. No uploads needed.", icon:"🎬", color:"#942945",  tag:"WebGL · WASM",        colSpan:1, rowSpan:1, image: videoPrev  },
-    { id:"image",  name:"Image Editor",    desc:"Layers, masks, filters, blend modes. Pro-grade photo editing in your browser.",                                icon:"🖼️", color:"#e1496d",  tag:"Canvas API",           colSpan:1, rowSpan:1, image: imagePrev  },
-    { id:"logo",   name:"Logo Maker",      desc:"Vector-based logo studio. AI suggestions, custom icons, SVG export.",                                          icon:"✦",  color:"#ec4899",  tag:"SVG · AI-assisted",    colSpan:1, rowSpan:1, image: null       },
-    { id:"ppt",    name:"Presentations",   desc:"Slides that animate. Real-time collaboration, 500+ templates, one-click export.",                              icon:"📊", color:"#7c233c",  tag:"PPTX · PDF · HTML5",   colSpan:1, rowSpan:1, image: pptPrev    },
-    { id:"white",  name:"Whiteboard",      desc:"Freehand canvas with sticky notes, arrows, shapes, laser pointer & live multiplayer cursors.",                  icon:"✏️",  color:"#be185d",  tag:"Canvas · Real-time",    colSpan:1, rowSpan:1, image: null       },
-    { id:"doc",    name:"Documents",       desc:"Rich docs with embedded media, tables, charts. Beautiful by default.",                                         icon:"📄", color:"#eba5b6",  tag:"DOCX · PDF",           colSpan:1, rowSpan:1, image: null       },
+    { id:"video",   name:"Video Editor",       desc:"Full multi-track timeline with WebGL color grading, audio mixing & in-browser rendering. No uploads needed.", icon:"🎬", color:"#942945",  tag:"WebGL · WASM",           colSpan:1, rowSpan:1, image: videoPrev  },
+    { id:"image",   name:"Image Editor",       desc:"Layers, masks, filters, blend modes. Pro-grade photo editing in your browser.",                                icon:"🖼️", color:"#e1496d",  tag:"Canvas API",             colSpan:1, rowSpan:1, image: imagePrev  },
+    { id:"logo",    name:"Logo Maker",         desc:"Vector-based logo studio. AI suggestions, custom icons, SVG export.",                                          icon:"✦",  color:"#ec4899",  tag:"SVG · AI-assisted",      colSpan:1, rowSpan:1, image: null       },
+    { id:"ppt",     name:"Presentations",      desc:"Slides that animate. Real-time collaboration, 500+ templates, one-click export.",                              icon:"📊", color:"#7c233c",  tag:"PPTX · PDF · HTML5",     colSpan:1, rowSpan:1, image: pptPrev    },
+    { id:"studio",  name:"Infinite Studio",    desc:"Code-to-canvas nodes, infinite spatial graph, live API data, dev mode handoff, AI prompt-to-DOM & multiplayer ghost replay.", icon:"∞",  color:"#4f46e5",  tag:"AI · Nodes · API · Dev", colSpan:1, rowSpan:1, image: null       },
+    { id:"white",   name:"Whiteboard",         desc:"Freehand canvas with sticky notes, arrows, shapes, laser pointer & live multiplayer cursors.",                  icon:"✏️",  color:"#be185d",  tag:"Canvas · Real-time",     colSpan:1, rowSpan:1, image: null       },
+    { id:"doc",     name:"Documents",          desc:"Rich docs with embedded media, tables, charts. Beautiful by default.",                                         icon:"📄", color:"#eba5b6",  tag:"DOCX · PDF",             colSpan:1, rowSpan:1, image: null       },
   ];
 
   const pricing = [
@@ -2586,6 +2587,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                     else if (tool.id === "logo") onNavigate("logo_maker");
                     else if (tool.id === "doc") onNavigate("documents");
                     else if (tool.id === "white") onNavigate("whiteboard");
+                    else if (tool.id === "studio") onNavigate("infinite_studio");
                     else onNavigate("auth", "signup");
                   }}
                   style={{

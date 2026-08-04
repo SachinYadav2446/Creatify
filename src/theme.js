@@ -151,7 +151,7 @@ const THEME = {
     primary:  "linear-gradient(135deg,#b13453 0%,#942945 50%,#7c233c 100%)",
     primarySoft:"linear-gradient(135deg,#e1496d 0%,#b13453 100%)",
     gold:     "linear-gradient(135deg,#f472b6 0%,#db2777 100%)",
-    sidebar:  "linear-gradient(180deg,#fdf2f4 0%,#ffffff 100%)",
+    sidebar:  "transparent",
     hero:     "linear-gradient(135deg,#fdf2f4 0%,#f3e8ff 35%,#ffffff 70%,#fbe5e9 100%)",
     heroDark: "linear-gradient(135deg,#3a0c19 0%,#581c87 40%,#1a0f14 100%)",
   },

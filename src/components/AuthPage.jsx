@@ -148,6 +148,20 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
     }
   }, [handleGoogleCallback]);
 
+  // ── Handle OAuth redirect hash fragment (#id_token=...) ────────────────────
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes("id_token=")) {
+      const params = new URLSearchParams(hash.substring(1));
+      const idToken = params.get("id_token");
+      if (idToken) {
+        // Clear the hash from URL to prevent re-processing
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        handleGoogleCallback({ credential: idToken });
+      }
+    }
+  }, [handleGoogleCallback]);
+
   // ── Complete Google Profile ────────────────────────────────────────────────
   const handleCompleteProfile = async (e) => {
     e.preventDefault();
@@ -902,9 +916,9 @@ export default function AuthPage({ initialTab = "signup", onBack, onSuccess }) {
                       setIsGoogleLoading(false);
                       // Fallback: open Google OAuth in popup window
                       const clientId = GOOGLE_CLIENT_ID;
-                      const redirectUri = encodeURIComponent(window.location.origin + "/auth/google/callback");
+                      const redirectUri = encodeURIComponent(window.location.origin);
                       const nonce = Math.random().toString(36).substring(7);
-                      const params = `client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token id_token&scope=${encodeURIComponent("openid email profile")}&nonce=${nonce}&prompt=select_account`;
+                      const params = `client_id=${clientId}&redirect_uri=${redirectUri}&response_type=id_token&scope=${encodeURIComponent("openid email profile")}&nonce=${nonce}&prompt=select_account`;
                       const popup = window.open(
                         `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
                         "google_auth",

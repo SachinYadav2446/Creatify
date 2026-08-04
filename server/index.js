@@ -440,6 +440,41 @@ app.delete('/api/projects/:id', requireAuth, async (req, res) => {
   }
 });
 
+// ─── Contact Form ────────────────────────────────────────────────────────────
+app.post('/api/contact', async (req, res) => {
+  try {
+    // Require authentication
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'You must be signed in to send a message.' });
+    }
+    let tokenUser;
+    try {
+      tokenUser = jwt.verify(authHeader.slice(7), JWT_SECRET);
+    } catch {
+      return res.status(401).json({ error: 'Session expired. Please sign in again.' });
+    }
+
+    const { name, subject, message } = req.body;
+    const email = tokenUser.email; // always use email from token
+
+    if (!name || !message) {
+      return res.status(400).json({ error: 'Name and message are required.' });
+    }
+    if (message.length < 10) {
+      return res.status(400).json({ error: 'Message must be at least 10 characters.' });
+    }
+
+    const { sendContactEmail } = require('./email');
+    await sendContactEmail({ name, email, subject: subject || 'General Inquiry', message });
+
+    res.json({ success: true, message: "Your message has been sent. We'll get back to you shortly." });
+  } catch (err) {
+    console.error('Contact route error:', err);
+    res.status(500).json({ error: 'Server error. Please try again.' });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'Creatify API' });

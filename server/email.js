@@ -180,9 +180,74 @@ async function sendWelcomeEmail(email, name = 'Creator') {
   }
 }
 
+/**
+ * Send contact form email to admin
+ */
+async function sendContactEmail({ name, email, subject, message }) {
+  try {
+    if (!transporter) {
+      return { success: false, error: 'Email service not available' };
+    }
+
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+
+    // Email to admin
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || 'noreply@creatify.app',
+      to: adminEmail,
+      replyTo: email,
+      subject: `[Creatify Contact] ${subject} — from ${name}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid rgba(148,41,69,0.15);">
+          <div style="background:linear-gradient(135deg,#942945,#e1496d);padding:28px 32px;color:#fff;">
+            <div style="font-size:20px;font-weight:800;letter-spacing:-0.02em;">Creatify — New Message</div>
+            <div style="font-size:13px;opacity:0.8;margin-top:4px;">Via contact form</div>
+          </div>
+          <div style="padding:32px;">
+            <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+              <tr><td style="padding:8px 0;font-size:12px;color:#999;font-weight:600;text-transform:uppercase;width:80px;">From</td><td style="padding:8px 0;font-size:14px;color:#333;">${name}</td></tr>
+              <tr><td style="padding:8px 0;font-size:12px;color:#999;font-weight:600;text-transform:uppercase;">Email</td><td style="padding:8px 0;font-size:14px;color:#942945;"><a href="mailto:${email}" style="color:#942945;">${email}</a></td></tr>
+              <tr><td style="padding:8px 0;font-size:12px;color:#999;font-weight:600;text-transform:uppercase;">Subject</td><td style="padding:8px 0;font-size:14px;color:#333;">${subject}</td></tr>
+            </table>
+            <div style="background:#f9f5f7;border-radius:12px;padding:20px;font-size:14px;color:#444;line-height:1.7;white-space:pre-wrap;">${message}</div>
+          </div>
+        </div>`,
+      text: `New contact from ${name} <${email}>\nSubject: ${subject}\n\n${message}`
+    });
+
+    // Auto-reply to user
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || 'noreply@creatify.app',
+      to: email,
+      subject: `We received your message — Creatify`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid rgba(148,41,69,0.15);">
+          <div style="background:linear-gradient(135deg,#942945,#e1496d);padding:28px 32px;color:#fff;">
+            <div style="font-size:20px;font-weight:800;letter-spacing:-0.02em;">Thanks, ${name}!</div>
+            <div style="font-size:13px;opacity:0.8;margin-top:4px;">We got your message</div>
+          </div>
+          <div style="padding:32px;font-size:14px;color:#444;line-height:1.7;">
+            <p>Hi ${name},</p>
+            <p>We received your message and will get back to you at <strong>${email}</strong> within 24 hours.</p>
+            <p style="background:#f9f5f7;border-radius:12px;padding:16px;font-style:italic;color:#666;">"${message.slice(0, 200)}${message.length > 200 ? '...' : ''}"</p>
+            <p>— The Creatify Team</p>
+          </div>
+        </div>`,
+      text: `Hi ${name}, we received your message and will reply within 24 hours. — Creatify`
+    });
+
+    console.log(`📬 Contact email from ${name} <${email}> forwarded to ${adminEmail}`);
+    return { success: true };
+  } catch (err) {
+    console.error('❌ Contact email failed:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 module.exports = {
   initEmailService,
   generateOTP,
   sendOTPEmail,
-  sendWelcomeEmail
+  sendWelcomeEmail,
+  sendContactEmail
 };

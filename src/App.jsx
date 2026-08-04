@@ -31,8 +31,20 @@ export default function App() {
 
   // Sync theme setting to body/root styles for seamless app-wide integration
   useEffect(() => {
-    document.documentElement.style.setProperty("--app-bg", appTheme === "dark" ? "#1a0f14" : "#f7f4f7");
-    document.documentElement.style.setProperty("--app-text", appTheme === "dark" ? "#fdf2f4" : "#2d2d2d");
+    const root = document.documentElement;
+    if (appTheme === "dark") {
+      root.classList.add("dark");
+      root.style.setProperty("--app-bg",   "#120810");
+      root.style.setProperty("--app-text", "#fdf2f4");
+      root.style.setProperty("--app-border","rgba(225,73,109,0.18)");
+      document.body.style.background = "#0e060b";
+    } else {
+      root.classList.remove("dark");
+      root.style.setProperty("--app-bg",   "#f7f6fb");
+      root.style.setProperty("--app-text", "#2d2d2d");
+      root.style.setProperty("--app-border","rgba(148,41,69,0.10)");
+      document.body.style.background = "#f7f6fb";
+    }
   }, [appTheme]);
 
   // Load session on startup

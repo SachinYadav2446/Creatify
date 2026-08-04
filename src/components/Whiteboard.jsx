@@ -1933,7 +1933,7 @@ export default function Whiteboard({ onBack, user, initialProject }) {
                           <div style={{
                             fontSize: "11px", color: "#94a3b8", marginTop: "2px"
                           }}>
-                            {project.tool} â€¢ {project.category}
+                            {project.tool} • {project.category}
                           </div>
                         </div>
                       </button>

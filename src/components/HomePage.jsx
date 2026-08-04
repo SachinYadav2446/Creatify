@@ -30,7 +30,7 @@ const TOOL_ACCENTS = {
   "Infinite Studio": "#e1496d",
 };
 
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â‚¬ÂÃ¢â€šÂ¬ ADVANCED MIND MAP GRAPH COMPONENT Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â‚¬ÂÃ¢â€šÂ¬
+// ──¬ ADVANCED MIND MAP GRAPH COMPONENT ──────────────────────────────────────¬
 function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSwitchTab }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -48,7 +48,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
   const [dimensions, setDimensions] = useState({ w: 900, h: 600 });
   const [stats, setStats] = useState({ nodes: 0, edges: 0, active: 0 });
 
-  // Derive activity nodes ONLY from real project fields Ã¢â‚¬â€ zero hardcoded data
+  // Derive activity nodes ONLY from real project fields — zero hardcoded data
   const getActivitiesForProject = (proj) => {
     const acts = [];
     // From tags (real data on the project)
@@ -112,7 +112,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
       glowIntensity: 1,
     };
 
-    // Project nodes Ã¢â‚¬â€ golden spiral placement
+    // Project nodes — golden spiral placement
     const mainNodes = projects.map((proj, i) => {
       const angle = (i / projects.length) * 2 * Math.PI - Math.PI / 2;
       const orbitR = Math.min(W, H - 100) * 0.3 + (i % 2) * 20;
@@ -134,7 +134,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
       };
     });
 
-    // Branch nodes Ã¢â‚¬â€ real data only, no fake timestamps
+    // Branch nodes — real data only, no fake timestamps
     const branchNodes = [];
     mainNodes.forEach(mn => {
       mn.activities.forEach((act, b) => {
@@ -159,7 +159,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
 
     // Edges
     const edges = [];
-    // Hub Ã¢â€ â€™ main (with multiple animated pulses)
+    // Hub ”™ main (with multiple animated pulses)
     mainNodes.forEach(mn => {
       edges.push({
         from: "hub", to: mn.id, type: "main",
@@ -170,7 +170,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
         active: mn.isActive, color: mn.color,
       });
     });
-    // Main Ã¢â€ â€™ branch
+    // Main ”™ branch
     branchNodes.forEach(bn => {
       const parent = mainNodes.find(m => m.id === bn.parentId);
       edges.push({
@@ -222,7 +222,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
 
     const draw = () => {
       const { w, h } = dimensions;
-      // DPR-aware canvas sizing Ã¢â‚¬â€ this is the fix for blurriness
+      // DPR-aware canvas sizing — this is the fix for blurriness
       canvas.width = Math.floor(w * dpr);
       canvas.height = Math.floor(h * dpr);
       canvas.style.width = w + "px";
@@ -363,7 +363,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
           // Color dot
           ctx.beginPath(); ctx.arc(n.x-pw/2+10,n.y,3.5,0,Math.PI*2);
           ctx.fillStyle=n.color; ctx.shadowColor=n.color; ctx.shadowBlur=7; ctx.fill(); ctx.shadowBlur=0;
-          // Label only Ã¢â‚¬â€ no timestamps
+          // Label only — no timestamps
           ctx.textBaseline="middle"; ctx.textAlign="left";
           ctx.fillStyle=isDark?"rgba(255,255,255,0.85)":"rgba(0,0,0,0.78)";
           ctx.font=`600 8px 'Poppins',sans-serif`;
@@ -412,7 +412,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
     }
     hoveredNodeRef.current = found?.id || null;
 
-    // Update tooltip via direct DOM Ã¢â‚¬â€ no React re-render
+    // Update tooltip via direct DOM — no React re-render
     const tip = tooltipRef.current;
     if (!tip) return;
     if (found && found.type !== "hub") {
@@ -444,7 +444,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
     const n = nodesRef.current.find(x => x.id === hoveredNodeRef.current);
     if (!n) return;
     if (n.type === "main") {
-      // Toggle selection via ref only Ã¢â‚¬â€ no state update
+      // Toggle selection via ref only — no state update
       selectedNodeRef.current = selectedNodeRef.current?.id === n.id ? null : n;
       // Update selected pill in stats bar via DOM
       const pill = document.getElementById("mg-selected-pill");
@@ -473,7 +473,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
       paddingBottom: "52px",  /* reserve space for stats bar */
       boxSizing: "border-box",
     }}>
-      {/* No background overlays Ã¢â‚¬â€ graph floats freely */}
+      {/* No background overlays — graph floats freely */}
 
       <canvas
         ref={canvasRef}
@@ -489,7 +489,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
         onClick={handleClick}
       />
 
-      {/* Tooltip Ã¢â‚¬â€ updated via DOM ref, never causes React re-render */}
+      {/* Tooltip — updated via DOM ref, never causes React re-render */}
       <div ref={tooltipRef} style={{
         position: "absolute", opacity: 0, pointerEvents: "none",
         transform: "translate(-50%, -100%) scale(0.95)",
@@ -562,7 +562,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
           ))}
         </div>
         <div style={{ display:"flex", gap:16, alignItems:"center" }}>
-          {/* Selected project quick action Ã¢â‚¬â€ hidden by default, shown via DOM */}
+          {/* Selected project quick action — hidden by default, shown via DOM */}
           <button
             id="mg-selected-pill"
             onClick={() => onSwitchTab && onSwitchTab("projects")}
@@ -576,7 +576,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
             onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
           >
             <span className="pill-label" style={{ fontSize:10, fontWeight:700, color:"#fff", fontFamily:"'Poppins',sans-serif" }} />
-            <span style={{ fontSize:9, color:"rgba(255,255,255,0.75)", fontFamily:"'Poppins',sans-serif" }}>Ã¢â€ â€™ View projects</span>
+            <span style={{ fontSize:9, color:"rgba(255,255,255,0.75)", fontFamily:"'Poppins',sans-serif" }}>”™ View projects</span>
           </button>
           {[
             { color:"#22c55e", label:"Active" },
@@ -597,7 +597,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
           position:"absolute", inset:0, display:"flex", flexDirection:"column",
           alignItems:"center", justifyContent:"center", gap:12, pointerEvents:"none",
         }}>
-          <div style={{ fontSize:40, opacity:0.3 }}>ÃƒÂ°Ã…Â¸Ã¢â‚¬Â¢Ã‚Â¸ÃƒÂ¯Ã‚Â¸Ã‚Â</div>
+          <div style={{ fontSize:40, opacity:0.3 }}>¸─¢¸</div>
           <div style={{ fontSize:14, fontWeight:600, color:isDark?"rgba(255,255,255,0.3)":"rgba(0,0,0,0.25)", fontFamily:"'Poppins',sans-serif" }}>
             Create your first project to see the graph
           </div>
@@ -607,7 +607,7 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
   );
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ SidebarIcon Ã¢â‚¬â€ defined at module scope so React never remounts it on re-render Ã¢â€â‚¬Ã¢â€â‚¬
+// ── SidebarIcon — defined at module scope so React never remounts it on re-render ──
 function SidebarIcon({ active, icon: IconComponent, label, onClick, THEME, crownBadge, bottom = false, animationType = "scale" }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -687,7 +687,7 @@ function SidebarIcon({ active, icon: IconComponent, label, onClick, THEME, crown
             width: 13, height: 13, borderRadius: "50%",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 7, boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-          }}>Ã°Å¸â€˜â€˜</div>
+          }}>✨</div>
         )}
       </button>
       <span style={{
@@ -702,6 +702,120 @@ function SidebarIcon({ active, icon: IconComponent, label, onClick, THEME, crown
     </div>
   );
 }
+
+
+// ─── Contact Form Component ────────────────────────────────────────────────
+function ContactForm({ isDark, user }) {
+  const [form, setForm] = useState({ name: user?.name || "", subject: "", message: "" });
+  const [status, setStatus] = useState(null); // null | "sending" | "sent" | "error"
+  const [errMsg, setErrMsg] = useState("");
+
+  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    if (!form.name || !form.message) {
+      setErrMsg("Please fill in your name and message."); return;
+    }
+    setStatus("sending"); setErrMsg("");
+    try {
+      const apiBase = (window.API_URL || "http://localhost:3001") + "/api";
+      const token = localStorage.getItem("creatify_token");
+      const res = await fetch(`${apiBase}/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) { setErrMsg(data.error || "Something went wrong."); setStatus("error"); return; }
+      setStatus("sent");
+      setForm({ name: user?.name || "", subject: "", message: "" });
+    } catch(err) {
+      setErrMsg("Connection error. Please try again."); setStatus("error");
+    }
+  };
+
+  const inp = {
+    background: "rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    borderRadius: 10,
+    padding: "11px 14px",
+    fontSize: 13,
+    color: "#fff",
+    fontFamily: "'Poppins',sans-serif",
+    width: "100%",
+    boxSizing: "border-box",
+    outline: "none",
+    transition: "border-color 0.2s",
+  };
+
+  if (status === "sent") return (
+    <div style={{ background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.25)", borderRadius:16, padding:"36px 28px", textAlign:"center" }}>
+      <div style={{ fontSize:36, marginBottom:12 }}>✓</div>
+      <h3 style={{ fontFamily:"Syne,sans-serif", fontWeight:700, fontSize:18, color:"#fff", margin:"0 0 8px" }}>Message sent!</h3>
+      <p style={{ fontSize:13, color:"rgba(255,255,255,0.45)", fontFamily:"'Poppins',sans-serif", margin:"0 0 20px", lineHeight:1.6 }}>
+        We'll reply to <strong style={{ color:"rgba(255,255,255,0.7)" }}>{user?.email}</strong> within 24 hours.
+      </p>
+      <button onClick={() => setStatus(null)} style={{ background:"none", border:"1px solid rgba(255,255,255,0.2)", color:"rgba(255,255,255,0.6)", borderRadius:99, padding:"8px 20px", fontSize:12, fontFamily:"'Poppins',sans-serif", cursor:"pointer" }}>
+        Send another
+      </button>
+    </div>
+  );
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:12 }}>
+
+      {/* User email badge — read only */}
+      <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", background:"rgba(34,197,94,0.07)", border:"1px solid rgba(34,197,94,0.18)", borderRadius:10 }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <span style={{ fontSize:12, color:"rgba(255,255,255,0.55)", fontFamily:"'Poppins',sans-serif" }}>
+          Reply will be sent to <strong style={{ color:"rgba(255,255,255,0.8)" }}>{user?.email}</strong>
+        </span>
+      </div>
+
+      {/* Name + Subject row */}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+        <div>
+          <label style={{ fontSize:10.5, color:"rgba(255,255,255,0.35)", fontFamily:"'Poppins',sans-serif", fontWeight:500, letterSpacing:"0.04em", display:"block", marginBottom:5 }}>NAME *</label>
+          <input name="name" value={form.name} onChange={handleChange} placeholder="Your name" style={inp}
+            onFocus={e => e.target.style.borderColor="rgba(225,73,109,0.5)"}
+            onBlur={e  => e.target.style.borderColor="rgba(255,255,255,0.12)"} />
+        </div>
+        <div>
+          <label style={{ fontSize:10.5, color:"rgba(255,255,255,0.35)", fontFamily:"'Poppins',sans-serif", fontWeight:500, letterSpacing:"0.04em", display:"block", marginBottom:5 }}>SUBJECT</label>
+          <input name="subject" value={form.subject} onChange={handleChange} placeholder="What's this about?" style={inp}
+            onFocus={e => e.target.style.borderColor="rgba(225,73,109,0.5)"}
+            onBlur={e  => e.target.style.borderColor="rgba(255,255,255,0.12)"} />
+        </div>
+      </div>
+
+      {/* Message */}
+      <div>
+        <label style={{ fontSize:10.5, color:"rgba(255,255,255,0.35)", fontFamily:"'Poppins',sans-serif", fontWeight:500, letterSpacing:"0.04em", display:"block", marginBottom:5 }}>MESSAGE *</label>
+        <textarea name="message" value={form.message} onChange={handleChange} placeholder="Tell us more..." rows={4}
+          style={{ ...inp, resize:"vertical", lineHeight:1.6 }}
+          onFocus={e => e.target.style.borderColor="rgba(225,73,109,0.5)"}
+          onBlur={e  => e.target.style.borderColor="rgba(255,255,255,0.12)"} />
+      </div>
+
+      {errMsg && <p style={{ fontSize:12, color:"#f87171", fontFamily:"'Poppins',sans-serif", margin:0 }}>{errMsg}</p>}
+
+      <button type="submit" disabled={status === "sending"}
+        style={{
+          background: status === "sending" ? "rgba(148,41,69,0.5)" : "linear-gradient(135deg,#942945,#e1496d)",
+          color:"#fff", border:"none", borderRadius:10, padding:"13px 0",
+          fontSize:14, fontWeight:600, fontFamily:"'Poppins',sans-serif",
+          cursor: status === "sending" ? "not-allowed" : "pointer",
+          transition:"opacity 0.2s, transform 0.2s", letterSpacing:"-0.01em",
+        }}
+        onMouseEnter={e => { if(status !== "sending") e.currentTarget.style.transform="translateY(-1px)"; }}
+        onMouseLeave={e => e.currentTarget.style.transform="none"}>
+        {status === "sending" ? "Sending…" : "Send message →"}
+      </button>
+    </form>
+  );
+}
+
 
 export default function HomePage({ onNavigate, user, onSignOut, theme = "light" }) {
   const [hoveredCard, setHoveredCard]         = useState(null);
@@ -1204,15 +1318,15 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
     return () => cleanup && cleanup();
   }, []);
 
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Tool definitions (ordered for Bento layout) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-  // Grid: 3 columns ÃƒÆ’Ã¢â‚¬â€ 2 rows. All tools equally sized to fit in one studio without gaps
+  // ── Tool definitions (ordered for Bento layout) ──────────────────────────
+  // Grid: 3 columns  2 rows. All tools equally sized to fit in one studio without gaps
   const tools = [
-    { id:"video",   name:"Video Editor",       desc:"Full multi-track timeline with WebGL color grading, audio mixing & in-browser rendering. No uploads needed.", icon:"Ã°Å¸Å½Â¬", color:"#942945",  tag:"WebGL Ã‚Â· WASM",           colSpan:1, rowSpan:1, image: videoPrev      },
-    { id:"image",   name:"Image Editor",       desc:"Layers, masks, filters, blend modes. Pro-grade photo editing in your browser.",                                icon:"ÃƒÂ°Ã…Â¸Ã¢â‚¬â€œÃ‚Â¼ÃƒÂ¯Ã‚Â¸Ã‚Â", color:"#e1496d",  tag:"Canvas API",             colSpan:1, rowSpan:1, image: imagePrev      },
-    { id:"logo",    name:"Logo Maker",         desc:"Vector-based logo studio. AI suggestions, custom icons, SVG export.",                                          icon:"Ã¢Å“Â¦",  color:"#ec4899",  tag:"SVG Ã‚Â· AI-assisted",      colSpan:1, rowSpan:1, image: logoPrev       },
-    { id:"ppt",     name:"Presentations",      desc:"Slides that animate. Real-time collaboration, 500+ templates, one-click export.",                              icon:"Ã°Å¸â€œÅ ", color:"#7c233c",  tag:"PPTX Ã‚Â· PDF Ã‚Â· HTML5",     colSpan:1, rowSpan:1, image: pptPrev        },
-    { id:"white",   name:"Whiteboard",         desc:"Freehand canvas with sticky notes, arrows, shapes, laser pointer & live multiplayer cursors.",                  icon:"Ã…â€œÃ‚ÂÃƒÂ¯Ã‚Â¸Ã‚Â",  color:"#be185d",  tag:"Canvas Ã‚Â· Real-time",     colSpan:1, rowSpan:1, image: whiteboardPrev },
-    { id:"doc",     name:"Documents",          desc:"Rich docs with embedded media, tables, charts. Beautiful by default.",                                         icon:"Ã°Å¸â€œÂ", color:"#eba5b6",  tag:"DOCX Ã‚Â· PDF",             colSpan:1, rowSpan:1, image: docPrev        },
+    { id:"video",   name:"Video Editor",       desc:"Full multi-track timeline with WebGL color grading, audio mixing & in-browser rendering. No uploads needed.", icon:"🎬", color:"#942945",  tag:"WebGL · WASM",           colSpan:1, rowSpan:1, image: videoPrev      },
+    { id:"image",   name:"Image Editor",       desc:"Layers, masks, filters, blend modes. Pro-grade photo editing in your browser.",                                icon:"🖼️", color:"#e1496d",  tag:"Canvas API",             colSpan:1, rowSpan:1, image: imagePrev      },
+    { id:"logo",    name:"Logo Maker",         desc:"Vector-based logo studio. AI suggestions, custom icons, SVG export.",                                          icon:"✦",  color:"#ec4899",  tag:"SVG · AI-assisted",      colSpan:1, rowSpan:1, image: logoPrev       },
+    { id:"ppt",     name:"Presentations",      desc:"Slides that animate. Real-time collaboration, 500+ templates, one-click export.",                              icon:"🎠", color:"#7c233c",  tag:"PPTX · PDF · HTML5",     colSpan:1, rowSpan:1, image: pptPrev        },
+    { id:"white",   name:"Whiteboard",         desc:"Freehand canvas with sticky notes, arrows, shapes, laser pointer & live multiplayer cursors.",                  icon:"🖊️",  color:"#be185d",  tag:"Canvas · Real-time",     colSpan:1, rowSpan:1, image: whiteboardPrev },
+    { id:"doc",     name:"Documents",          desc:"Rich docs with embedded media, tables, charts. Beautiful by default.",                                         icon:"📄", color:"#eba5b6",  tag:"DOCX · PDF",             colSpan:1, rowSpan:1, image: docPrev        },
   ];
 
   const pricing = [
@@ -1221,25 +1335,29 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
     { name:"Team",  price:42, period:"per month, up to 5 seats",  popular:false, features:["Everything in Pro","Real-time collaboration","Shared brand assets","Admin controls","1TB storage","Dedicated support"] },
   ];
 
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Gradient fallbacks for cards without images Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-  const cardGradients = {
+  // ── Gradient fallbacks for cards without images ──────────────────────────
+  const cardGradients = isDark ? {
     logo:  "linear-gradient(135deg, #1a0f14 0%, #3a0c19 40%, #ec489920 100%)",
     doc:   "linear-gradient(135deg, #170b11 0%, #23141b 50%, #eba5b620 100%)",
     white: "linear-gradient(135deg, #140a0f 0%, #2a0d1b 45%, #be185d25 100%)",
+  } : {
+    logo:  "linear-gradient(135deg, #fff0f3 0%, #fce7f3 50%, #ec489912 100%)",
+    doc:   "linear-gradient(135deg, #fdf2f4 0%, #fce8ef 50%, #eba5b615 100%)",
+    white: "linear-gradient(135deg, #f8f0f5 0%, #fce7f3 45%, #be185d12 100%)",
   };
 
   const colors = {
     bg: isDark ? "#1a0f14" : "#f7f4f7",
     text: isDark ? "#fdf2f4" : "#2d2d2d",
-    textMuted: isDark ? "#a8a29e" : "#666",
-    navBg: isDark ? "rgba(12, 10, 9, 0.94)" : "rgba(250, 248, 245, 0.94)",
-    border: isDark ? "rgba(212, 165, 116, 0.22)" : "rgba(139, 90, 43, 0.1)",
-    btnBg: isDark ? "rgba(212, 165, 116, 0.12)" : "rgba(139, 90, 43, 0.1)",
-    btnBorder: isDark ? "rgba(212, 165, 116, 0.25)" : "rgba(139, 90, 43, 0.2)",
-    marqueeBg: isDark ? "#23141b" : "#fdf2f4",
+    textMuted: isDark ? "#9d8e94" : "#666",
+    navBg: isDark ? "rgba(14, 6, 10, 0.95)" : "rgba(253, 248, 250, 0.95)",
+    border: isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.10)",
+    btnBg: isDark ? "rgba(225,73,109,0.10)" : "rgba(148,41,69,0.07)",
+    btnBorder: isDark ? "rgba(225,73,109,0.25)" : "rgba(148,41,69,0.18)",
+    marqueeBg: isDark ? "#160b12" : "#fdf2f4",
     logoGlow: isDark ? "rgba(212, 165, 116, 0.2)" : "rgba(139, 90, 43, 0.35)",
-    cardBorder: isDark ? "rgba(212, 165, 116, 0.22)" : "rgba(139, 90, 43, 0.15)",
-    cardShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 4px 20px rgba(139, 90, 43, 0.08)",
+    cardBorder: isDark ? "rgba(225,73,109,0.16)" : "rgba(148,41,69,0.12)",
+    cardShadow: isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 4px 20px rgba(148,41,69,0.08)",
   };
 
   const [homeTab, setHomeTab] = useState("home");
@@ -1289,7 +1407,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           boxShadow: h ? "0 10px 24px rgba(0,0,0,0.18)" : "0 2px 8px rgba(0,0,0,0.08)",
         }}>
           {icon}
-          {isCrown && <div style={{ position: "absolute", top: -4, right: -4, fontSize: 14 }}>Ã°Å¸â€˜â€˜</div>}
+          {isCrown && <div style={{ position: "absolute", top: -4, right: -4, fontSize: 14 }}>✨</div>}
         </div>
         <span style={{
           fontSize: 11.5, color: isDark ? "rgba(245,240,232,0.78)" : "rgba(45,45,45,0.82)",
@@ -1300,168 +1418,204 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
   };
 
   const AnimatedCreateRow = ({ onNavigate, user, isDark, THEME }) => (
-    <div style={{ display:"flex", alignItems:"center", gap:64, padding:"60px 0 80px", flexWrap:"wrap", width:"100%" }}>
+    <div style={{ width:"100%", boxSizing:"border-box" }}>
       <style>{`
-        @keyframes heroGrad { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-        @keyframes floatCard { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        @keyframes floatBadge1 { 0%,100%{transform:translateY(-4px)} 50%{transform:translateY(4px)} }
-        @keyframes floatBadge2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes badgePop { 0%{opacity:0;transform:scale(0.85)} 100%{opacity:1;transform:scale(1)} }
-        @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.6)} }
-        @keyframes glowFade { 0%,100%{opacity:0.4} 50%{opacity:1} }
-        @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
-        @keyframes toolRowIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
-        .hero-cta-primary {
-          background: linear-gradient(135deg,#e1496d,#942945);
-          color:#fff; border:none; padding:15px 32px; border-radius:14px;
-          font-family:'Poppins',sans-serif; font-weight:600; font-size:14px;
-          cursor:pointer; display:flex; align-items:center; gap:9px;
-          box-shadow:0 8px 28px rgba(225,73,109,0.38);
-          transition:transform 0.25s,box-shadow 0.25s;
-          letter-spacing:-0.01em;
+        @keyframes hFadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes hGrad   { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        @keyframes hOrb1   { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-20px)} }
+        @keyframes hOrb2   { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,25px)} }
+        @keyframes hShine  { from{left:-100%} to{left:160%} }
+
+        .h4-cta {
+          display:inline-flex; align-items:center; gap:10px;
+          padding:16px 36px; border-radius:50px; border:none; cursor:pointer;
+          font-family:'Poppins',sans-serif; font-size:16px; font-weight:600;
+          letter-spacing:-0.01em; position:relative; overflow:hidden;
+          background: linear-gradient(135deg,#7c1d35,#b13453,#e1496d);
+          background-size:200% 200%; animation:hGrad 5s ease-in-out infinite;
+          color:#fff;
+          box-shadow:0 8px 32px rgba(148,41,69,0.4), 0 2px 8px rgba(225,73,109,0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+          transition:transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
         }
-        .hero-cta-primary:hover { transform:translateY(-2px); box-shadow:0 14px 40px rgba(225,73,109,0.55); }
-        .hero-cta-sec {
-          background: transparent;
-          border:1.5px solid rgba(148,41,69,0.18); padding:15px 28px; border-radius:14px;
-          font-family:'Poppins',sans-serif; font-weight:500; font-size:14px;
-          cursor:pointer; display:flex; align-items:center; gap:8px;
-          transition:background 0.2s, border-color 0.2s;
-          color:rgba(0,0,0,0.6); letter-spacing:-0.01em;
+        .h4-cta::after {
+          content:''; position:absolute; top:0; left:-100%; width:40%; height:100%;
+          background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);
+          animation:hShine 3s ease-in-out 1s infinite;
         }
-        .hero-cta-sec:hover { background:rgba(148,41,69,0.05); border-color:rgba(148,41,69,0.32); }
-        .hero-tool-pill {
-          display:flex; align-items:center; gap:8px; padding:9px 14px 9px 10px;
-          border-radius:50px; cursor:pointer;
-          transition:transform 0.2s, box-shadow 0.2s, background 0.2s;
-          border:1px solid transparent;
+        .h4-cta:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 16px 44px rgba(148,41,69,0.5),0 4px 12px rgba(225,73,109,0.25); }
+
+        .h4-ghost {
+          display:inline-flex; align-items:center; gap:8px;
+          padding:15px 28px; border-radius:50px; cursor:pointer;
+          font-family:'Poppins',sans-serif; font-size:15px; font-weight:500;
+          letter-spacing:-0.01em; background:none;
+          border:1.5px solid ${isDark?"rgba(255,255,255,0.15)":"rgba(15,2,8,0.14)"};
+          color:${isDark?"rgba(255,255,255,0.65)":"rgba(15,2,8,0.55)"};
+          transition:border-color 0.2s, background 0.2s, color 0.2s;
         }
-        .hero-tool-pill:hover { transform:translateY(-2px); }
-        .hero-card-btn {
-          width:100%; padding:14px 0; border-radius:14px;
-          background:linear-gradient(135deg,#e1496d,#942945); border:none;
-          color:#fff; cursor:pointer; display:flex; align-items:center;
-          justify-content:center; gap:9px; font-family:'Poppins',sans-serif;
-          font-weight:600; font-size:13px;
-          box-shadow:0 6px 20px rgba(225,73,109,0.35);
-          transition:transform 0.2s, box-shadow 0.2s;
+        .h4-ghost:hover {
+          border-color:${isDark?"rgba(255,255,255,0.35)":"rgba(148,41,69,0.4)"};
+          background:${isDark?"rgba(255,255,255,0.05)":"rgba(148,41,69,0.04)"};
+          color:${isDark?"#fff":"#7c1d35"};
         }
-        .hero-card-btn:hover { transform:translateY(-1px); box-shadow:0 12px 30px rgba(225,73,109,0.5); }
+
+        .h4-mock-browser {
+          border-radius: 16px;
+          background: ${isDark ? "#1e0f16" : "#fdfaf9"};
+          box-shadow: 0 20px 80px rgba(148,41,69,0.15), 0 4px 20px rgba(0,0,0,0.06);
+          overflow: hidden;
+          border: 1px solid ${isDark ? "rgba(225,73,109,0.10)" : "rgba(148,41,69,0.08)"};
+        }
       `}</style>
 
-      {/* LEFT */}
-      <div style={{ flex:1, minWidth:300, maxWidth:560 }}>
-        <div style={{ display:"inline-flex", alignItems:"center", gap:8, marginBottom:24, padding:"6px 14px 6px 8px", borderRadius:99, background:isDark?"rgba(225,73,109,0.1)":"rgba(148,41,69,0.07)", border:`1px solid ${isDark?"rgba(225,73,109,0.2)":"rgba(148,41,69,0.15)"}`, animation:"badgePop 0.5s ease 0.1s both" }}>
-          <div style={{ width:22, height:22, borderRadius:"50%", background:"linear-gradient(135deg,#e1496d,#942945)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <span style={{ fontSize:11, fontWeight:600, color:isDark?"rgba(225,73,109,0.9)":"#942945", fontFamily:"'Poppins',sans-serif", letterSpacing:"0.05em" }}>ALL-IN-ONE CREATIVE SUITE</span>
-        </div>
+      {/* ─── TOP HERO BAND ─── */}
+      <div style={{
+        width:"100%", padding:"88px 72px 80px",
+        boxSizing:"border-box", textAlign:"center",
+        position:"relative", overflow:"hidden",
+        background: isDark
+          ? "linear-gradient(180deg,#0f0408 0%,#1a0f14 100%)"
+          : "linear-gradient(180deg,#fdf2f4 0%,#f7edf1 100%)",
+      }}>
+        {/* Background orbs */}
+        <div style={{ position:"absolute", width:600, height:600, borderRadius:"50%", top:"-200px", left:"50%", transform:"translateX(-50%)", background:"radial-gradient(circle,rgba(225,73,109,0.18) 0%,transparent 65%)", filter:"blur(60px)", animation:"hOrb1 12s ease-in-out infinite", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", width:400, height:400, borderRadius:"50%", bottom:"-100px", left:"20%", background:"radial-gradient(circle,rgba(148,41,69,0.12) 0%,transparent 65%)", filter:"blur(48px)", animation:"hOrb2 16s ease-in-out infinite", pointerEvents:"none" }} />
+        <div style={{ position:"absolute", width:300, height:300, borderRadius:"50%", bottom:"-60px", right:"15%", background:"radial-gradient(circle,rgba(168,85,247,0.09) 0%,transparent 65%)", filter:"blur(40px)", animation:"hOrb1 20s ease-in-out 3s infinite", pointerEvents:"none" }} />
 
-        <h1 style={{ fontFamily:"Syne,sans-serif", fontWeight:800, fontSize:"clamp(36px,4.5vw,62px)", letterSpacing:"-0.04em", lineHeight:1.05, margin:"0 0 20px", color:isDark?"#fff":"#0f0208", animation:"fadeUp 0.6s ease 0.15s both" }}>
-          {user ? "Welcome back," : "Your creative"}<br/>
-          <span style={{ background:"linear-gradient(135deg,#e1496d 0%,#b13453 45%,#f472b6 100%)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", backgroundSize:"200% 200%", animation:"heroGrad 5s ease-in-out infinite", display:"inline-block" }}>
-            {user ? ((user.name || "").split(" ")[0] || "Creator") + "." : "design studio."}
-          </span>
-        </h1>
+        {/* Content */}
+        <div style={{ position:"relative", zIndex:1, maxWidth:760, margin:"0 auto" }}>
 
-        <p style={{ fontSize:15, lineHeight:1.75, margin:"0 0 34px", color:isDark?"rgba(255,255,255,0.55)":"rgba(15,2,8,0.55)", fontFamily:"'Instrument Sans',sans-serif", maxWidth:420, animation:"fadeUp 0.6s ease 0.25s both" }}>
-          {user ? "Pick up where you left off. Your canvas, your rules." : "Professional tools for video, graphics, presentations and AI generation â€” all in one place."}
-        </p>
+          {/* Headline — 2 rows */}
+          <h1 style={{ fontFamily:"Syne,sans-serif", fontWeight:800, margin:"0 0 18px", fontSize:"clamp(36px,4.8vw,64px)", letterSpacing:"-0.04em", lineHeight:1.08, color:isDark?"#fdf2f4":"#0f0208", animation:"hFadeUp 0.7s ease 0.08s both" }}>
+            Design anything.<br/>
+            <span style={{ background:"linear-gradient(135deg,#e1496d,#b13453,#f472b6)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", backgroundSize:"200% 200%", animation:"hGrad 5s ease-in-out infinite" }}>
+              Create everywhere.
+            </span>
+          </h1>
 
-        <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:44, animation:"fadeUp 0.6s ease 0.35s both" }}>
-          <button className="hero-cta-primary" onClick={() => onNavigate(user ? "editor" : "auth", "signup")}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            {user ? "Open Studio" : "Start for free"}
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </button>
-          {!user && (
-            <button className="hero-cta-sec" onClick={() => onNavigate("auth", "signin")}>
-              Sign in
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          {/* Subtitle */}
+          <p style={{ fontSize:17, lineHeight:1.68, margin:"0 0 40px", color:isDark?"rgba(255,255,255,0.5)":"rgba(15,2,8,0.48)", fontFamily:"'Instrument Sans',sans-serif", maxWidth:500, marginLeft:"auto", marginRight:"auto", animation:"hFadeUp 0.7s ease 0.16s both" }}>
+            {user
+              ? `Hey ${(user.name||"").split(" ")[0]||"there"} — your studio is ready. Jump back in.`
+              : "Video, presentations, whiteboards, social graphics and AI — all in one browser-native studio. Free forever."}
+          </p>
+
+          {/* CTAs */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, flexWrap:"wrap", animation:"hFadeUp 0.7s ease 0.24s both" }}>
+            <button className="h4-cta" onClick={() => onNavigate(user?"editor":"auth","signup")}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+              {user ? "Open Studio" : "Start for free"}
             </button>
-          )}
-        </div>
+            {!user && (
+              <button className="h4-ghost" onClick={() => onNavigate("auth","signin")}>
+                Sign in
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+              </button>
+            )}
+          </div>
 
-        <div style={{ display:"flex", gap:0, animation:"fadeUp 0.6s ease 0.45s both" }}>
-          {[{val:"10M+",label:"Designs created"},{val:"200+",label:"Templates"},{val:"4.9 / 5",label:"User rating"}].map((s,i) => (
-            <div key={i} style={{ paddingRight:i<2?28:0, marginRight:i<2?28:0, borderRight:i<2?`1px solid ${isDark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.08)"}`:undefined }}>
-              <div style={{ fontSize:"clamp(20px,2.2vw,28px)", fontWeight:800, fontFamily:"Syne,sans-serif", letterSpacing:"-0.04em", color:isDark?"#fff":"#0f0208", lineHeight:1 }}>{s.val}</div>
-              <div style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.38)":"rgba(0,0,0,0.4)", fontFamily:"'Poppins',sans-serif", marginTop:4 }}>{s.label}</div>
-            </div>
-          ))}
         </div>
       </div>
 
-      {/* RIGHT */}
-      <div style={{ position:"relative", flexShrink:0, width:290, height:370, display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <div style={{ position:"absolute", width:260, height:260, borderRadius:"50%", background:"radial-gradient(circle,rgba(225,73,109,0.22) 0%,transparent 70%)", filter:"blur(40px)", top:"50%", left:"50%", animation:"orbFloat 7s ease-in-out infinite", pointerEvents:"none" }} />
-        <div style={{ position:"absolute", width:190, height:190, borderRadius:"50%", background:"radial-gradient(circle,rgba(148,41,69,0.16) 0%,transparent 70%)", filter:"blur(28px)", top:"45%", left:"58%", animation:"orbFloat 9s ease-in-out 1s infinite", pointerEvents:"none" }} />
+      {/* ─── MOCK STUDIO PREVIEW ─── */}
+      <div style={{
+        width:"100%", boxSizing:"border-box",
+        background: "transparent",
+        padding:"0 72px 0",
+        position:"relative",
+      }}>
+        {/* Top fade — eases the mock in from the hero */}
+        <div style={{
+          position:"absolute", top:0, left:0, right:0, height:60,
+          background: isDark
+            ? "linear-gradient(to bottom, #1a0f14, transparent)"
+            : "linear-gradient(to bottom, #f7edf1, transparent)",
+          pointerEvents:"none", zIndex:2,
+        }} />
+        {/* Bottom fade — dissolves into page background */}
+        <div style={{
+          position:"absolute", bottom:0, left:0, right:0, height:140,
+          background: isDark
+            ? "linear-gradient(to bottom, transparent, #1a0f14)"
+            : "linear-gradient(to bottom, transparent, #f7f4f7)",
+          pointerEvents:"none", zIndex:2,
+        }} />
 
-        <div style={{ position:"relative", width:260, borderRadius:26, background:isDark?"linear-gradient(145deg,rgba(32,12,20,0.92),rgba(18,6,12,0.96))":"linear-gradient(145deg,rgba(255,255,255,0.96),rgba(252,238,246,0.92))", border:`1px solid ${isDark?"rgba(225,73,109,0.15)":"rgba(148,41,69,0.1)"}`, backdropFilter:"blur(20px)", boxShadow:isDark?"0 32px 80px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.05)":"0 32px 80px rgba(148,41,69,0.13),inset 0 1px 0 rgba(255,255,255,1)", padding:"26px 22px 22px", animation:"floatCard 7s ease-in-out infinite" }}>
-          <div style={{ position:"absolute", inset:0, borderRadius:26, background:"linear-gradient(180deg,rgba(255,255,255,0.06) 0%,transparent 40%)", pointerEvents:"none" }} />
-
-          <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:18 }}>
-            <div style={{ width:38, height:38, borderRadius:11, background:"linear-gradient(135deg,#e1496d,#942945)", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 6px 16px rgba(225,73,109,0.35)" }}>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            </div>
-            <div>
-              <div style={{ fontSize:13, fontWeight:700, fontFamily:"'Poppins',sans-serif", color:isDark?"#fff":"#0f0208" }}>New Design</div>
-              <div style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.38)":"rgba(0,0,0,0.36)", fontFamily:"'Instrument Sans',sans-serif", marginTop:2 }}>Start from scratch</div>
-            </div>
-            <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:5 }}>
-              <div style={{ width:6, height:6, borderRadius:"50%", background:"#22c55e", animation:"livePulse 2s ease-in-out infinite" }} />
-              <span style={{ fontSize:9, color:"#22c55e", fontFamily:"'Poppins',sans-serif", fontWeight:600 }}>LIVE</span>
+        <div className="h4-mock-browser" style={{
+          width:"100%", maxWidth:1000, margin:"0 auto",
+          boxShadow: isDark
+            ? "0 8px 60px rgba(148,41,69,0.15), 0 2px 20px rgba(0,0,0,0.3)"
+            : "0 8px 60px rgba(148,41,69,0.10), 0 2px 20px rgba(148,41,69,0.08)",
+          position:"relative", zIndex:1,
+        }}>
+          {/* Browser chrome bar */}
+          <div style={{ height:38, background:isDark?"#1f0d14":"#f5edf0", borderBottom:"1px solid "+(isDark?"rgba(255,255,255,0.06)":"rgba(148,41,69,0.08)"), display:"flex", alignItems:"center", padding:"0 16px", gap:8 }}>
+            <div style={{ width:10, height:10, borderRadius:"50%", background:"#ff5f57" }} />
+            <div style={{ width:10, height:10, borderRadius:"50%", background:"#febc2e" }} />
+            <div style={{ width:10, height:10, borderRadius:"50%", background:"#28c840" }} />
+            <div style={{ flex:1, margin:"0 16px", height:20, borderRadius:6, background:isDark?"rgba(255,255,255,0.06)":"rgba(148,41,69,0.07)", display:"flex", alignItems:"center", paddingLeft:10 }}>
+              <span style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.3)":"rgba(148,41,69,0.4)", fontFamily:"'Poppins',sans-serif" }}>creatify.app/studio</span>
             </div>
           </div>
 
-          <div style={{ marginBottom:16 }}>
-            {[{w:"68%",c:"#e1496d"},{w:"88%",c:isDark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.06)"},{w:"52%",c:isDark?"rgba(255,255,255,0.04)":"rgba(0,0,0,0.04)"}].map((r,i)=>(
-              <div key={i} style={{ height:7, width:r.w, borderRadius:99, background:r.c, marginBottom:7 }} />
-            ))}
-          </div>
+          {/* Studio UI mockup — pure CSS */}
+          <div style={{ display:"flex", height:340 }}>
 
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:7, marginBottom:18 }}>
-            {[{bg:"linear-gradient(135deg,#e1496d,#942945)",label:"Social"},{bg:"linear-gradient(135deg,#a855f7,#6d28d9)",label:"Deck"},{bg:"linear-gradient(135deg,#3b82f6,#1d4ed8)",label:"Video"}].map((t,i)=>(
-              <div key={i} className="hero-tool-card" style={{ background:t.bg }}>
-                <div style={{ position:"absolute", inset:0, background:"linear-gradient(180deg,rgba(255,255,255,0.12) 0%,transparent 60%)" }} />
-                <div style={{ position:"absolute", bottom:6, left:8, fontSize:8, fontWeight:700, color:"rgba(255,255,255,0.92)", fontFamily:"'Poppins',sans-serif" }}>{t.label}</div>
+            {/* Left tool palette */}
+            <div style={{ width:52, background:isDark?"#180b10":"#fdf2f4", borderRight:"1px solid "+(isDark?"rgba(255,255,255,0.05)":"rgba(148,41,69,0.08)"), display:"flex", flexDirection:"column", alignItems:"center", paddingTop:16, gap:14 }}>
+              {[
+                <svg key="a" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
+                <svg key="b" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>,
+                <svg key="c" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0"/></svg>,
+                <svg key="d" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15 8.5 22 9.3 17 14 18.5 21 12 17.8 5.5 21 7 14 2 9.3 9 8.5"/></svg>,
+              ].map((icon,i) => (
+                <div key={i} style={{ width:32, height:32, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", background:i===0?"linear-gradient(135deg,#e1496d,#942945)":"transparent", color:i===0?"#fff":isDark?"rgba(255,255,255,0.3)":"rgba(148,41,69,0.4)" }}>
+                  {icon}
+                </div>
+              ))}
+            </div>
+
+            {/* Canvas area */}
+            <div style={{ flex:1, background:isDark?"#150910":"#faf5f7", position:"relative", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              {/* Dot grid */}
+              <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(circle,"+(isDark?"rgba(225,73,109,0.12)":"rgba(148,41,69,0.08)")+" 1px,transparent 1px)", backgroundSize:"24px 24px", pointerEvents:"none" }} />
+
+              {/* Mock design card */}
+              <div style={{ position:"relative", zIndex:1, width:320, height:200, borderRadius:16, background:isDark?"linear-gradient(135deg,#2a0f1a,#1f0a14)":"linear-gradient(135deg,#fff,#fdf2f4)", border:"1px solid "+(isDark?"rgba(225,73,109,0.18)":"rgba(148,41,69,0.12)"), boxShadow:"0 20px 60px rgba(148,41,69,0.2)", padding:24, display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+                <div>
+                  <div style={{ width:48, height:6, borderRadius:3, background:"linear-gradient(90deg,#e1496d,#f472b6)", marginBottom:10 }} />
+                  <div style={{ width:"80%", height:5, borderRadius:3, background:isDark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.06)", marginBottom:7 }} />
+                  <div style={{ width:"60%", height:5, borderRadius:3, background:isDark?"rgba(255,255,255,0.05)":"rgba(0,0,0,0.04)" }} />
+                </div>
+                <div style={{ display:"flex", gap:8 }}>
+                  {["#e1496d","#a855f7","#3b82f6"].map((c,i) => (
+                    <div key={i} style={{ flex:1, height:40, borderRadius:8, background:c, opacity:0.85 }} />
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-
-          <button className="hero-card-btn" onClick={() => onNavigate(user ? "editor" : "auth", "signup")}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-            New design
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </button>
-        </div>
-
-        <div style={{ position:"absolute", top:-14, right:-14, zIndex:10, background:isDark?"rgba(18,6,12,0.94)":"#fff", border:"1px solid rgba(34,197,94,0.28)", borderRadius:12, padding:"8px 12px", backdropFilter:"blur(10px)", boxShadow:"0 6px 20px rgba(0,0,0,0.1)", animation:"floatBadge1 5s ease-in-out infinite" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-            <div style={{ width:7, height:7, borderRadius:"50%", background:"#22c55e", boxShadow:"0 0 7px #22c55e", animation:"glowFade 2s ease-in-out infinite" }} />
-            <span style={{ fontSize:10, fontWeight:700, color:"#22c55e", fontFamily:"'Poppins',sans-serif" }}>4.9 / 5 Rating</span>
-          </div>
-        </div>
-
-        <div style={{ position:"absolute", bottom:8, left:-20, zIndex:10, background:isDark?"rgba(18,6,12,0.92)":"#fff", border:"1px solid rgba(168,85,247,0.22)", borderRadius:12, padding:"8px 12px", backdropFilter:"blur(10px)", boxShadow:"0 6px 20px rgba(0,0,0,0.08)", animation:"floatBadge2 6s ease-in-out 0.8s infinite" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:7 }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <div>
-              <div style={{ fontSize:10, fontWeight:700, color:isDark?"#fff":"#0f0208", fontFamily:"'Poppins',sans-serif", lineHeight:1 }}>AI-Powered</div>
-              <div style={{ fontSize:9, color:isDark?"rgba(255,255,255,0.4)":"rgba(0,0,0,0.38)", fontFamily:"'Instrument Sans',sans-serif" }}>Smart suggestions</div>
             </div>
+
+            {/* Right properties panel */}
+            <div style={{ width:160, background:isDark?"#180b10":"#fdf2f4", borderLeft:"1px solid "+(isDark?"rgba(255,255,255,0.05)":"rgba(148,41,69,0.08)"), padding:16, display:"flex", flexDirection:"column", gap:12 }}>
+              {[["Font","Syne"],["Size","48px"],["Color","Crimson"],["Weight","Bold"]].map(([k,v],i) => (
+                <div key={i}>
+                  <div style={{ fontSize:9, color:isDark?"rgba(255,255,255,0.25)":"rgba(148,41,69,0.4)", fontFamily:"'Poppins',sans-serif", letterSpacing:"0.06em", marginBottom:3 }}>{k.toUpperCase()}</div>
+                  <div style={{ fontSize:11, color:isDark?"rgba(255,255,255,0.6)":"rgba(15,2,8,0.6)", fontFamily:"'Poppins',sans-serif", fontWeight:500, background:isDark?"rgba(255,255,255,0.04)":"rgba(148,41,69,0.05)", borderRadius:6, padding:"4px 8px" }}>{v}</div>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       </div>
+
     </div>
   );
 
   return (
     <div style={{
       margin: 0, padding: 0, width: "100%",
-      background: isDark ? "#1a0f14" : "#f7f6fb",
+      background: isDark ? "#0e060b" : "#f7f6fb",
       color: colors.text,
       fontFamily: "'Instrument Sans',sans-serif", overflowX: "hidden",
       transition: "background 0.3s, color 0.3s", minHeight: "100vh",
@@ -1486,18 +1640,20 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       `}</style>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Instrument+Sans:wght@300;400;500;600&family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
 
-      {/* Ã¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚Â CANVA-STYLE VERTICAL SIDEBAR Ã¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚Â */}
+      {/* ─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢ CANVA-STYLE VERTICAL SIDEBAR ─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢ */}
       <aside style={{
-        position: "fixed", top: 20, left: 12, bottom: 20, width: sidebarW,
-        background: THEME.grad.sidebar,
-        borderRight: `1px solid ${THEME.borderSoft}`,
-        border: `1px solid ${THEME.borderSoft}`,
+        position: "fixed", top: 0, left: 0, bottom: 0, width: sidebarW,
+        background: isDark
+          ? "rgba(14, 6, 11, 0.96)"
+          : "rgba(253, 248, 250, 0.96)",
+        borderRight: isDark
+          ? "1px solid rgba(225,73,109,0.12)"
+          : "1px solid rgba(148,41,69,0.10)",
         zIndex: 200,
         display: "flex", flexDirection: "column", alignItems: "center",
-        padding: "14px 0 12px",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-        borderRadius: "20px",
-        backdropFilter: "blur(10px)",
+        padding: "16px 0 12px",
+        backdropFilter: "blur(20px) saturate(160%)",
+        WebkitBackdropFilter: "blur(20px) saturate(160%)",
       }}>
         {/* Avatar at Top */}
         <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 12 }}>
@@ -1600,12 +1756,12 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         </div>
       </aside>
 
-      {/* Ã¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚Â MAIN CONTENT (full width with sidebar padding) Ã¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚ÂÃ¢â‚¬Â¢Ã‚Â */}
-      <main style={{ width: "100%", position: "relative", overflow: "hidden", paddingLeft: "88px" }}>
+      {/* ─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢ MAIN CONTENT (full width with sidebar padding) ─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢ */}
+      <main style={{ width: "100%", position: "relative", overflow: "hidden", paddingLeft: `${sidebarW}px` }}>
 
         {/* Conditional rendering based on activeNav */}
         {activeNav === "projects" ? (
-          /* Ã¢â€â‚¬Ã¢â€â‚¬ INLINE PROJECTS VIEW Ã¢â‚¬â€ keeps sidebar visible Ã¢â€â‚¬Ã¢â€â‚¬ */
+          /* ── INLINE PROJECTS VIEW — keeps sidebar visible ── */
           <div style={{ padding: "48px", minHeight: "100vh" }}>
             {/* Header */}
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:40 }}>
@@ -1631,14 +1787,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 onMouseEnter={e=>e.currentTarget.style.background=THEME.wineTint}
                 onMouseLeave={e=>e.currentTarget.style.background="none"}
               >
-                Ã¢â‚¬Â Ã‚Â Back to Home
+                ─  Back to Home
               </button>
             </div>
 
             {/* Empty state */}
             {pastWorks.length === 0 ? (
               <div style={{ textAlign:"center", padding:"80px 0" }}>
-                <div style={{ fontSize:48, marginBottom:16 }}>Ã°Å¸Å½Â¨</div>
+                <div style={{ fontSize:48, marginBottom:16 }}>🎨</div>
                 <h3 style={{ fontFamily:"Syne,sans-serif", fontSize:22, fontWeight:700, color:colors.text, margin:"0 0 8px" }}>
                   No projects yet
                 </h3>
@@ -1692,7 +1848,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                             alignItems:"center", justifyContent:"center",
                             fontSize:40, opacity:0.4,
                           }}>
-                            {proj.icon || "Ã°Å¸Å½Â¨"}
+                            {proj.icon || "🎨"}
                           </div>
                         )}
                         {/* Tool badge */}
@@ -1719,9 +1875,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                           margin:"0 0 10px", fontSize:12, color:colors.textMuted,
                           fontFamily:"'Instrument Sans',sans-serif",
                         }}>
-                          {proj.category || proj.tool || "Design"} Ã‚Â· {proj.year || new Date().getFullYear()}
+                          {proj.category || proj.tool || "Design"} · {proj.year || new Date().getFullYear()}
                         </p>
-                        {/* Tags Ã¢â‚¬â€ real data only */}
+                        {/* Tags — real data only */}
                         {proj.tags?.length > 0 && (
                           <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                             {proj.tags.slice(0,3).map(tag => (
@@ -1742,33 +1898,13 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           </div>
         ) : (
           <>
-        {/* Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â PLAIN HERO SECTION WITH HEADING Ã¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢ÂÃ¢â€¢Â */}
-        <section style={{
-          position: "relative", padding: "80px 48px 40px",
-          background: THEME.grad.hero,
-          overflow: "hidden", minHeight: 580,
-          display: "flex", alignItems: "center",
-        }}>
-
-          {/* Animated bg orbs */}
-          <div style={{ position:"absolute", inset:0, pointerEvents:"none", overflow:"hidden" }}>
-            <div style={{ position:"absolute", width:700, height:700, borderRadius:"50%", background: isDark ? "radial-gradient(circle, rgba(148,41,69,0.18) 0%, transparent 65%)" : "radial-gradient(circle, rgba(225,73,109,0.12) 0%, transparent 65%)", top:"-200px", left:"-100px", filter:"blur(60px)", animation:"heroOrb1 12s ease-in-out infinite" }}/>
-            <div style={{ position:"absolute", width:500, height:500, borderRadius:"50%", background: isDark ? "radial-gradient(circle, rgba(225,73,109,0.12) 0%, transparent 65%)" : "radial-gradient(circle, rgba(148,41,69,0.08) 0%, transparent 65%)", bottom:"-100px", right:"5%", filter:"blur(50px)", animation:"heroOrb2 15s ease-in-out infinite" }}/>
-            <div style={{ position:"absolute", top:0, left:0, right:0, height:1, background:isDark ? "linear-gradient(90deg,transparent,rgba(225,73,109,0.5),transparent)" : "linear-gradient(90deg,transparent,rgba(148,41,69,0.3),transparent)" }}/>
-            <div style={{ position:"absolute", bottom:0, left:0, right:0, height:120, background:isDark ? "linear-gradient(to bottom,transparent,#160b12)" : "linear-gradient(to bottom,transparent,#fdf4f7)" }}/>
-          </div>
-          <div style={{ maxWidth: pageMax, margin: "0 auto", width:"100%", position:"relative", zIndex:1 }}>
-            <AnimatedCreateRow
-              onNavigate={onNavigate}
-              user={user}
-              isDark={isDark}
-              THEME={THEME}
-            />
-          </div>
+        {/*  HERO SECTION  */}
+        <section style={{ position:"relative", padding:0, background:isDark?"linear-gradient(135deg,#1a0f14 0%,#0f0408 100%)":THEME.grad.hero, overflow:"hidden" }}>
+          <AnimatedCreateRow onNavigate={onNavigate} user={user} isDark={isDark} THEME={THEME} />
         </section>
 
       {/* Marquee */}
-      <div style={{ padding:"28px 0", borderTop:`1px solid ${colors.border}`, borderBottom:`1px solid ${colors.border}`, overflow:"hidden", background:colors.marqueeBg, transition:"background 0.3s, border-color 0.3s" }}>
+      <div style={{ padding:"28px 0", marginTop:48, borderTop:`1px solid ${colors.border}`, borderBottom:`1px solid ${colors.border}`, overflow:"hidden", background:colors.marqueeBg, transition:"background 0.3s, border-color 0.3s" }}>
         <div style={{ display:"flex", whiteSpace:"nowrap", animation:"marquee 25s linear infinite" }}>
           {[...Array(2)].flatMap((_, outerIdx) => ["Video Editor","Logo Maker","Presentations","Social Media","Brand Kit","Print Design","Documents","Mockups","Infographics"].map((item,i) => (
             <span key={`${outerIdx}-${item}-${i}`} style={{ display:"inline-flex", alignItems:"center", gap:"12px", padding:"0 40px", fontSize:"12px", color:colors.textMuted, letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:500 }}>
@@ -1779,7 +1915,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       </div>
 
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ INFINITE STUDIO DEDICATED MEGA SECTION Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â‚¬ÂÃ¢â€šÂ¬ */}
+      {/* ── INFINITE STUDIO DEDICATED MEGA SECTION ──────────────────────¬ */}
       <section className="reveal" id="infinite-studio-section" style={{
         padding: "100px 48px",
         background: `linear-gradient(180deg, ${colors.bg} 0%, rgba(148,41,69,0.06) 50%, ${colors.bg} 100%)`,
@@ -1836,7 +1972,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
               onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px) scale(1.03)"}
               onMouseLeave={e => e.currentTarget.style.transform = "none"}
             >
-              <span style={{ fontSize: "20px" }}>Ã¢Ë†Å¾</span> Open Infinite Studio
+              <span style={{ fontSize: "20px" }}>∞</span> Open Infinite Studio
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
             </button>
           </div>
@@ -1850,7 +1986,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 num: "01",
                 title: "Code-to-Canvas Bounding",
                 tag: "React & JSX Nodes",
-                desc: "Elements on canvas aren't static imagesÃ¢â‚¬â€they are executable React & Web components. Inspect, modify live JSX/CSS, and export clean production code.",
+                desc: "Elements on canvas aren't static images—they are executable React & Web components. Inspect, modify live JSX/CSS, and export clean production code.",
                 Icon: Code,
                 iconColor: "#ff8da7",
                 gradient: "linear-gradient(135deg, rgba(225,73,109,0.15), rgba(148,41,69,0.05))"
@@ -1877,7 +2013,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 num: "04",
                 title: "Dev-Mode Spatial Handoff",
                 tag: "CSS Rulers & Tailwind",
-                desc: "One click toggles Dev ModeÃ¢â‚¬â€exposing pixel spacing between nodes, calculated CSS Flexbox/Grid properties, and instant Tailwind class copying.",
+                desc: "One click toggles Dev Mode—exposing pixel spacing between nodes, calculated CSS Flexbox/Grid properties, and instant Tailwind class copying.",
                 Icon: Cpu,
                 iconColor: "#f59e0b",
                 gradient: "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.05))"
@@ -1951,7 +2087,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         </div>
       </section>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ BENTO GRID TOOLS SECTION Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* ── BENTO GRID TOOLS SECTION ── */}
       <div id="tools">
         <div className="reveal" id="tools-section" style={{
           padding:"100px 48px", maxWidth:"1400px", margin:"0 auto",
@@ -1965,7 +2101,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
               <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, color:colors.text }}>One studio.<br/>All formats<span style={{ color: THEME.wine }}>.</span></h2>
             </div>
             <p style={{ fontSize:"16px", color:colors.textMuted, maxWidth:"440px", lineHeight:1.65, fontWeight:400, fontFamily:"'Instrument Sans',sans-serif" }}>
-              From a cinematic edit to a full brand deck Ã¢â‚¬â€ Creatify handles every format your ideas demand.
+              From a cinematic edit to a full brand deck — Creatify handles every format your ideas demand.
             </p>
           </div>
 
@@ -1976,8 +2112,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
               return (
                 <div
                   key={tool.id}
-                  onMouseEnter={() => { setHoveredCard(tool.id); setCursorHovered(true); }}
-                  onMouseLeave={() => { setHoveredCard(null); setCursorHovered(false); }}
+                  onMouseEnter={() => { setHoveredCard(tool.id); }}
+                  onMouseLeave={() => { setHoveredCard(null); }}
                   onClick={() => {
                     if (!user) return onNavigate("auth", "signup");
                     if (tool.id === "video") onNavigate("editor");
@@ -2007,7 +2143,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                       <div style={{ position:"absolute", inset:0, background: isHovered ? "rgba(0,0,0,0.42)" : "rgba(0,0,0,0.62)", transition:"background 0.4s" }} />
                     </div>
                   ) : (
-                    <div style={{ position:"absolute", inset:0, background: cardGradients[tool.id] || `linear-gradient(135deg, #111318, ${tool.color}20)` }}>
+                    <div style={{ position:"absolute", inset:0, background: cardGradients[tool.id] || `linear-gradient(135deg, ${isDark ? "#111318" : "#fdf8fa"}, ${tool.color}${isDark?"20":"14"})` }}>
                       {/* Subtle pattern for no-image cards */}
                       <div style={{ position:"absolute", inset:0, opacity:0.06, backgroundImage:`radial-gradient(${tool.color} 1px, transparent 1px)`, backgroundSize:"24px 24px" }} />
                     </div>
@@ -2045,7 +2181,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                         </div>
                       )}
 
-                      {/* Whiteboard card decoration Ã¢â‚¬â€ sticky notes + marker lines */}
+                      {/* Whiteboard card decoration — sticky notes + marker lines */}
                       {tool.id === "white" && (
                         <div style={{ marginBottom:"10px", position:"relative", height:"34px" }}>
                           {/* Soft whiteboard grid bg shape */}
@@ -2086,7 +2222,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                   {tool.id === "video" && isHovered && (
                     <div style={{ position:"absolute", bottom:"76px", left:"22px", right:"22px", zIndex:3 }}>
                       <div style={{ background:"rgba(0,0,0,0.7)", backdropFilter:"blur(8px)", borderRadius:"8px", padding:"8px", border:"1px solid rgba(148,41,69,0.3)" }}>
-                        <div style={{ fontSize:"7.5px", color:"#22d3a8", fontWeight:700, marginBottom:"5px" }}>Ã¢â‚¬â€Ã‚Â LIVE PLAYBACK</div>
+                        <div style={{ fontSize:"7.5px", color:"#22d3a8", fontWeight:700, marginBottom:"5px" }}>— LIVE PLAYBACK</div>
                         <div style={{ position:"relative", height:"5px", background:"rgba(255,255,255,0.1)", borderRadius:"2.5px" }}>
                           <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${timelinePlayhead}%`, background:`linear-gradient(90deg, #942945, #e1496d)`, borderRadius:"2.5px", transition:"width 0.05s" }} />
                           <div style={{ position:"absolute", top:"-2.5px", width:"10px", height:"10px", borderRadius:"50%", background:"#ef4444", boxShadow:"0 0 6px #ef4444", transition:"left 0.05s", left:`calc(${timelinePlayhead}% - 5px)` }} />
@@ -2117,7 +2253,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           </div>
         </div>
       </div>
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ PAST WORK Ã¢â‚¬â€œ Horizontal Scrollable Showcase Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* ── PAST WORK —œ Horizontal Scrollable Showcase ── */}
       <section className="reveal" id="past-work-section" style={{
         padding: "96px 0 96px",
         background: isDark
@@ -2180,7 +2316,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 background: "rgba(148,41,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
                 color: THEME.wine, fontSize: "24px",
               }}>
-                Ã¢Å“Â¦
+                ✦
               </div>
               <div>
                 <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "20px", fontWeight: 700, color: colors.text, marginBottom: "6px" }}>
@@ -2223,128 +2359,155 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                     onMouseLeave={() => setPastWorkHoveredId(null)}
                     onClick={() => handlePastWorkClick(pw)}
                     style={{
-                      flexShrink: 0, width: "320px", height: "240px",
-                      borderRadius: "20px", position: "relative", overflow: "hidden",
-                      cursor: "pointer", scrollSnapAlign: "start",
-                      background: isDark ? "#160d12" : "#ffffff",
-                      border: `1.5px solid ${isHovered ? accentColor + "80" : colors.border}`,
+                      flexShrink: 0,
+                      width: "300px",
+                      borderRadius: "20px",
+                      position: "relative",
+                      overflow: "hidden",
+                      cursor: "pointer",
+                      scrollSnapAlign: "start",
+                      background: isDark
+                        ? `linear-gradient(145deg, #1e0f16 0%, #160b12 100%)`
+                        : `linear-gradient(145deg, #ffffff 0%, #fdf5f7 100%)`,
+                      border: `1.5px solid ${isHovered ? accentColor + "55" : (isDark ? "rgba(225,73,109,0.10)" : "rgba(148,41,69,0.08)")}`,
                       boxShadow: isHovered
-                        ? `0 20px 48px ${accentColor}30, 0 4px 16px rgba(0,0,0,0.12)`
-                        : "0 4px 20px rgba(0,0,0,0.06)",
-                      transform: isHovered ? "translateY(-6px) scale(1.02)" : "translateY(0) scale(1)",
+                        ? `0 24px 56px ${accentColor}28, 0 8px 24px rgba(0,0,0,0.12)`
+                        : `0 2px 16px rgba(0,0,0,0.06)`,
+                      transform: isHovered ? "translateY(-8px) scale(1.02)" : "translateY(0) scale(1)",
                       transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
                     }}
                   >
-                    {/* Visual Header / Cover Canvas Mockup */}
+                    {/* ── Cover area ── */}
                     <div style={{
-                      height: "135px", width: "100%", position: "relative", overflow: "hidden",
+                      height: "160px",
+                      position: "relative",
+                      overflow: "hidden",
                       background: isDark
-                        ? `radial-gradient(circle at 70% 30%, ${accentColor}25 0%, #160d12 70%)`
-                        : `radial-gradient(circle at 70% 30%, ${accentColor}18 0%, #f7f4f7 70%)`,
-                      borderBottom: `1px solid ${colors.border}`,
+                        ? `linear-gradient(135deg, ${accentColor}20 0%, #0f0408 100%)`
+                        : `linear-gradient(135deg, ${accentColor}14 0%, #faf3f6 100%)`,
                     }}>
-                      {/* Decorative grid pattern on cover */}
+                      {/* Animated mesh gradient orb */}
                       <div style={{
-                        position: "absolute", inset: 0, opacity: 0.15,
-                        backgroundImage: `radial-gradient(${accentColor} 1px, transparent 1px)`,
-                        backgroundSize: "16px 16px",
+                        position: "absolute", width: "180px", height: "180px",
+                        borderRadius: "50%", top: "-40px", right: "-40px",
+                        background: `radial-gradient(circle, ${accentColor}30 0%, transparent 70%)`,
+                        filter: "blur(32px)",
+                        transform: isHovered ? "scale(1.2)" : "scale(1)",
+                        transition: "transform 0.6s ease",
+                        pointerEvents: "none",
+                      }} />
+                      <div style={{
+                        position: "absolute", width: "100px", height: "100px",
+                        borderRadius: "50%", bottom: "-20px", left: "10%",
+                        background: `radial-gradient(circle, ${accentColor}18 0%, transparent 70%)`,
+                        filter: "blur(20px)",
+                        pointerEvents: "none",
                       }} />
 
-                      {/* Tool Tag Pill */}
+                      {/* Tool tag */}
                       <div style={{
-                        position: "absolute", top: "12px", left: "14px", zIndex: 3,
-                        padding: "3px 10px", borderRadius: "12px",
-                        background: isDark ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.85)",
-                        backdropFilter: "blur(8px)",
-                        border: `1px solid ${accentColor}40`,
-                        display: "flex", alignItems: "center", gap: "6px",
+                        position: "absolute", top: 12, left: 12, zIndex: 3,
+                        display: "flex", alignItems: "center", gap: 5,
+                        padding: "4px 10px", borderRadius: 99,
+                        background: isDark ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.80)",
+                        backdropFilter: "blur(10px)",
+                        border: `1px solid ${accentColor}30`,
                       }}>
-                        <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: accentColor }} />
-                        <span style={{ fontSize: "10px", fontWeight: 700, color: colors.text, letterSpacing: "0.04em" }}>
+                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: accentColor, flexShrink: 0 }} />
+                        <span style={{ fontSize: 10, fontWeight: 600, color: isDark ? "rgba(255,255,255,0.85)" : "#2d2d2d", fontFamily: "'Poppins',sans-serif", letterSpacing: "0.03em" }}>
                           {pw.tool}
                         </span>
                       </div>
 
-                      {/* Cover Center Content (Simulated Preview) */}
+                      {/* Center avatar */}
                       <div style={{
-                        position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                        flexDirection: "column", gap: "6px", transform: isHovered ? "scale(1.06)" : "scale(1)",
+                        position: "absolute", inset: 0,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        transform: isHovered ? "scale(1.1) translateY(-4px)" : "scale(1) translateY(0)",
                         transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1)",
                       }}>
                         <div style={{
-                          width: "48px", height: "48px", borderRadius: "14px",
-                          background: `linear-gradient(135deg, ${accentColor}, ${THEME.roseGold})`,
+                          width: 56, height: 56, borderRadius: 16,
+                          background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)`,
                           display: "flex", alignItems: "center", justifyContent: "center",
-                          color: "#fff", fontWeight: 800, fontSize: "20px",
-                          boxShadow: `0 8px 24px ${accentColor}50`,
+                          color: "#fff", fontWeight: 800, fontSize: 22,
+                          fontFamily: "Syne,sans-serif",
+                          boxShadow: `0 12px 32px ${accentColor}50, 0 4px 12px rgba(0,0,0,0.15)`,
+                          border: "2px solid rgba(255,255,255,0.2)",
                         }}>
                           {pw.tool?.charAt(0) || "C"}
                         </div>
                       </div>
 
-                      {/* Quick Resume Hover Overlay */}
+                      {/* Hover overlay */}
                       <div style={{
-                        position: "absolute", inset: 0,
-                        background: `linear-gradient(180deg, transparent 0%, ${accentColor}ee 100%)`,
+                        position: "absolute", inset: 0, zIndex: 4,
+                        background: `linear-gradient(180deg, transparent 30%, ${accentColor}dd 100%)`,
                         opacity: isHovered ? 1 : 0,
                         transition: "opacity 0.3s ease",
-                        display: "flex", alignItems: "flex-end", padding: "14px",
-                        zIndex: 4,
+                        display: "flex", alignItems: "flex-end", padding: "12px 14px",
                       }}>
                         <span style={{
-                          color: "#fff", fontSize: "12px", fontWeight: 700,
-                          fontFamily: "Syne,sans-serif", display: "flex", alignItems: "center", gap: "6px",
+                          color: "#fff", fontSize: 12, fontWeight: 700,
+                          fontFamily: "Syne,sans-serif",
+                          display: "flex", alignItems: "center", gap: 6,
                         }}>
-                          Resume Project Ã¢â€ â€™
+                          Resume Project
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                         </span>
                       </div>
                     </div>
 
-                    {/* Card Footer Details */}
-                    <div style={{ padding: "14px 16px", height: "105px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                      <div>
-                        <h4 style={{
-                          fontFamily: "Syne,sans-serif", fontSize: "15px", fontWeight: 700,
-                          color: colors.text, margin: "0 0 4px 0",
-                          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                        }}>
-                          {pw.title}
-                        </h4>
-                        <p style={{
-                          fontSize: "11px", color: colors.textMuted, margin: 0,
-                          display: "flex", alignItems: "center", gap: "8px",
-                        }}>
-                          <span>{pw.category}</span>
-                          <span>Ã¢â‚¬â€Ã‚Â¢</span>
-                          <span>{pw.date}</span>
-                        </p>
-                      </div>
+                    {/* ── Footer ── */}
+                    <div style={{ padding: "14px 16px 16px" }}>
+                      <h4 style={{
+                        fontFamily: "Syne,sans-serif", fontSize: 14, fontWeight: 700,
+                        color: isDark ? "#fdf2f4" : "#0f0208", margin: "0 0 5px",
+                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                      }}>
+                        {pw.title}
+                      </h4>
+
+                      <p style={{
+                        fontSize: 11, color: isDark ? "rgba(255,255,255,0.38)" : "rgba(15,2,8,0.4)",
+                        margin: "0 0 12px", display: "flex", alignItems: "center", gap: 5,
+                        fontFamily: "'Poppins',sans-serif", fontWeight: 400,
+                      }}>
+                        <span>{pw.category}</span>
+                        <span style={{ opacity: 0.4 }}>·</span>
+                        <span>{pw.date}</span>
+                      </p>
 
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <span style={{
-                          fontSize: "10px", padding: "2px 8px", borderRadius: "8px",
-                          background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
-                          color: colors.textMuted, fontWeight: 500,
+                          fontSize: 10, padding: "3px 9px", borderRadius: 99,
+                          background: isDark ? `${accentColor}15` : `${accentColor}0d`,
+                          color: accentColor, fontWeight: 600, fontFamily: "'Poppins',sans-serif",
+                          border: `1px solid ${accentColor}25`,
                         }}>
-                          {pw.data?.layers ? `${pw.data.layers.length} Layers` : "Saved State"}
+                          {pw.data?.layers ? `${pw.data.layers.length} layers` : "Saved"}
                         </span>
                         <span style={{
-                          fontSize: "11px", color: accentColor, fontWeight: 700,
-                          opacity: isHovered ? 1 : 0.7, transition: "opacity 0.2s",
+                          fontSize: 11, color: accentColor, fontWeight: 700,
+                          fontFamily: "'Poppins',sans-serif",
+                          display: "flex", alignItems: "center", gap: 4,
+                          opacity: isHovered ? 1 : 0.6, transition: "opacity 0.2s",
                         }}>
-                          Open Ã¢â€ â€™
+                          Open
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                         </span>
                       </div>
                     </div>
                   </div>
                 );
               })}
+              })}
             </div>
           </div>
         )}
       </section>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ REAL-TIME CREATIVE ECOSYSTEM (MIND MAP GRAPH) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â‚¬ÂÃ¢â€šÂ¬ */}
+      {/* ── REAL-TIME CREATIVE ECOSYSTEM (MIND MAP GRAPH) ────────────────¬ */}
       <section className="reveal" id="mindmap-section" style={{
         padding: "80px 0 100px",
         background: isDark
@@ -2388,9 +2551,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             <p style={{ fontSize:"16px", color:colors.textMuted, lineHeight:1.7, margin:"0 0 32px", fontWeight:300 }}>Every tool is one click away. No buried menus. No learning curve. Just your ideas, amplified.</p>
             <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
               {[
-                { icon:"Ã°Å¸Å½Â¨", title:"Smart layers & artboards",  desc:"Unlimited layers with blend modes and masks",      color:"#942945" },
-                { icon:"Ã¢Å¡Â¡", title:"Real-time collaboration",   desc:"Edit with your team simultaneously",               color:"#22d3a8" },
-                { icon:"Ã°Å¸â€œÂ¦", title:"Export anywhere",           desc:"PNG, SVG, MP4, PPTX, PDF Ã¢â‚¬â€ all from browser",     color:"#e1496d" },
+                { icon:"🎨", title:"Smart layers & artboards",  desc:"Unlimited layers with blend modes and masks",      color:"#942945" },
+                { icon:"✦", title:"Real-time collaboration",   desc:"Edit with your team simultaneously",               color:"#22d3a8" },
+                { icon:"✨", title:"Export anywhere",           desc:"PNG, SVG, MP4, PPTX, PDF — all from browser",     color:"#e1496d" },
               ].map((f,i) => (
                 <div key={i} style={{ display:"flex", alignItems:"center", gap:"14px", padding:"16px 18px", background: isDark ? "rgba(225,73,109,0.06)" : "rgba(148,41,69,0.05)", border: isDark ? "1px solid rgba(225,73,109,0.15)" : "1px solid rgba(148,41,69,0.1)", borderRadius:"12px" }}>
                   <div style={{ width:"36px", height:"36px", background:`${f.color}20`, borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{f.icon}</div>
@@ -2400,21 +2563,21 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             </div>
           </div>
           {/* Visual mockup */}
-          <div style={{ position:"relative", aspectRatio:"4/3", borderRadius:"24px", overflow:"hidden", background:"#111318", border:"1px solid rgba(148,41,69,0.15)" }}>
+          <div style={{ position:"relative", aspectRatio:"4/3", borderRadius:"24px", overflow:"hidden", background:isDark?"#111318":"#fff", border:`1px solid ${isDark?"rgba(148,41,69,0.15)":"rgba(148,41,69,0.12)"}` }}>
             <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(148,41,69,0.12), rgba(34,211,168,0.06))" }} />
-            <div style={{ position:"absolute", width:"52px", top:0, bottom:0, left:0, background:"rgba(255,255,255,0.03)", borderRight:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", alignItems:"center", padding:"16px 0", gap:"8px" }}>
-              {["Ã¢â€ â€“","Ã…â€œÃ‚Â","Ã¢â€“Â®","Ã¢â€”â€¹","T"].map((ic,i) => <div key={i} style={{ width:"32px", height:"32px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", background:i===0?"#942945":"rgba(255,255,255,0.05)", color:i===0?"#fff":"rgba(255,255,255,0.5)" }}>{ic}</div>)}
+            <div style={{ position:"absolute", width:"52px", top:0, bottom:0, left:0, background:isDark?"rgba(255,255,255,0.03)":"rgba(148,41,69,0.04)", borderRight:isDark?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(148,41,69,0.08)", display:"flex", flexDirection:"column", alignItems:"center", padding:"16px 0", gap:"8px" }}>
+              {["”“","","®","”","T"].map((ic,i) => <div key={i} style={{ width:"32px", height:"32px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", background:i===0?"#942945":isDark?"rgba(255,255,255,0.05)":"rgba(148,41,69,0.06)", color:i===0?"#fff":isDark?"rgba(255,255,255,0.5)":"rgba(148,41,69,0.45)" }}>{ic}</div>)}
             </div>
             <div style={{ position:"absolute", inset:0, left:"52px", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <div style={{ fontFamily:"Syne,sans-serif", fontSize:"28px", fontWeight:800, color:"rgba(255,255,255,0.06)", letterSpacing:"-0.04em" }}>CREATIFY</div>
+              <div style={{ fontFamily:"Syne,sans-serif", fontSize:"28px", fontWeight:800, color:isDark?"rgba(255,255,255,0.06)":"rgba(148,41,69,0.08)", letterSpacing:"-0.04em" }}>CREATIFY</div>
             </div>
-            <div style={{ position:"absolute", width:"120px", height:"80px", top:"20px", left:"80px", borderRadius:"12px", background:"linear-gradient(135deg,rgba(225,73,109,0.3),rgba(196,154,108,0.2))", border:"1px solid rgba(225,73,109,0.3)", animation:"float1 4s ease-in-out infinite" }} />
-            <div style={{ position:"absolute", width:"80px", height:"100px", top:"40px", right:"30px", borderRadius:"12px", background:"linear-gradient(135deg,rgba(148,41,69,0.3),rgba(245,200,66,0.2))", border:"1px solid rgba(148,41,69,0.3)", animation:"float2 5s ease-in-out infinite" }} />
+            <div style={{ position:"absolute", width:"120px", height:"80px", top:"20px", left:"80px", borderRadius:"12px", background:isDark?"linear-gradient(135deg,rgba(225,73,109,0.3),rgba(196,154,108,0.2))":"linear-gradient(135deg,rgba(225,73,109,0.2),rgba(196,154,108,0.15))", border:"1px solid rgba(225,73,109,0.3)", animation:"float1 4s ease-in-out infinite" }} />
+            <div style={{ position:"absolute", width:"80px", height:"100px", top:"40px", right:"30px", borderRadius:"12px", background:isDark?"linear-gradient(135deg,rgba(148,41,69,0.3),rgba(245,200,66,0.2))":"linear-gradient(135deg,rgba(148,41,69,0.2),rgba(245,200,66,0.15))", border:"1px solid rgba(148,41,69,0.3)", animation:"float2 5s ease-in-out infinite" }} />
           </div>
         </div>
       </section>
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ ABOUT SECTION Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* ── ABOUT SECTION ── */}
       <section className="reveal" id="about-section" style={{
         opacity: revealedSections.has("about-section") ? 1 : 0,
         transform: revealedSections.has("about-section") ? "translateY(0)" : "translateY(40px)",
@@ -2426,9 +2589,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         {/* Top rule */}
         <div style={{ height:"1px", background: `linear-gradient(90deg, transparent, ${colors.border}, transparent)` }} />
 
-        {/* Ã¢â‚¬ÂÃ¢â€šÂ¬ Top editorial band: full-width dark */}
+        {/* ─¬ Top editorial band: full-width dark */}
         <div style={{
-          background: isDark ? "#0f070b" : "#1a0f14",
+          background: isDark ? "#0d060a" : "#180d12",
           padding: "80px 48px",
           position: "relative",
           overflow: "hidden",
@@ -2463,7 +2626,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 <em style={{ fontFamily:"Instrument Serif,serif", fontWeight:400, color:"#e1496d", fontStyle:"italic" }}>by creators.</em>
               </h2>
               <p style={{ fontSize:"17px", color:"rgba(255,255,255,0.38)", lineHeight:1.7, fontWeight:300, maxWidth:"620px", marginTop:"28px" }}>
-                Creatify was born from a simple frustrationÃ¢â‚¬â€Ã‚Â¯Ã¢â‚¬â€ professional design tools demanded years of training and steep subscriptions. We built an entirely browser-native suite so anyone can create at a professional level, instantly.
+                Creatify was born from a simple frustration—¯— professional design tools demanded years of training and steep subscriptions. We built an entirely browser-native suite so anyone can create at a professional level, instantly.
               </p>
             </div>
 
@@ -2495,15 +2658,15 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           </div>
         </div>
 
-        {/* Ã¢â‚¬ÂÃ¢â€šÂ¬ Bottom split: mission + principles */}
+        {/* ─¬ Bottom split: mission + principles */}
         <div style={{
-          background: isDark ? "#0a0807" : "#fff",
+          background: isDark ? "#120810" : "#faf5f8",
           padding: "80px 48px",
           borderTop: `1px solid ${colors.border}`,
         }}>
           <div style={{ maxWidth:"1400px", margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:"80px", alignItems:"start" }}>
 
-            {/* Left Ã¢â‚¬â€ Mission statement */}
+            {/* Left — Mission statement */}
             <div>
               <div style={{ fontSize:"11px", letterSpacing:"0.16em", color:"#942945", textTransform:"uppercase", fontWeight:600, marginBottom:"20px", display:"flex", alignItems:"center", gap:"10px" }}>
                 <div style={{ width:"20px", height:"1px", background:"#942945" }} /> Mission
@@ -2513,12 +2676,12 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
               </p>
               <div style={{ marginTop:"36px", paddingTop:"36px", borderTop:`1px solid ${colors.border}` }}>
                 <p style={{ fontSize:"14px", color:colors.textMuted, lineHeight:1.7, fontWeight:300, margin:0 }}>
-                  From a first-time freelancer to a studio of fiftyÃ¢â‚¬â€Ã‚Â¯Ã¢â‚¬â€ Creatify scales with you. Everything runs in your browser. Nothing ever leaves your machine without your say.
+                  From a first-time freelancer to a studio of fifty—¯— Creatify scales with you. Everything runs in your browser. Nothing ever leaves your machine without your say.
                 </p>
               </div>
             </div>
 
-            {/* Right Ã¢â‚¬â€ Principles (clean list, no emoji boxes) */}
+            {/* Right — Principles (clean list, no emoji boxes) */}
             <div>
               <div style={{ fontSize:"11px", letterSpacing:"0.16em", color:"#942945", textTransform:"uppercase", fontWeight:600, marginBottom:"20px", display:"flex", alignItems:"center", gap:"10px" }}>
                 <div style={{ width:"20px", height:"1px", background:"#942945" }} /> Principles
@@ -2547,48 +2710,92 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         </div>
       </section>
 
+      {/* ── CONTACT ── */}
+      <section id="contact-section" style={{
+        background: isDark ? "#0a0508" : "#0f0208",
+        borderTop: "1px solid rgba(225,73,109,0.10)",
+        width: "100%",
+        padding: "72px 64px",
+        boxSizing: "border-box",
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Subtle background orb */}
+        <div style={{ position:"absolute", width:500, height:500, borderRadius:"50%", filter:"blur(120px)", background:"rgba(148,41,69,0.08)", top:"50%", left:"60%", transform:"translate(-50%,-50%)", pointerEvents:"none" }} />
 
+        <div style={{ maxWidth:960, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center", position:"relative", zIndex:1 }}>
 
-      {/* Footer CTA Ã¢â‚¬â€ only for logged-out users */}
-      {!user && (
-      <section style={{ background: isDark ? "linear-gradient(135deg,#0f0809,#1a0f14)" : "linear-gradient(135deg,#fdf2f4,#f7f4f7)", padding:"100px 48px", textAlign:"center", width:"100%", position:"relative", overflow:"hidden" }}>
-        {/* Glowing orb background */}
-        <div style={{ position:"absolute", width:"600px", height:"600px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(148,41,69,0.12)", top:"50%", left:"50%", transform:"translate(-50%,-50%)", pointerEvents:"none" }} />
-        <div style={{ position:"relative", zIndex:1 }}>
-          <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(40px,6vw,72px)", fontWeight:800, letterSpacing:"-0.04em", color: isDark ? "#fff" : "#2d2d2d", marginBottom:"20px", lineHeight:0.95 }}>
-            Ready to create<br/><em style={{ fontFamily:"Instrument Serif,serif", color:"#942945", fontWeight:400 }}>something great?</em>
-          </h2>
-          <p style={{ fontSize:"16px", color: isDark ? "rgba(255,255,255,0.45)" : "rgba(45,45,45,0.65)", marginBottom:"44px", fontWeight:300, maxWidth:"420px", margin:"0 auto 44px", lineHeight:1.6 }}>Join millions of creators. Free forever, no credit card required.</p>
-          <div style={{ display:"flex", gap:"14px", justifyContent:"center", flexWrap:"wrap" }}>
-            <button style={{ background:"linear-gradient(135deg,#942945,#e1496d)", color:"#fff", border:"none", padding:"18px 48px", borderRadius:"50px", fontSize:"17px", fontFamily:"'Poppins',sans-serif", fontWeight:400, cursor:"pointer", transition:"all 0.3s", boxShadow:"0 8px 40px rgba(148,41,69,0.5)", letterSpacing:"-0.02em" }}
-              onMouseEnter={e => { e.currentTarget.style.transform="translateY(-3px)"; e.currentTarget.style.boxShadow="0 16px 60px rgba(148,41,69,0.6)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform="none"; e.currentTarget.style.boxShadow="0 8px 40px rgba(148,41,69,0.5)"; }}
-              onClick={() => onNavigate("auth","signup")}>Start for free</button>
-            <button style={{ background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.8)", border:"1px solid rgba(255,255,255,0.12)", padding:"18px 36px", borderRadius:"50px", fontSize:"17px", fontFamily:"'Poppins',sans-serif", fontWeight:300, cursor:"pointer", transition:"all 0.3s", backdropFilter:"blur(8px)", letterSpacing:"-0.02em" }}
-              onMouseEnter={e => { e.currentTarget.style.background="rgba(255,255,255,0.1)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.25)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background="rgba(255,255,255,0.06)"; e.currentTarget.style.borderColor="rgba(255,255,255,0.12)"; }}
-              onClick={() => onNavigate("auth","signin")}>Sign in instead</button>
+          {/* Left — copy */}
+          <div>
+            <p style={{ fontSize:11, fontWeight:600, color:"rgba(225,73,109,0.65)", fontFamily:"'Poppins',sans-serif", letterSpacing:"0.1em", textTransform:"uppercase", margin:"0 0 14px" }}>Get in touch</p>
+            <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(28px,3.5vw,44px)", fontWeight:800, letterSpacing:"-0.04em", color:"#fff", margin:"0 0 16px", lineHeight:1.1 }}>
+              Have a question<br/>or feedback?
+            </h2>
+            <p style={{ fontSize:14, color:"rgba(255,255,255,0.38)", lineHeight:1.7, fontFamily:"'Instrument Sans',sans-serif", margin:"0 0 32px", maxWidth:340 }}>
+              We read every message. Whether it's a bug, a feature request, or just a hello — reach out and we'll reply within 24 hours.
+            </p>
+            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+              {[
+                { icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>, label:"demandsightsupport@gmail.com" },
+                { icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, label:"We reply within 24 hours" },
+              ].map(({ icon, label }, i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, color:"rgba(255,255,255,0.35)", fontSize:13, fontFamily:"'Poppins',sans-serif" }}>
+                  <span style={{ color:"rgba(225,73,109,0.6)" }}>{icon}</span>
+                  {label}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right — form or lock */}
+          {user ? (
+            <ContactForm isDark={isDark} user={user} />
+          ) : (
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 32px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:16, textAlign:"center", gap:16 }}>
+              <div style={{ width:52, height:52, borderRadius:"50%", background:"rgba(225,73,109,0.12)", border:"1px solid rgba(225,73,109,0.22)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(225,73,109,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <div>
+                <h3 style={{ fontFamily:"Syne,sans-serif", fontWeight:700, fontSize:17, color:"#fff", margin:"0 0 8px" }}>Sign in to send a message</h3>
+                <p style={{ fontSize:13, color:"rgba(255,255,255,0.38)", fontFamily:"'Poppins',sans-serif", margin:"0 0 24px", lineHeight:1.6 }}>You need to be signed in so we can reply to you.</p>
+              </div>
+              <div style={{ display:"flex", gap:10 }}>
+                <button onClick={() => onNavigate("auth","signin")}
+                  style={{ background:"linear-gradient(135deg,#942945,#e1496d)", color:"#fff", border:"none", padding:"11px 28px", borderRadius:99, fontSize:13, fontFamily:"'Poppins',sans-serif", fontWeight:600, cursor:"pointer" }}>
+                  Sign in
+                </button>
+                <button onClick={() => onNavigate("auth","signup")}
+                  style={{ background:"transparent", color:"rgba(255,255,255,0.55)", border:"1px solid rgba(255,255,255,0.14)", padding:"11px 24px", borderRadius:99, fontSize:13, fontFamily:"'Poppins',sans-serif", cursor:"pointer" }}>
+                  Create account
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        {/* Bottom bar */}
+        <div style={{ maxWidth:960, margin:"48px auto 0", paddingTop:24, borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <div style={{ width:20, height:20, borderRadius:5, background:"linear-gradient(135deg,#942945,#e1496d)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <svg width="9" height="9" viewBox="0 0 16 16" fill="none"><path d="M3 8 L8 2 L13 8 L8 14 Z" fill="white" opacity="0.9"/><circle cx="8" cy="8" r="2" fill="white"/></svg>
+            </div>
+            <span style={{ fontFamily:"Syne,sans-serif", fontWeight:800, fontSize:13, color:"#fff", letterSpacing:"-0.03em" }}>Creat<span style={{ color:"#e1496d" }}>ify</span></span>
+            <span style={{ fontSize:11, color:"rgba(255,255,255,0.16)", fontFamily:"'Poppins',sans-serif", marginLeft:6 }}>
+              © {new Date().getFullYear()} Creatify. All rights reserved.
+            </span>
+          </div>
+          <div style={{ display:"flex", gap:20 }}>
+            {["Privacy","Terms","Security"].map(l => (
+              <span key={l} style={{ fontSize:11.5, color:"rgba(255,255,255,0.2)", fontFamily:"'Poppins',sans-serif", cursor:"pointer", transition:"color 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.color="rgba(255,255,255,0.6)"}
+                onMouseLeave={e => e.currentTarget.style.color="rgba(255,255,255,0.2)"}>
+                {l}
+              </span>
+            ))}
           </div>
         </div>
       </section>
-      )}
-
-
-      {/* Footer */}
-      <footer style={{ background:"#111", padding:"36px 48px", borderTop:"1px solid rgba(255,255,255,0.05)", width:"100%" }}>
-        <div style={{ maxWidth:"1400px", margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:"16px" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
-            <div style={{ width:"24px", height:"24px", borderRadius:"6px", background:"linear-gradient(135deg,#942945,#e1496d)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8 L8 2 L13 8 L8 14 Z" fill="white" opacity="0.9"/><circle cx="8" cy="8" r="2" fill="white"/></svg>
-            </div>
-            <div style={{ fontFamily:"Syne,sans-serif", fontWeight:800, fontSize:"16px", color:"#fff", letterSpacing:"-0.03em" }}>Creat<span style={{ color:"#e1496d" }}>ify</span></div>
-          </div>
-          <div style={{ display:"flex", gap:"32px" }}>
-            {["Privacy","Terms","Support","Blog"].map(l => <a key={l} href="#" style={{ fontSize:"12px", color:"rgba(255,255,255,0.3)", textDecoration:"none", transition:"color 0.2s" }} onMouseEnter={e=>e.target.style.color="rgba(255,255,255,0.7)"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,0.3)"}>{l}</a>)}
-          </div>
-          <div style={{ fontSize:"12px", color:"rgba(255,255,255,0.25)" }}>Ã‚Â© 2025 Creatify Inc. All rights reserved.</div>
-        </div>
-      </footer>
 
           </>
         )}

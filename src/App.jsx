@@ -4,6 +4,7 @@ import AuthPage from "./components/AuthPage";
 import PresentationPage from "./components/PresentationPage";
 import VideoEditor from "./components/VideoEditor";
 import ProfilePage from "./components/ProfilePage";
+import SettingsPage from "./components/SettingsPage";
 import ImageEditor from "./components/ImageEditor";
 import LogoMaker from "./components/LogoMaker";
 import SocialStudio from "./components/SocialStudio";
@@ -190,6 +191,18 @@ export default function App() {
           setAppTheme(newTheme);
           localStorage.setItem("creatify_theme", newTheme);
         }}
+      />
+    );
+  }
+
+  if (currentPage === "settings") {
+    return (
+      <SettingsPage
+        onBack={() => navigate("home")}
+        user={user}
+        onSignOut={handleSignOut}
+        theme={appTheme}
+        onToggleTheme={(t) => { setAppTheme(t); localStorage.setItem("creatify_theme", t); }}
       />
     );
   }

@@ -348,6 +348,30 @@ const requireAuth = (req, res, next) => {
 
 // ─── Projects Endpoints ──────────────────────────────────────────────────────
 
+// GET /api/profile — get full profile from DB
+app.get('/api/profile', requireAuth, async (req, res) => {
+  try {
+    const user = await db.findUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    res.json(sanitize(user));
+  } catch (err) {
+    res.status(500).json({ error: 'Server error.' });
+  }
+});
+
+// PUT /api/profile — update profile fields
+app.put('/api/profile', requireAuth, async (req, res) => {
+  try {
+    const { name, bio, phone, company, country } = req.body;
+    const user = await db.completeProfile(req.user.id, { name, bio, phone, company, country });
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    console.log(`✏️  Profile updated for ${user.name} <${user.email}>`);
+    res.json(sanitize(user));
+  } catch (err) {
+    res.status(500).json({ error: 'Server error updating profile.' });
+  }
+});
+
 // GET /api/projects — Get user projects
 app.get('/api/projects', requireAuth, async (req, res) => {
   try {

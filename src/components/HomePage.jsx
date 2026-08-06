@@ -704,7 +704,151 @@ function SidebarIcon({ active, icon: IconComponent, label, onClick, THEME, crown
 }
 
 
-// ─── Contact Form Component ────────────────────────────────────────────────
+// ─── Studio Picker Modal ──────────────────────────────────────────────────
+const STUDIO_TOOLS = [
+  {
+    id: "editor",       name: "Video Editor",
+    desc: "Multi-track timeline, color grading, audio mixing",
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>,
+    color: "#e1496d", tag: "WebGL · WASM",
+  },
+  {
+    id: "presentation",  name: "Presentations",
+    desc: "Animated slides, 500+ templates, PPTX export",
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="13" rx="2"/><path d="M8 21h8M12 16v5"/></svg>,
+    color: "#942945", tag: "PPTX · PDF · HTML5",
+  },
+  {
+    id: "whiteboard",    name: "Whiteboard",
+    desc: "Infinite canvas, sticky notes, live multiplayer",
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>,
+    color: "#b13453", tag: "Canvas · Real-time",
+  },
+  {
+    id: "logo_maker",    name: "Logo Maker",
+    desc: "Vector studio, AI suggestions, SVG export",
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+    color: "#e1496d", tag: "SVG · AI-assisted",
+  },
+  {
+    id: "social_studio", name: "Social Studio",
+    desc: "Instagram, X, LinkedIn — all formats in one place",
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>,
+    color: "#942945", tag: "All social formats",
+  },
+  {
+    id: "image_editor",  name: "Image Editor",
+    desc: "Layers, masks, filters, blend modes",
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
+    color: "#b13453", tag: "Canvas API",
+  },
+  {
+    id: "documents",     name: "Documents",
+    desc: "Rich docs with media, tables, charts",
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
+    color: "#e1496d", tag: "DOCX · PDF",
+  },
+  {
+    id: "infinite_studio", name: "Infinite Studio",
+    desc: "Executable canvas, live APIs, multiplayer",
+    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg>,
+    color: "#942945", tag: "React · Live APIs",
+  },
+];
+
+function StudioPicker({ onClose, onSelect, isDark }) {
+  const [hovered, setHovered] = useState(null);
+  const bg     = isDark ? "rgba(18,8,14,0.98)"  : "rgba(255,255,255,0.98)";
+  const border = isDark ? "rgba(225,73,109,0.16)": "rgba(148,41,69,0.12)";
+  const tx     = isDark ? "#fdf2f4"              : "#0f0208";
+  const mu     = isDark ? "rgba(255,255,255,0.38)": "rgba(15,2,8,0.44)";
+
+  // Close on backdrop click
+  const handleBackdrop = e => { if (e.target === e.currentTarget) onClose(); };
+
+  // Close on Escape
+  useEffect(() => {
+    const h = e => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, []);
+
+  return (
+    <div onClick={handleBackdrop} style={{
+      position:"fixed", inset:0, zIndex:9000,
+      background:"rgba(0,0,0,0.55)", backdropFilter:"blur(8px)",
+      display:"flex", alignItems:"center", justifyContent:"center",
+      padding:24,
+    }}>
+      <div style={{
+        background:bg, border:`1px solid ${border}`, borderRadius:24,
+        width:"100%", maxWidth:760, maxHeight:"85vh", overflow:"hidden",
+        display:"flex", flexDirection:"column",
+        boxShadow:"0 32px 80px rgba(0,0,0,0.4)",
+      }}>
+        {/* Header */}
+        <div style={{ padding:"24px 28px 20px", borderBottom:`1px solid ${border}`, display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
+          <div>
+            <h2 style={{ fontFamily:"Syne,sans-serif", fontWeight:800, fontSize:22, color:tx, margin:0, letterSpacing:"-0.03em" }}>
+              Choose a tool
+            </h2>
+            <p style={{ fontFamily:"'Poppins',sans-serif", fontSize:13, color:mu, margin:"4px 0 0" }}>
+              Pick where you want to start creating
+            </p>
+          </div>
+          <button onClick={onClose} style={{ background:"none", border:`1px solid ${border}`, borderRadius:8, width:34, height:34, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:mu, fontSize:18, flexShrink:0 }}>
+            ×
+          </button>
+        </div>
+
+        {/* Tool grid */}
+        <div style={{ overflow:"auto", padding:"20px 24px 24px" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(220px, 1fr))", gap:12 }}>
+            {STUDIO_TOOLS.map(tool => (
+              <button key={tool.id}
+                onClick={() => { onSelect(tool.id); onClose(); }}
+                onMouseEnter={() => setHovered(tool.id)}
+                onMouseLeave={() => setHovered(null)}
+                style={{
+                  background: hovered===tool.id ? (isDark?`${tool.color}18`:`${tool.color}0d`) : "transparent",
+                  border: `1.5px solid ${hovered===tool.id ? tool.color+"55" : border}`,
+                  borderRadius:14, padding:"16px 18px", cursor:"pointer",
+                  display:"flex", alignItems:"flex-start", gap:14, textAlign:"left",
+                  transition:"all 0.18s", outline:"none",
+                }}>
+                {/* Icon */}
+                <div style={{
+                  width:44, height:44, borderRadius:12, flexShrink:0,
+                  background: hovered===tool.id ? `${tool.color}22` : (isDark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.04)"),
+                  border:`1px solid ${hovered===tool.id ? tool.color+"44" : border}`,
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  color: hovered===tool.id ? tool.color : mu,
+                  transition:"all 0.18s",
+                }}>
+                  {tool.icon}
+                </div>
+                {/* Text */}
+                <div style={{ minWidth:0 }}>
+                  <div style={{ fontFamily:"Syne,sans-serif", fontWeight:700, fontSize:14, color: hovered===tool.id ? tool.color : tx, marginBottom:3, transition:"color 0.18s" }}>
+                    {tool.name}
+                  </div>
+                  <div style={{ fontFamily:"'Instrument Sans',sans-serif", fontSize:12, color:mu, lineHeight:1.5, marginBottom:5 }}>
+                    {tool.desc}
+                  </div>
+                  <span style={{ fontFamily:"'Poppins',sans-serif", fontSize:10, fontWeight:600, color: hovered===tool.id ? tool.color : mu, opacity: hovered===tool.id ? 1 : 0.6, letterSpacing:"0.04em", transition:"all 0.18s" }}>
+                    {tool.tag}
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Contact Form Component ──────────────────────────────────────────────────
 function ContactForm({ isDark, user }) {
   const [form, setForm] = useState({ name: user?.name || "", subject: "", message: "" });
   const [status, setStatus] = useState(null); // null | "sending" | "sent" | "error"
@@ -822,6 +966,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
   const [revealedSections, setRevealedSections] = useState(new Set());
   const [animatedStats, setAnimatedStats]     = useState(new Set());
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [showStudioPicker, setShowStudioPicker] = useState(false);
   const [activeNav, setActiveNav]             = useState("home");
   const [navScrolled, setNavScrolled]         = useState(false);
   const [heroSettled, setHeroSettled]         = useState(false);
@@ -1434,7 +1579,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           background: linear-gradient(135deg,#7c1d35,#b13453,#e1496d);
           background-size:200% 200%; animation:hGrad 5s ease-in-out infinite;
           color:#fff;
-          box-shadow:0 8px 32px rgba(148,41,69,0.4), 0 2px 8px rgba(225,73,109,0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
           transition:transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
         }
         .h4-cta::after {
@@ -1442,7 +1587,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           background:linear-gradient(90deg,transparent,rgba(255,255,255,0.18),transparent);
           animation:hShine 3s ease-in-out 1s infinite;
         }
-        .h4-cta:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 16px 44px rgba(148,41,69,0.5),0 4px 12px rgba(225,73,109,0.25); }
+        .h4-cta:hover { transform:translateY(-3px) scale(1.02); }
 
         .h4-ghost {
           display:inline-flex; align-items:center; gap:8px;
@@ -1502,7 +1647,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
           {/* CTAs */}
           <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, flexWrap:"wrap", animation:"hFadeUp 0.7s ease 0.24s both" }}>
-            <button className="h4-cta" onClick={() => onNavigate(user?"editor":"auth","signup")}>
+            <button className="h4-cta" onClick={() => user ? setShowStudioPicker(true) : onNavigate("auth","signup")}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
               {user ? "Open Studio" : "Start for free"}
             </button>
@@ -1520,26 +1665,10 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       {/* ─── MOCK STUDIO PREVIEW ─── */}
       <div style={{
         width:"100%", boxSizing:"border-box",
-        background: "transparent",
-        padding:"0 72px 0",
+        background: isDark ? "#1a0f14" : "#f7edf1",
+        padding:"0 72px 56px",
         position:"relative",
       }}>
-        {/* Top fade — eases the mock in from the hero */}
-        <div style={{
-          position:"absolute", top:0, left:0, right:0, height:60,
-          background: isDark
-            ? "linear-gradient(to bottom, #1a0f14, transparent)"
-            : "linear-gradient(to bottom, #f7edf1, transparent)",
-          pointerEvents:"none", zIndex:2,
-        }} />
-        {/* Bottom fade — dissolves into page background */}
-        <div style={{
-          position:"absolute", bottom:0, left:0, right:0, height:140,
-          background: isDark
-            ? "linear-gradient(to bottom, transparent, #1a0f14)"
-            : "linear-gradient(to bottom, transparent, #f7f4f7)",
-          pointerEvents:"none", zIndex:2,
-        }} />
 
         <div className="h4-mock-browser" style={{
           width:"100%", maxWidth:1000, margin:"0 auto",
@@ -1694,7 +1823,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             THEME={THEME}
             active={activeNav === "home"}
             label="Home"
-            onClick={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+            onClick={() => { setActiveNav("home"); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }}
             icon={Home}
             animationType="bounce"
           />
@@ -1710,7 +1839,13 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             THEME={THEME}
             active={activeNav === "tools"}
             label="Tools"
-            onClick={() => { scrollTo("tools-section", "tools"); }}
+            onClick={() => {
+              setActiveNav("home");
+              setTimeout(() => {
+                const el = document.getElementById("tools-section");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 150);
+            }}
             icon={Wrench}
             animationType="rotate"
           />
@@ -1721,7 +1856,13 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             THEME={THEME}
             active={activeNav === "studio"}
             label="Studio"
-            onClick={() => { scrollTo("infinite-studio-section", "studio"); }}
+            onClick={() => {
+              setActiveNav("home");
+              setTimeout(() => {
+                const el = document.getElementById("infinite-studio-section");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }, 150);
+            }}
             icon={InfinityIcon}
             animationType="pulse"
           />
@@ -1737,14 +1878,6 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         }} />
 
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%", paddingBottom: 8 }}>
-          <SidebarIcon
-            THEME={THEME}
-            active={activeNav === "settings"}
-            label="Settings"
-            onClick={() => setActiveNav("settings")}
-            icon={Settings}
-            animationType="rotate"
-          />
           <SidebarIcon
             THEME={THEME}
             active={activeNav === "more"}
@@ -1776,7 +1909,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 </p>
               </div>
               <button
-                onClick={() => setActiveNav("home")}
+                onClick={() => { setActiveNav("home"); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }}
                 style={{
                   display:"flex", alignItems:"center", gap:8,
                   background:"none", border:`1px solid ${THEME.hexA(THEME.wine,0.2)}`,
@@ -1822,7 +1955,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                       }}
                       onMouseEnter={e=>{
                         e.currentTarget.style.transform="translateY(-4px)";
-                        e.currentTarget.style.boxShadow=`0 12px 32px ${THEME.hexA(accent,0.18)}`;
+                        e.currentTarget.style.boxShadow=`0 4px 20px ${THEME.hexA(accent,0.08)}`;
                         e.currentTarget.style.borderColor=THEME.hexA(accent,0.4);
                       }}
                       onMouseLeave={e=>{
@@ -1903,14 +2036,52 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           <AnimatedCreateRow onNavigate={onNavigate} user={user} isDark={isDark} THEME={THEME} />
         </section>
 
-      {/* Marquee */}
-      <div style={{ padding:"28px 0", marginTop:48, borderTop:`1px solid ${colors.border}`, borderBottom:`1px solid ${colors.border}`, overflow:"hidden", background:colors.marqueeBg, transition:"background 0.3s, border-color 0.3s" }}>
-        <div style={{ display:"flex", whiteSpace:"nowrap", animation:"marquee 25s linear infinite" }}>
-          {[...Array(2)].flatMap((_, outerIdx) => ["Video Editor","Logo Maker","Presentations","Social Media","Brand Kit","Print Design","Documents","Mockups","Infographics"].map((item,i) => (
-            <span key={`${outerIdx}-${item}-${i}`} style={{ display:"inline-flex", alignItems:"center", gap:"12px", padding:"0 40px", fontSize:"12px", color:colors.textMuted, letterSpacing:"0.06em", textTransform:"uppercase", fontWeight:500 }}>
-              <span style={{ width:"4px", height:"4px", background:"#942945", borderRadius:"50%", flexShrink:0 }} />{item}
-            </span>
-          )))}
+      {/* Live strip */}
+      <div style={{
+        borderTop: `1px solid ${colors.border}`,
+        borderBottom: `1px solid ${colors.border}`,
+        background: isDark ? "rgba(14,6,11,0.8)" : "rgba(253,248,250,0.9)",
+        backdropFilter: "blur(8px)",
+        overflow: "hidden",
+        position: "relative",
+      }}>
+        {/* Left fade */}
+        <div style={{ position:"absolute", left:0, top:0, bottom:0, width:80, background:`linear-gradient(90deg,${isDark?"#0e060b":"#f7f6fb"},transparent)`, zIndex:2, pointerEvents:"none" }} />
+        {/* Right fade */}
+        <div style={{ position:"absolute", right:0, top:0, bottom:0, width:80, background:`linear-gradient(270deg,${isDark?"#0e060b":"#f7f6fb"},transparent)`, zIndex:2, pointerEvents:"none" }} />
+
+        <div style={{ display:"flex", padding:"0", overflow:"hidden" }}>
+          <div style={{ display:"flex", whiteSpace:"nowrap", animation:"marquee 35s linear infinite", alignItems:"stretch" }}>
+            {[...Array(2)].flatMap((_, gi) =>
+              [
+                { label:"Video Editor",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>, color:"#e1496d" },
+                { label:"Presentations",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="13" rx="2"/><path d="M8 21h8M12 16v5"/></svg>, color:"#942945" },
+                { label:"Whiteboard",      icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>, color:"#b13453" },
+                { label:"Logo Maker",      icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, color:"#e1496d" },
+                { label:"Social Studio",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>, color:"#942945" },
+                { label:"Image Editor",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>, color:"#b13453" },
+                { label:"Documents",       icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>, color:"#e1496d" },
+                { label:"Infinite Studio", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg>, color:"#942945" },
+                { label:"AI Magic",        icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, color:"#b13453" },
+                { label:"Print Design",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>, color:"#e1496d" },
+              ].map((t, i) => (
+                <span key={`${gi}-${i}`} style={{
+                  display:"inline-flex", alignItems:"center", gap:8,
+                  padding:"16px 32px",
+                  fontSize:12, fontFamily:"'Poppins',sans-serif", fontWeight:500,
+                  letterSpacing:"0.03em",
+                  color: isDark ? "rgba(255,255,255,0.45)" : "rgba(15,2,8,0.45)",
+                  borderRight: `1px solid ${colors.border}`,
+                  whiteSpace:"nowrap",
+                  transition:"color 0.2s",
+                  cursor:"default",
+                }}>
+                  <span style={{ color: t.color, opacity: 0.7 }}>{t.icon}</span>
+                  {t.label}
+                </span>
+              ))
+            )}
+          </div>
         </div>
       </div>
 
@@ -1927,13 +2098,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         position: "relative",
         overflow: "hidden"
       }}>
-        {/* Glow backdrop */}
-        <div style={{
-          position: "absolute", top: "20%", left: "50%", transform: "translate(-50%, -50%)",
-          width: "800px", height: "400px",
-          background: "radial-gradient(circle, rgba(225,73,109,0.12) 0%, transparent 70%)",
-          pointerEvents: "none", zIndex: 0
-        }} />
+        {/* Glow backdrop removed */}
 
         <div style={{ maxWidth: "1350px", margin: "0 auto", position: "relative", zIndex: 1 }}>
           {/* Header */}
@@ -1965,7 +2130,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                 background: `linear-gradient(135deg, ${THEME.wine}, ${THEME.roseGold})`,
                 border: "none", color: "#fff", fontSize: "16px", fontWeight: 700,
                 fontFamily: "Syne, sans-serif", cursor: "pointer",
-                boxShadow: "0 8px 32px rgba(225,73,109,0.45)",
+                boxShadow: "none",
                 display: "inline-flex", alignItems: "center", gap: "12px",
                 transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)"
               }}
@@ -2053,7 +2218,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                   onMouseEnter={e => {
                     e.currentTarget.style.transform = "translateY(-4px)";
                     e.currentTarget.style.borderColor = "rgba(225,73,109,0.45)";
-                    e.currentTarget.style.boxShadow = "0 18px 45px rgba(225,73,109,0.18)";
+                    e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.1)";
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.transform = "none";
@@ -2131,7 +2296,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                     position:"relative", borderRadius:"20px", overflow:"hidden",
                     cursor:"pointer", transition:"all 0.4s cubic-bezier(0.16,1,0.3,1)",
                     transform: isHovered ? "translateY(-3px) scale(1.01)" : "none",
-                    boxShadow: isHovered ? `0 22px 52px ${tool.color}30` : "0 3px 14px rgba(148,41,69,0.07)",
+                    boxShadow: "0 3px 14px rgba(148,41,69,0.07)",
                     border: `1px solid ${isHovered ? tool.color + "60" : "rgba(148,41,69,0.14)"}`,
                   }}
                 >
@@ -2265,19 +2430,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         overflow: "hidden",
         position: "relative",
       }}>
-        {/* Section ambient gradient blobs */}
-        <div aria-hidden style={{
-          position: "absolute", top: 80, left: -80,
-          width: 360, height: 360, borderRadius: "50%",
-          background: `radial-gradient(circle, ${THEME.hexA(THEME.wine, isDark ? 0.18 : 0.12)} 0%, transparent 70%)`,
-          pointerEvents: "none",
-        }} />
-        <div aria-hidden style={{
-          position: "absolute", bottom: 40, right: -60,
-          width: 320, height: 320, borderRadius: "50%",
-          background: `radial-gradient(circle, ${THEME.hexA(THEME.plum, isDark ? 0.16 : 0.1)} 0%, transparent 70%)`,
-          pointerEvents: "none",
-        }} />
+        {/* Section ambient gradient blobs removed */}
 
         {/* Section header */}
         <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 48px", marginBottom: "40px" }}>
@@ -2371,7 +2524,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                         : `linear-gradient(145deg, #ffffff 0%, #fdf5f7 100%)`,
                       border: `1.5px solid ${isHovered ? accentColor + "55" : (isDark ? "rgba(225,73,109,0.10)" : "rgba(148,41,69,0.08)")}`,
                       boxShadow: isHovered
-                        ? `0 24px 56px ${accentColor}28, 0 8px 24px rgba(0,0,0,0.12)`
+                        ? `0 8px 24px rgba(0,0,0,0.12)`
                         : `0 2px 16px rgba(0,0,0,0.06)`,
                       transform: isHovered ? "translateY(-8px) scale(1.02)" : "translateY(0) scale(1)",
                       transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
@@ -2386,23 +2539,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                         ? `linear-gradient(135deg, ${accentColor}20 0%, #0f0408 100%)`
                         : `linear-gradient(135deg, ${accentColor}14 0%, #faf3f6 100%)`,
                     }}>
-                      {/* Animated mesh gradient orb */}
-                      <div style={{
-                        position: "absolute", width: "180px", height: "180px",
-                        borderRadius: "50%", top: "-40px", right: "-40px",
-                        background: `radial-gradient(circle, ${accentColor}30 0%, transparent 70%)`,
-                        filter: "blur(32px)",
-                        transform: isHovered ? "scale(1.2)" : "scale(1)",
-                        transition: "transform 0.6s ease",
-                        pointerEvents: "none",
-                      }} />
-                      <div style={{
-                        position: "absolute", width: "100px", height: "100px",
-                        borderRadius: "50%", bottom: "-20px", left: "10%",
-                        background: `radial-gradient(circle, ${accentColor}18 0%, transparent 70%)`,
-                        filter: "blur(20px)",
-                        pointerEvents: "none",
-                      }} />
+                      {/* Animated mesh gradient orbs removed */}
 
                       {/* Tool tag */}
                       <div style={{
@@ -2432,7 +2569,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
                           display: "flex", alignItems: "center", justifyContent: "center",
                           color: "#fff", fontWeight: 800, fontSize: 22,
                           fontFamily: "Syne,sans-serif",
-                          boxShadow: `0 12px 32px ${accentColor}50, 0 4px 12px rgba(0,0,0,0.15)`,
+                          boxShadow: `0 4px 12px rgba(0,0,0,0.15)`,
                           border: "2px solid rgba(255,255,255,0.2)",
                         }}>
                           {pw.tool?.charAt(0) || "C"}
@@ -2602,8 +2739,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             backgroundImage: `linear-gradient(rgba(225,73,109,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(225,73,109,0.04) 1px, transparent 1px)`,
             backgroundSize: "64px 64px",
           }} />
-          {/* Glow */}
-          <div style={{ position:"absolute", width:"500px", height:"500px", borderRadius:"50%", filter:"blur(120px)", background:"rgba(148,41,69,0.1)", top:"-100px", right:"-100px", pointerEvents:"none" }} />
+          {/* Glow orb removed */}
 
           <div style={{ maxWidth:"1400px", margin:"0 auto", position:"relative" }}>
             {/* Eyebrow */}
@@ -2720,8 +2856,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         position: "relative",
         overflow: "hidden",
       }}>
-        {/* Subtle background orb */}
-        <div style={{ position:"absolute", width:500, height:500, borderRadius:"50%", filter:"blur(120px)", background:"rgba(148,41,69,0.08)", top:"50%", left:"60%", transform:"translate(-50%,-50%)", pointerEvents:"none" }} />
+        {/* Background orb removed */}
 
         <div style={{ maxWidth:960, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center", position:"relative", zIndex:1 }}>
 
@@ -2800,6 +2935,15 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           </>
         )}
       </main>
+
+      {/* Studio Picker Modal */}
+      {showStudioPicker && (
+        <StudioPicker
+          isDark={isDark}
+          onClose={() => setShowStudioPicker(false)}
+          onSelect={(toolId) => onNavigate(toolId)}
+        />
+      )}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=Poppins:wght@300;400;500;600&display=swap');

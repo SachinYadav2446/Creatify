@@ -26,18 +26,18 @@ export default function ShowroomHero({ onNavigate, user, isDark, THEME }) {
       style={{
         position: "relative",
         width: "100%",
-        minHeight: "88vh",
+        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         // Smooth rich cosmic mesh background
         background: isDark
-          ? "radial-gradient(circle at 50% 30%, #3b0a1d 0%, #1a040d 45%, #080205 100%)"
+          ? "radial-gradient(circle at 50% 30%, #3b0a1d 0%, #1a0814 45%, #080205 100%)"
           : "radial-gradient(circle at 50% 30%, #fce7f3 0%, #f9d2e2 45%, #f1bbd2 100%)",
         overflow: "hidden",
         boxSizing: "border-box",
-        padding: "50px 32px 90px",
+        padding: "100px 32px 180px",
         userSelect: "none",
       }}
     >
@@ -177,7 +177,7 @@ export default function ShowroomHero({ onNavigate, user, isDark, THEME }) {
       <div
         style={{
           position: "absolute",
-          bottom: "-15px",
+          bottom: "15px",
           left: "2%",
           width: "clamp(220px, 22vw, 340px)",
           pointerEvents: "none",
@@ -230,7 +230,7 @@ export default function ShowroomHero({ onNavigate, user, isDark, THEME }) {
       <div
         style={{
           position: "absolute",
-          bottom: "-35px",
+          bottom: "5px",
           right: "1%",
           width: "clamp(280px, 30vw, 460px)",
           pointerEvents: "none",
@@ -287,36 +287,6 @@ export default function ShowroomHero({ onNavigate, user, isDark, THEME }) {
           alignItems: "center",
         }}
       >
-        {/* Crisp Badge (No Emoji) */}
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "6px 16px",
-            borderRadius: 99,
-            background: isDark ? "rgba(225, 73, 109, 0.2)" : "rgba(255, 255, 255, 0.85)",
-            border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.45)" : "rgba(148, 41, 69, 0.25)"}`,
-            backdropFilter: "blur(12px)",
-            marginBottom: 16,
-            boxShadow: isDark ? "0 4px 20px rgba(0,0,0,0.3)" : "0 4px 16px rgba(148,41,69,0.08)",
-          }}
-        >
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#e1496d", boxShadow: "0 0 8px #e1496d" }} />
-          <span
-            style={{
-              fontFamily: "'Poppins', sans-serif",
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: isDark ? "#ff8da7" : "#831843",
-            }}
-          >
-            CREATIFY • ALL-IN-ONE STUDIO
-          </span>
-        </div>
-
         {/* Small, Crisp, Punchy Headline with Refined 3D Shadow */}
         <h1
           style={{
@@ -435,6 +405,22 @@ export default function ShowroomHero({ onNavigate, user, isDark, THEME }) {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Seamless curved horizon transition into the next section */}
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, overflow: "hidden", lineHeight: 0, pointerEvents: "none", zIndex: 6 }}>
+        <svg
+          viewBox="0 0 1440 120"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="none"
+          style={{ width: "100%", height: "85px", display: "block" }}
+        >
+          <path
+            d="M0,35 Q720,120 1440,35 L1440,120 L0,120 Z"
+            fill={isDark ? "#0e060b" : "#f7f6fb"}
+          />
+        </svg>
       </div>
     </div>
   );

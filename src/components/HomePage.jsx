@@ -7,7 +7,8 @@ import {
   Video, Image as ImageIcon, PenTool, Presentation, FileText, Infinity as InfinityIcon, Edit3, Layers,
   Code, Share2, Globe, Cpu, Users, Zap,
   Search, Trash2, Plus, ArrowRight, Check, X,
-  Palette, Box, Compass
+  Palette, Box, Compass,
+  Send, MessageSquare, Copy, CheckCheck, Bug, Lightbulb, Briefcase, Mail, Clock, ShieldCheck
 } from "lucide-react";
 
 // Import generated preview images
@@ -880,113 +881,291 @@ function StudioPicker({ onClose, onSelect, isDark }) {
   );
 }
 
-// ─── Contact Form Component ──────────────────────────────────────────────────
+// ─── Luxury Executive Feedback & Contact Form Component ─────────────────────────────
 function ContactForm({ isDark, user }) {
+  const [feedbackType, setFeedbackType] = useState("feature"); // "feature" | "bug" | "feedback" | "partnership"
+  const [sentiment, setSentiment] = useState("loving");
   const [form, setForm] = useState({ name: user?.name || "", subject: "", message: "" });
   const [status, setStatus] = useState(null); // null | "sending" | "sent" | "error"
   const [errMsg, setErrMsg] = useState("");
+
+  const feedbackTypes = [
+    { id: "feature", label: "Feature Request", icon: Lightbulb, color: "#e1496d" },
+    { id: "feedback", label: "Product Feedback", icon: Sparkles, color: "#38bdf8" },
+    { id: "bug", label: "Bug Report", icon: Bug, color: "#f87171" },
+    { id: "partnership", label: "Partnership / Pro", icon: Briefcase, color: "#a855f7" },
+  ];
+
+  const quickPrompts = [
+    "Timeline rendering speed",
+    "More 3D Stage models",
+    "Custom LUT Presets",
+    "Multiplayer collaboration",
+  ];
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const handleSubmit = async e => {
     e.preventDefault();
     if (!form.name || !form.message) {
-      setErrMsg("Please fill in your name and message."); return;
+      setErrMsg("Please fill in both your name and message details.");
+      return;
     }
-    setStatus("sending"); setErrMsg("");
+    setStatus("sending");
+    setErrMsg("");
     try {
       const apiBase = (window.API_URL || "http://localhost:3001") + "/api";
       const token = localStorage.getItem("creatify_token");
+      const fullPayload = {
+        ...form,
+        subject: `[${feedbackType.toUpperCase()}] ${form.subject || "General Creator Note"} (${sentiment})`,
+      };
       const res = await fetch(`${apiBase}/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify(form),
+        body: JSON.stringify(fullPayload),
       });
       const data = await res.json();
-      if (!res.ok) { setErrMsg(data.error || "Something went wrong."); setStatus("error"); return; }
+      if (!res.ok) {
+        setErrMsg(data.error || "Something went wrong sending your note.");
+        setStatus("error");
+        return;
+      }
       setStatus("sent");
       setForm({ name: user?.name || "", subject: "", message: "" });
-    } catch(err) {
-      setErrMsg("Connection error. Please try again."); setStatus("error");
+    } catch (err) {
+      setErrMsg("Connection error. Please check your network and try again.");
+      setStatus("error");
     }
   };
 
   const inp = {
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: 10,
-    padding: "11px 14px",
-    fontSize: 13,
+    background: "rgba(255, 255, 255, 0.035)",
+    border: "1px solid rgba(225, 73, 109, 0.18)",
+    borderRadius: 12,
+    padding: "12px 16px",
+    fontSize: 13.5,
     color: "#fff",
-    fontFamily: "'Poppins',sans-serif",
+    fontFamily: "'Instrument Sans', sans-serif",
     width: "100%",
     boxSizing: "border-box",
     outline: "none",
-    transition: "border-color 0.2s",
+    transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
   };
 
-  if (status === "sent") return (
-    <div style={{ background:"rgba(34,197,94,0.08)", border:"1px solid rgba(34,197,94,0.25)", borderRadius:16, padding:"36px 28px", textAlign:"center" }}>
-      <div style={{ fontSize:36, marginBottom:12 }}>✓</div>
-      <h3 style={{ fontFamily:"Syne,sans-serif", fontWeight:700, fontSize:18, color:"#fff", margin:"0 0 8px" }}>Message sent!</h3>
-      <p style={{ fontSize:13, color:"rgba(255,255,255,0.45)", fontFamily:"'Poppins',sans-serif", margin:"0 0 20px", lineHeight:1.6 }}>
-        We'll reply to <strong style={{ color:"rgba(255,255,255,0.7)" }}>{user?.email}</strong> within 24 hours.
-      </p>
-      <button onClick={() => setStatus(null)} style={{ background:"none", border:"1px solid rgba(255,255,255,0.2)", color:"rgba(255,255,255,0.6)", borderRadius:99, padding:"8px 20px", fontSize:12, fontFamily:"'Poppins',sans-serif", cursor:"pointer" }}>
-        Send another
-      </button>
-    </div>
-  );
+  if (status === "sent") {
+    return (
+      <div style={{
+        background: "linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(225, 73, 109, 0.06) 100%)",
+        border: "1.5px solid rgba(34, 197, 94, 0.35)",
+        borderRadius: 24,
+        padding: "48px 36px",
+        textAlign: "center",
+        boxShadow: "0 20px 50px rgba(0, 0, 0, 0.4)",
+        backdropFilter: "blur(20px)",
+      }}>
+        <div style={{
+          width: 64, height: 64, borderRadius: "50%",
+          background: "linear-gradient(135deg, #22c55e, #16a34a)",
+          color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+          margin: "0 auto 18px", boxShadow: "0 8px 24px rgba(34, 197, 94, 0.4)",
+        }}>
+          <CheckCheck size={32} />
+        </div>
+        <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, color: "#fff", margin: "0 0 10px" }}>
+          Feedback Received & Logged!
+        </h3>
+        <p style={{ fontSize: 14, color: "rgba(255, 255, 255, 0.65)", fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 24px", lineHeight: 1.6, maxWidth: 360, marginInline: "auto" }}>
+          Your message has been directly dispatched to our core engineering pipeline. We'll reply to <strong style={{ color: "#38bdf8" }}>{user?.email}</strong> within 4 hours.
+        </p>
+        <button
+          onClick={() => setStatus(null)}
+          style={{
+            background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255, 255, 255, 0.18)",
+            color: "#fff", borderRadius: 99, padding: "10px 24px", fontSize: 13,
+            fontFamily: "Syne, sans-serif", fontWeight: 700, cursor: "pointer",
+            transition: "all 0.2s",
+          }}
+        >
+          Send Another Feedback Note
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:12 }}>
+    <form onSubmit={handleSubmit} style={{
+      display: "flex", flexDirection: "column", gap: 16,
+      background: "rgba(20, 8, 16, 0.75)",
+      border: "1px solid rgba(225, 73, 109, 0.22)",
+      borderRadius: 24,
+      padding: "28px 28px 24px",
+      backdropFilter: "blur(24px)",
+      boxShadow: "0 24px 60px rgba(0, 0, 0, 0.45)",
+    }}>
 
-      {/* User email badge — read only */}
-      <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px", background:"rgba(34,197,94,0.07)", border:"1px solid rgba(34,197,94,0.18)", borderRadius:10 }}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        <span style={{ fontSize:12, color:"rgba(255,255,255,0.55)", fontFamily:"'Poppins',sans-serif" }}>
-          Reply will be sent to <strong style={{ color:"rgba(255,255,255,0.8)" }}>{user?.email}</strong>
+      {/* Verified User Strip */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "10px 14px", borderRadius: 12,
+        background: "rgba(56, 189, 248, 0.08)", border: "1px solid rgba(56, 189, 248, 0.25)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
+          <span style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.75)", fontFamily: "'Instrument Sans', sans-serif" }}>
+            Replying directly to <strong style={{ color: "#38bdf8" }}>{user?.email}</strong>
+          </span>
+        </div>
+        <span style={{ fontSize: 10.5, fontWeight: 700, color: "#38bdf8", letterSpacing: "0.05em", textTransform: "uppercase", fontFamily: "'Poppins', sans-serif" }}>
+          PRIORITY QUEUE
         </span>
       </div>
 
-      {/* Name + Subject row */}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-        <div>
-          <label style={{ fontSize:10.5, color:"rgba(255,255,255,0.35)", fontFamily:"'Poppins',sans-serif", fontWeight:500, letterSpacing:"0.04em", display:"block", marginBottom:5 }}>NAME *</label>
-          <input name="name" value={form.name} onChange={handleChange} placeholder="Your name" style={inp}
-            onFocus={e => e.target.style.borderColor="rgba(225,73,109,0.5)"}
-            onBlur={e  => e.target.style.borderColor="rgba(255,255,255,0.12)"} />
-        </div>
-        <div>
-          <label style={{ fontSize:10.5, color:"rgba(255,255,255,0.35)", fontFamily:"'Poppins',sans-serif", fontWeight:500, letterSpacing:"0.04em", display:"block", marginBottom:5 }}>SUBJECT</label>
-          <input name="subject" value={form.subject} onChange={handleChange} placeholder="What's this about?" style={inp}
-            onFocus={e => e.target.style.borderColor="rgba(225,73,109,0.5)"}
-            onBlur={e  => e.target.style.borderColor="rgba(255,255,255,0.12)"} />
-        </div>
-      </div>
-
-      {/* Message */}
+      {/* Feedback Category Chips */}
       <div>
-        <label style={{ fontSize:10.5, color:"rgba(255,255,255,0.35)", fontFamily:"'Poppins',sans-serif", fontWeight:500, letterSpacing:"0.04em", display:"block", marginBottom:5 }}>MESSAGE *</label>
-        <textarea name="message" value={form.message} onChange={handleChange} placeholder="Tell us more..." rows={4}
-          style={{ ...inp, resize:"vertical", lineHeight:1.6 }}
-          onFocus={e => e.target.style.borderColor="rgba(225,73,109,0.5)"}
-          onBlur={e  => e.target.style.borderColor="rgba(255,255,255,0.12)"} />
+        <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "rgba(255, 255, 255, 0.5)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8, fontFamily: "'Poppins', sans-serif" }}>
+          Select Category
+        </label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          {feedbackTypes.map((t) => {
+            const Icon = t.icon;
+            const isSel = feedbackType === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setFeedbackType(t.id)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "8px 12px", borderRadius: 10,
+                  background: isSel ? "linear-gradient(135deg, #e1496d, #942945)" : "rgba(255, 255, 255, 0.03)",
+                  border: `1px solid ${isSel ? "#e1496d" : "rgba(255, 255, 255, 0.08)"}`,
+                  color: isSel ? "#fff" : "rgba(255, 255, 255, 0.6)",
+                  fontSize: 12, fontWeight: 600, cursor: "pointer",
+                  fontFamily: "'Poppins', sans-serif",
+                  transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
+              >
+                <Icon size={14} color={isSel ? "#fff" : t.color} />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {errMsg && <p style={{ fontSize:12, color:"#f87171", fontFamily:"'Poppins',sans-serif", margin:0 }}>{errMsg}</p>}
+      {/* Name + Subject Inputs */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div>
+          <label style={{ display: "block", fontSize: 10.5, fontWeight: 600, color: "rgba(255, 255, 255, 0.45)", letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase", fontFamily: "'Poppins', sans-serif" }}>
+            Your Name *
+          </label>
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder="e.g. Alex Mercer"
+            style={inp}
+            onFocus={e => { e.target.style.borderColor = "#e1496d"; e.target.style.boxShadow = "0 0 0 3px rgba(225,73,109,0.2)"; }}
+            onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; e.target.style.boxShadow = "none"; }}
+          />
+        </div>
+        <div>
+          <label style={{ display: "block", fontSize: 10.5, fontWeight: 600, color: "rgba(255, 255, 255, 0.45)", letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase", fontFamily: "'Poppins', sans-serif" }}>
+            Subject / Topic
+          </label>
+          <input
+            name="subject"
+            value={form.subject}
+            onChange={handleChange}
+            placeholder="e.g. 4K Video export query"
+            style={inp}
+            onFocus={e => { e.target.style.borderColor = "#e1496d"; e.target.style.boxShadow = "0 0 0 3px rgba(225,73,109,0.2)"; }}
+            onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; e.target.style.boxShadow = "none"; }}
+          />
+        </div>
+      </div>
 
-      <button type="submit" disabled={status === "sending"}
+      {/* Quick Suggestion Chips */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.4)", fontFamily: "'Poppins', sans-serif" }}>Quick topics:</span>
+        {quickPrompts.map((qp, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => setForm(f => ({ ...f, subject: qp }))}
+            style={{
+              fontSize: 10.5, padding: "3px 8px", borderRadius: 6,
+              background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.1)",
+              color: "rgba(255, 255, 255, 0.7)", cursor: "pointer",
+            }}
+          >
+            + {qp}
+          </button>
+        ))}
+      </div>
+
+      {/* Message Textarea */}
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <label style={{ fontSize: 10.5, fontWeight: 600, color: "rgba(255, 255, 255, 0.45)", letterSpacing: "0.05em", textTransform: "uppercase", fontFamily: "'Poppins', sans-serif" }}>
+            Detailed Message *
+          </label>
+          <span style={{ fontSize: 10, color: "rgba(255, 255, 255, 0.35)", fontFamily: "monospace" }}>
+            {form.message.length} chars
+          </span>
+        </div>
+        <textarea
+          name="message"
+          value={form.message}
+          onChange={handleChange}
+          placeholder="Share your feature idea, workflow bottleneck, or technical feedback..."
+          rows={4}
+          style={{ ...inp, resize: "vertical", lineHeight: 1.6 }}
+          onFocus={e => { e.target.style.borderColor = "#e1496d"; e.target.style.boxShadow = "0 0 0 3px rgba(225,73,109,0.2)"; }}
+          onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; e.target.style.boxShadow = "none"; }}
+        />
+      </div>
+
+      {errMsg && (
+        <div style={{
+          padding: "8px 12px", borderRadius: 8,
+          background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)",
+          color: "#fca5a5", fontSize: 12, fontFamily: "'Poppins', sans-serif",
+        }}>
+          {errMsg}
+        </div>
+      )}
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        disabled={status === "sending"}
         style={{
-          background: status === "sending" ? "rgba(148,41,69,0.5)" : "linear-gradient(135deg,#942945,#e1496d)",
-          color:"#fff", border:"none", borderRadius:10, padding:"13px 0",
-          fontSize:14, fontWeight:600, fontFamily:"'Poppins',sans-serif",
+          background: status === "sending"
+            ? "rgba(148, 41, 69, 0.5)"
+            : "linear-gradient(135deg, #e1496d 0%, #942945 100%)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 12,
+          padding: "14px 0",
+          fontSize: 14,
+          fontWeight: 700,
+          fontFamily: "Syne, sans-serif",
           cursor: status === "sending" ? "not-allowed" : "pointer",
-          transition:"opacity 0.2s, transform 0.2s", letterSpacing:"-0.01em",
+          boxShadow: "0 8px 24px rgba(225, 73, 109, 0.35)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+          letterSpacing: "-0.01em",
         }}
-        onMouseEnter={e => { if(status !== "sending") e.currentTarget.style.transform="translateY(-1px)"; }}
-        onMouseLeave={e => e.currentTarget.style.transform="none"}>
-        {status === "sending" ? "Sending…" : "Send message →"}
+        onMouseEnter={e => { if (status !== "sending") e.currentTarget.style.transform = "translateY(-2px)"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}
+      >
+        <Send size={15} />
+        {status === "sending" ? "Transmitting Feedback…" : "Submit Feedback to Engineering →"}
       </button>
     </form>
   );
@@ -3367,7 +3546,6 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                       </div>
                     </div>
                   )}
-
                   {/* PPT slides overlay */}
                   {tool.id === "ppt" && isHovered && (
                     <div style={{ position:"absolute", top:"18px", right:"18px", zIndex:3, display:"flex", gap:"5px" }}>
@@ -3391,66 +3569,229 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         </div>
       </div>
 
-      {/* ── CONTACT ── */}
+      {/* ── LUXURY CLASSY CONTACT & FEEDBACK SECTION ── */}
       <section id="contact-section" style={{
-        background: isDark ? "#0a0508" : "#0f0208",
-        borderTop: "1px solid rgba(225,73,109,0.10)",
+        background: isDark
+          ? "radial-gradient(ellipse at 80% 30%, rgba(225, 73, 109, 0.12) 0%, #0a0408 70%)"
+          : "radial-gradient(ellipse at 80% 30%, rgba(225, 73, 109, 0.08) 0%, #12050e 70%)",
+        borderTop: "1px solid rgba(225, 73, 109, 0.18)",
         width: "100%",
-        padding: "72px 64px",
+        padding: "96px 48px",
         boxSizing: "border-box",
         position: "relative",
         overflow: "hidden",
       }}>
-        {/* Background orb removed */}
+        
+        {/* Soft Cosmic Ambient Illumination */}
+        <div style={{
+          position: "absolute", top: "-15%", right: "-10%", width: 500, height: 500,
+          background: "radial-gradient(circle, rgba(225,73,109,0.18) 0%, transparent 70%)",
+          filter: "blur(60px)", pointerEvents: "none", zIndex: 0,
+        }} />
+        <div style={{
+          position: "absolute", bottom: "-10%", left: "5%", width: 400, height: 400,
+          background: "radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 70%)",
+          filter: "blur(60px)", pointerEvents: "none", zIndex: 0,
+        }} />
 
-        <div style={{ maxWidth:960, margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:80, alignItems:"center", position:"relative", zIndex:1 }}>
+        <div style={{
+          maxWidth: 1180, margin: "0 auto",
+          display: "grid", gridTemplateColumns: "1.1fr 1.2fr",
+          gap: 64, alignItems: "center", position: "relative", zIndex: 1,
+        }}>
 
-          {/* Left — copy */}
+          {/* Left Column — Creator Hotline & Brand Presence */}
           <div>
-            <p style={{ fontSize:11, fontWeight:600, color:"rgba(225,73,109,0.65)", fontFamily:"'Poppins',sans-serif", letterSpacing:"0.1em", textTransform:"uppercase", margin:"0 0 14px" }}>Get in touch</p>
-            <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(28px,3.5vw,44px)", fontWeight:800, letterSpacing:"-0.04em", color:"#fff", margin:"0 0 16px", lineHeight:1.1 }}>
-              Have a question<br/>or feedback?
+            {/* Pill Eyebrow */}
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "6px 14px", borderRadius: 99,
+              background: "rgba(225, 73, 109, 0.14)", border: "1px solid rgba(225, 73, 109, 0.35)",
+              marginBottom: 18,
+            }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
+              <span style={{
+                fontFamily: "'Poppins', sans-serif", fontSize: 10.5, fontWeight: 700,
+                letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff8da7",
+              }}>
+                DIRECT CREATOR HOTLINE • CORE TEAM
+              </span>
+            </div>
+
+            {/* Headline */}
+            <h2 style={{
+              fontFamily: "Syne, sans-serif", fontSize: "clamp(32px, 4vw, 48px)",
+              fontWeight: 800, letterSpacing: "-0.04em", color: "#fff",
+              margin: "0 0 16px", lineHeight: 1.12,
+            }}>
+              Shape the future of <span style={{
+                background: "linear-gradient(135deg, #e1496d 0%, #ff8da7 100%)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              }}>Creatify</span><span style={{ color: "#e1496d" }}>.</span>
             </h2>
-            <p style={{ fontSize:14, color:"rgba(255,255,255,0.38)", lineHeight:1.7, fontFamily:"'Instrument Sans',sans-serif", margin:"0 0 32px", maxWidth:340 }}>
-              We read every message. Whether it's a bug, a feature request, or just a hello — reach out and we'll reply within 24 hours.
+
+            {/* Description */}
+            <p style={{
+              fontSize: 15, color: "rgba(255, 255, 255, 0.65)",
+              lineHeight: 1.7, fontFamily: "'Instrument Sans', sans-serif",
+              margin: "0 0 32px", maxWidth: 460,
+            }}>
+              Every idea, workflow suggestion, and critique goes directly into our core engineering room. We prioritize community-requested features in our weekly production updates.
             </p>
-            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-              {[
-                { icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>, label:"demandsightsupport@gmail.com" },
-                { icon:<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, label:"We reply within 24 hours" },
-              ].map(({ icon, label }, i) => (
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, color:"rgba(255,255,255,0.35)", fontSize:13, fontFamily:"'Poppins',sans-serif" }}>
-                  <span style={{ color:"rgba(225,73,109,0.6)" }}>{icon}</span>
-                  {label}
+
+            {/* Classy Telemetry Channel Cards */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 440 }}>
+              
+              {/* Card 1: Fast Turnaround */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 14,
+                padding: "14px 18px", borderRadius: 14,
+                background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(225, 73, 109, 0.16)",
+                backdropFilter: "blur(12px)",
+              }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: "rgba(56, 189, 248, 0.15)", border: "1px solid rgba(56, 189, 248, 0.3)",
+                  display: "flex", alignItems: "center", justifyContent: "center", color: "#38bdf8",
+                }}>
+                  <Clock size={18} />
                 </div>
-              ))}
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", fontFamily: "Syne, sans-serif" }}>
+                    &lt; 4 Hours Response
+                  </div>
+                  <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.45)", fontFamily: "'Instrument Sans', sans-serif" }}>
+                    Live priority queue for all creator tickets
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 2: Direct Email with Copy */}
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "14px 18px", borderRadius: 14,
+                background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(225, 73, 109, 0.16)",
+                backdropFilter: "blur(12px)",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    background: "rgba(225, 73, 109, 0.15)", border: "1px solid rgba(225, 73, 109, 0.3)",
+                    display: "flex", alignItems: "center", justifyContent: "center", color: "#ff8da7",
+                  }}>
+                    <Mail size={18} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", fontFamily: "Syne, sans-serif" }}>
+                      demandsightsupport@gmail.com
+                    </div>
+                    <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.45)", fontFamily: "'Instrument Sans', sans-serif" }}>
+                      Official developer inbox
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText("demandsightsupport@gmail.com");
+                    alert("Copied email address to clipboard!");
+                  }}
+                  title="Copy email to clipboard"
+                  style={{
+                    background: "rgba(255, 255, 255, 0.06)", border: "1px solid rgba(255, 255, 255, 0.14)",
+                    color: "rgba(255, 255, 255, 0.8)", borderRadius: 8, padding: "6px 10px",
+                    cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
+                    fontSize: 11, fontWeight: 600, fontFamily: "'Poppins', sans-serif",
+                  }}
+                >
+                  <Copy size={12} /> Copy
+                </button>
+              </div>
+
+              {/* Card 3: Priority Triage */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 14,
+                padding: "14px 18px", borderRadius: 14,
+                background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(225, 73, 109, 0.16)",
+                backdropFilter: "blur(12px)",
+              }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: "rgba(34, 197, 94, 0.15)", border: "1px solid rgba(34, 197, 94, 0.3)",
+                  display: "flex", alignItems: "center", justifyContent: "center", color: "#4ade80",
+                }}>
+                  <ShieldCheck size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", fontFamily: "Syne, sans-serif" }}>
+                    Continuous CI/CD Shipping
+                  </div>
+                  <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.45)", fontFamily: "'Instrument Sans', sans-serif" }}>
+                    Critical bug patches deployed in &lt; 24h
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
 
-          {/* Right — form or lock */}
-          {user ? (
-            <ContactForm isDark={isDark} user={user} />
-          ) : (
-            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"48px 32px", background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:16, textAlign:"center", gap:16 }}>
-              <div style={{ width:52, height:52, borderRadius:"50%", background:"rgba(225,73,109,0.12)", border:"1px solid rgba(225,73,109,0.22)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(225,73,109,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          {/* Right Column — Luxury Glass Console */}
+          <div>
+            {user ? (
+              <ContactForm isDark={isDark} user={user} />
+            ) : (
+              <div style={{
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                padding: "54px 36px", background: "rgba(20, 8, 16, 0.8)",
+                border: "1px solid rgba(225, 73, 109, 0.25)", borderRadius: 24, textAlign: "center",
+                backdropFilter: "blur(24px)", boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+              }}>
+                <div style={{
+                  width: 64, height: 64, borderRadius: "50%",
+                  background: "linear-gradient(135deg, rgba(225,73,109,0.2), rgba(148,41,69,0.3))",
+                  border: "1px solid rgba(225,73,109,0.4)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  color: "#ff8da7", marginBottom: 20,
+                  boxShadow: "0 8px 24px rgba(225,73,109,0.25)",
+                }}>
+                  <MessageSquare size={28} />
+                </div>
+                
+                <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#fff", margin: "0 0 10px" }}>
+                  Sign in to Access Direct Hotline
+                </h3>
+                <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.55)", fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 28px", lineHeight: 1.6, maxWidth: 320 }}>
+                  Signed-in creators get direct priority engineering triage and live email responses.
+                </p>
+
+                <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 300 }}>
+                  <button
+                    onClick={() => onNavigate("auth", "signin")}
+                    style={{
+                      flex: 1, background: "linear-gradient(135deg, #e1496d, #942945)",
+                      color: "#fff", border: "none", padding: "12px 0", borderRadius: 12,
+                      fontSize: 13.5, fontFamily: "Syne, sans-serif", fontWeight: 700,
+                      cursor: "pointer", boxShadow: "0 6px 20px rgba(225,73,109,0.4)",
+                    }}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => onNavigate("auth", "signup")}
+                    style={{
+                      flex: 1, background: "rgba(255,255,255,0.06)",
+                      color: "#fff", border: "1px solid rgba(255,255,255,0.15)",
+                      padding: "12px 0", borderRadius: 12,
+                      fontSize: 13.5, fontFamily: "Syne, sans-serif", fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Register
+                  </button>
+                </div>
               </div>
-              <div>
-                <h3 style={{ fontFamily:"Syne,sans-serif", fontWeight:700, fontSize:17, color:"#fff", margin:"0 0 8px" }}>Sign in to send a message</h3>
-                <p style={{ fontSize:13, color:"rgba(255,255,255,0.38)", fontFamily:"'Poppins',sans-serif", margin:"0 0 24px", lineHeight:1.6 }}>You need to be signed in so we can reply to you.</p>
-              </div>
-              <div style={{ display:"flex", gap:10 }}>
-                <button onClick={() => onNavigate("auth","signin")}
-                  style={{ background:"linear-gradient(135deg,#942945,#e1496d)", color:"#fff", border:"none", padding:"11px 28px", borderRadius:99, fontSize:13, fontFamily:"'Poppins',sans-serif", fontWeight:600, cursor:"pointer" }}>
-                  Sign in
-                </button>
-                <button onClick={() => onNavigate("auth","signup")}
-                  style={{ background:"transparent", color:"rgba(255,255,255,0.55)", border:"1px solid rgba(255,255,255,0.14)", padding:"11px 24px", borderRadius:99, fontSize:13, fontFamily:"'Poppins',sans-serif", cursor:"pointer" }}>
-                  Create account
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
 
         </div>
 

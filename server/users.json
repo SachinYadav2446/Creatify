@@ -11,12 +11,29 @@
       "created_at": "2026-07-29T15:13:09.007Z",
       "otp": "371764",
       "otp_expires_at": "2026-07-29T15:23:09.026Z"
+    },
+    {
+      "id": 2,
+      "name": "SACHIN YADAV",
+      "email": "sachin.p24@medhaviskillsuniversity.edu.in",
+      "password": null,
+      "provider": "google",
+      "google_id": "111913696525529518289",
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKD0WocboaR-2Znl7H6ndMZRyjqw5tBHgPi-kLECVwNa4Ixlg=s96-c",
+      "email_verified": true,
+      "profile_completed": true,
+      "phone": "+919518820988",
+      "company": "",
+      "country": "India",
+      "bio": "",
+      "created_at": "2026-08-01T04:07:12.504Z",
+      "updated_at": "2026-08-05T05:52:02.655Z"
     }
   ],
   "projects": [
     {
       "id": "logo_1779892127508",
-      "user_id": 1,
+      "user_id": 2,
       "title": "My Brand Identity",
       "category": "Logo Design",
       "tool": "Logo Maker",
@@ -73,12 +90,12 @@
           }
         ]
       },
-      "updated_at": "2026-07-30T03:23:47.402Z",
+      "updated_at": "2026-08-01T04:07:25.447Z",
       "created_at": "2026-07-30T03:23:47.402Z"
     },
     {
       "id": "logo_1779892637845",
-      "user_id": 1,
+      "user_id": 2,
       "title": "My Brand Identity",
       "category": "Logo Design",
       "tool": "Logo Maker",
@@ -135,12 +152,12 @@
           }
         ]
       },
-      "updated_at": "2026-07-30T03:23:47.324Z",
+      "updated_at": "2026-08-01T04:07:25.455Z",
       "created_at": "2026-07-30T03:23:47.324Z"
     },
     {
       "id": "ppt_1779891870468",
-      "user_id": 1,
+      "user_id": 2,
       "title": "Next Gen Platform",
       "category": "Presentation",
       "tool": "Slide Studio",
@@ -186,12 +203,12 @@
         ],
         "themeIdx": 0
       },
-      "updated_at": "2026-07-30T03:23:47.095Z",
+      "updated_at": "2026-08-01T04:07:25.460Z",
       "created_at": "2026-07-30T03:23:47.095Z"
     },
     {
       "id": "ppt_1779894481150",
-      "user_id": 1,
+      "user_id": 2,
       "title": "Creatify Studio Presentation",
       "category": "Presentation",
       "tool": "Slide Studio",
@@ -266,12 +283,12 @@
         ],
         "themeIdx": 17
       },
-      "updated_at": "2026-07-30T03:23:47.018Z",
+      "updated_at": "2026-08-01T04:07:25.470Z",
       "created_at": "2026-07-30T03:23:47.018Z"
     },
     {
       "id": "social_1779973129661",
-      "user_id": 1,
+      "user_id": 2,
       "title": "New Social Campaign",
       "category": "Social Post",
       "tool": "Social Studio",
@@ -314,12 +331,12 @@
         "scheduleTime": "12:00",
         "isScheduled": false
       },
-      "updated_at": "2026-07-30T03:23:47.555Z",
+      "updated_at": "2026-08-01T04:07:25.477Z",
       "created_at": "2026-07-30T03:23:46.936Z"
     },
     {
       "id": "logo_1779972960490",
-      "user_id": 1,
+      "user_id": 2,
       "title": "My Brand Identity",
       "category": "Logo Design",
       "tool": "Logo Maker",
@@ -420,12 +437,12 @@
           }
         ]
       },
-      "updated_at": "2026-07-30T03:23:46.903Z",
+      "updated_at": "2026-08-01T04:07:25.482Z",
       "created_at": "2026-07-30T03:23:46.903Z"
     },
     {
       "id": "print_1779972966348",
-      "user_id": 1,
+      "user_id": 2,
       "title": "Corporate Flyer Design",
       "category": "Print Layout",
       "tool": "Print Design",
@@ -488,12 +505,12 @@
         "showMargins": true,
         "cmykPreview": false
       },
-      "updated_at": "2026-07-30T03:23:46.833Z",
+      "updated_at": "2026-08-01T04:07:25.488Z",
       "created_at": "2026-07-30T03:23:46.833Z"
     },
     {
       "id": "ai_1779972979812",
-      "user_id": 1,
+      "user_id": 2,
       "title": "AI Generative Campaign",
       "category": "AI Design",
       "tool": "AI Magic",
@@ -540,12 +557,12 @@
         "maskTolerance": 12,
         "resizeLayoutMode": "banner"
       },
-      "updated_at": "2026-07-30T03:23:47.759Z",
+      "updated_at": "2026-08-01T04:07:25.494Z",
       "created_at": "2026-07-30T03:23:46.705Z"
     },
     {
       "id": "ppt_1779973399018",
-      "user_id": 1,
+      "user_id": 2,
       "title": "Creatify Studio Presentation",
       "category": "Presentation",
       "tool": "Slide Studio",
@@ -609,12 +626,12 @@
         ],
         "themeIdx": 0
       },
-      "updated_at": "2026-07-30T03:23:47.151Z",
+      "updated_at": "2026-08-01T04:07:25.500Z",
       "created_at": "2026-07-30T03:23:46.673Z"
     },
     {
       "id": "ppt_1779973040350",
-      "user_id": 1,
+      "user_id": 2,
       "title": "Creatify Studio Presentation",
       "category": "Presentation",
       "tool": "Slide Studio",
@@ -678,12 +695,12 @@
         ],
         "themeIdx": 0
       },
-      "updated_at": "2026-07-30T03:23:47.182Z",
+      "updated_at": "2026-08-01T04:07:25.507Z",
       "created_at": "2026-07-30T03:23:46.645Z"
     },
     {
       "id": "social_1779973068948",
-      "user_id": 1,
+      "user_id": 2,
       "title": "New Social Campaign",
       "category": "Social Post",
       "tool": "Social Studio",
@@ -744,12 +761,12 @@
         "scheduleTime": "12:00",
         "isScheduled": false
       },
-      "updated_at": "2026-07-30T03:23:47.639Z",
+      "updated_at": "2026-08-01T04:07:25.514Z",
       "created_at": "2026-07-30T03:23:46.611Z"
     },
     {
       "id": "logo_1780428901088",
-      "user_id": 1,
+      "user_id": 2,
       "title": "My Brand Identity",
       "category": "Logo Design",
       "tool": "Logo Maker",
@@ -820,9 +837,9 @@
           }
         ]
       },
-      "updated_at": "2026-07-30T03:23:47.116Z",
+      "updated_at": "2026-08-01T04:07:25.519Z",
       "created_at": "2026-07-30T03:23:46.567Z"
     }
   ],
-  "nextId": 2
+  "nextId": 3
 }

@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import THEME from "../theme";
+import ShowroomHero from "./ShowroomHero";
 import { 
   Home, FolderOpen, Wrench, LayoutGrid, 
   Settings, MoreHorizontal, Sparkles,
   Video, Image as ImageIcon, PenTool, Presentation, FileText, Infinity as InfinityIcon, Edit3, Layers,
-  Code, Share2, Globe, Cpu, Users, Zap
+  Code, Share2, Globe, Cpu, Users, Zap,
+  Search, Trash2, Plus, ArrowRight, Check, X,
+  Palette, Box, Compass
 } from "lucide-react";
 
 // Import generated preview images
@@ -16,6 +19,11 @@ import aiPrev         from "../assets/images/ai_preview.png";
 import logoPrev       from "../assets/images/logo_preview.png";
 import docPrev        from "../assets/images/doc_preview.png";
 import whiteboardPrev from "../assets/images/whiteboard_preview.png";
+
+import BrandKit from "./BrandKit";
+import TemplatesMarketplace from "./TemplatesMarketplace";
+import WorkflowPipelines from "./WorkflowPipelines";
+import MockupStudio from "./MockupStudio";
 
 const TOOL_ACCENTS = {
   "Video Editor": "#ef4444",
@@ -651,22 +659,22 @@ function SidebarIcon({ active, icon: IconComponent, label, onClick, THEME, crown
         onMouseLeave={() => setIsHovered(false)}
         title={label}
         style={{
-          width: 40, height: 40, borderRadius: 11,
+          width: 42, height: 42, borderRadius: 12,
           display: "flex", alignItems: "center", justifyContent: "center",
           background: active
-            ? `linear-gradient(135deg, rgba(148,41,69,0.15), rgba(148,41,69,0.08))`
+            ? "linear-gradient(135deg, rgba(225, 73, 109, 0.35), rgba(148, 41, 69, 0.25))"
             : isHovered
-              ? `linear-gradient(135deg, rgba(148,41,69,0.08), rgba(148,41,69,0.03))`
+              ? "rgba(225, 73, 109, 0.14)"
               : "transparent",
-          border: active ? `2px solid rgba(148,41,69,0.4)` : `2px solid transparent`,
-          color: active ? wine : isHovered ? wine : textMuted,
+          border: active ? "1.5px solid rgba(225, 73, 109, 0.55)" : "1.5px solid transparent",
+          color: active ? "#ff8da7" : isHovered ? "#ff8da7" : "#9ca3af",
           cursor: "pointer",
-          transition: "all 0.2s ease",
+          transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
           outline: "none",
           position: "relative",
           boxShadow: active
-            ? `0 4px 12px rgba(148,41,69,0.2)`
-            : isHovered ? `0 2px 8px rgba(148,41,69,0.1)` : "none",
+            ? "0 4px 16px rgba(225, 73, 109, 0.35), inset 0 1px 0 rgba(255,255,255,0.2)"
+            : isHovered ? "0 2px 10px rgba(225, 73, 109, 0.15)" : "none",
         }}
       >
         <div style={{
@@ -753,6 +761,30 @@ const STUDIO_TOOLS = [
     desc: "Executable canvas, live APIs, multiplayer",
     icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg>,
     color: "#942945", tag: "React · Live APIs",
+  },
+  {
+    id: "templates",     name: "Templates Marketplace",
+    desc: "1-Click remixable community showcases & decks",
+    icon: <Compass size={22} />,
+    color: "#e1496d", tag: "Community · Remix",
+  },
+  {
+    id: "brand_kit",     name: "Brand Kit Hub",
+    desc: "Global palettes, typography hierarchy, logos",
+    icon: <Palette size={22} />,
+    color: "#38bdf8", tag: "Design Systems",
+  },
+  {
+    id: "pipelines",     name: "Workflow Pipelines",
+    desc: "Visual Unreal Blueprint AI automation wires",
+    icon: <Zap size={22} />,
+    color: "#a855f7", tag: "Blueprints · AI",
+  },
+  {
+    id: "mockup_studio", name: "3D Mockup Studio",
+    desc: "Interactive Three.js 3D devices & packaging stages",
+    icon: <Box size={22} />,
+    color: "#22d3a8", tag: "Three.js · WebGL",
   },
 ];
 
@@ -961,15 +993,80 @@ function ContactForm({ isDark, user }) {
 }
 
 
-export default function HomePage({ onNavigate, user, onSignOut, theme = "light" }) {
+export default function HomePage({ onNavigate, user, onSignOut, theme = "light", initialNav = "home" }) {
   const [hoveredCard, setHoveredCard]         = useState(null);
   const [revealedSections, setRevealedSections] = useState(new Set());
   const [animatedStats, setAnimatedStats]     = useState(new Set());
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showStudioPicker, setShowStudioPicker] = useState(false);
-  const [activeNav, setActiveNav]             = useState("home");
+  const [activeNav, setActiveNav]             = useState(initialNav || "home");
+
+  useEffect(() => {
+    if (initialNav) {
+      setActiveNav(initialNav);
+      window.scrollTo(0, 0);
+    }
+  }, [initialNav]);
+
   const [navScrolled, setNavScrolled]         = useState(false);
   const [heroSettled, setHeroSettled]         = useState(false);
+  const [studioScrollProgress, setStudioScrollProgress] = useState(0);
+  const infiniteStudioSectionRef = useRef(null);
+
+  const infiniteStudioCards = [
+    {
+      num: "01",
+      title: "Spatial Infinite Node Graph",
+      tag: "Interactive Blueprints",
+      desc: "Infinite 2D spatial canvas with freeform pan & zoom. Draw dynamic bezier logic connections between component ports to craft interactive user journeys across artboards.",
+      capabilities: ["Infinite Pan & Zoom (10% to 500%)", "Dynamic Bezier Spline Cables", "Multi-Port Real-Time Data Sync"],
+      Icon: Share2,
+      iconColor: "#ff8da7",
+      gradient: "linear-gradient(135deg, rgba(225,73,109,0.25), rgba(148,41,69,0.1))",
+      demoType: "nodes",
+    },
+    {
+      num: "02",
+      title: "Code-to-Canvas Bounding",
+      tag: "Live React & JSX DOM",
+      desc: "Elements on canvas aren't static images—they are executable live DOM components. Inspect, modify live JSX/CSS properties, and export clean production code instantly.",
+      capabilities: ["Live React 18 & JSX Compilation", "Dev Mode Spacing & CSS Rulers", "Instant Tailwind & Clean Code Export"],
+      Icon: Code,
+      iconColor: "#38bdf8",
+      gradient: "linear-gradient(135deg, rgba(56,189,248,0.25), rgba(14,165,233,0.1))",
+      demoType: "code",
+    },
+    {
+      num: "03",
+      title: "AI Prompt-to-DOM Engine",
+      tag: "Neural Auto-Layout",
+      desc: "Describe any layout in plain English and AI outputs structured, fully-editable canvas nodes with auto-layout constraints, responsive breakpoints, and text boxes.",
+      capabilities: ["Natural Language Prompt Parsing", "Auto-Layout Flexbox Hierarchy", "Instant Component Synthesis"],
+      Icon: Sparkles,
+      iconColor: "#a855f7",
+      gradient: "linear-gradient(135deg, rgba(168,85,247,0.25), rgba(126,34,206,0.1))",
+      demoType: "ai",
+    },
+  ];
+
+  // Scroll listener for sticky 3-step feature progression
+  useEffect(() => {
+    const handleStudioScroll = () => {
+      const el = infiniteStudioSectionRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const totalDist = el.offsetHeight - window.innerHeight;
+      if (totalDist <= 0) return;
+      const progress = Math.min(Math.max(-rect.top / totalDist, 0), 1);
+      setStudioScrollProgress(progress);
+    };
+
+    window.addEventListener("scroll", handleStudioScroll, { passive: true });
+    handleStudioScroll();
+    return () => window.removeEventListener("scroll", handleStudioScroll);
+  }, []);
+
+
 
   // Dynamic Past Works state
   const [pastWorks, setPastWorks] = useState(() => {
@@ -1176,6 +1273,23 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
   const [hoveredWork, setHoveredWork]         = useState(null);
   const [pastWorkHoveredId, setPastWorkHoveredId] = useState(null);
   const pastWorkScrollRef = useRef(null);
+
+  // Vault Hub state
+  const [vaultSearch, setVaultSearch] = useState("");
+  const [vaultCategory, setVaultCategory] = useState("all");
+  const [vaultView, setVaultView] = useState("both"); // "both", "graph", "grid"
+
+  const handleDeleteProject = (projectId, e) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this project from your Vault?")) return;
+    const updated = pastWorks.filter(p => p.id !== projectId);
+    setPastWorks(updated);
+    try {
+      localStorage.setItem("creatify_past_works", JSON.stringify(updated));
+    } catch (err) {
+      console.error("Failed to delete project", err);
+    }
+  };
 
   const handlePastWorkClick = (work) => {
     if (!user) return onNavigate("auth", "signup");
@@ -1570,6 +1684,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         @keyframes hOrb1   { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-20px)} }
         @keyframes hOrb2   { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-20px,25px)} }
         @keyframes hShine  { from{left:-100%} to{left:160%} }
+        @keyframes studioScrollDot { 0%,100%{transform:translateX(-50%) translateY(0); opacity:0.95} 50%{transform:translateX(-50%) translateY(9px); opacity:0.25} }
 
         .h4-cta {
           display:inline-flex; align-items:center; gap:10px;
@@ -1746,7 +1861,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       margin: 0, padding: 0, width: "100%",
       background: isDark ? "#0e060b" : "#f7f6fb",
       color: colors.text,
-      fontFamily: "'Instrument Sans',sans-serif", overflowX: "hidden",
+      fontFamily: "'Instrument Sans',sans-serif", overflowX: "clip",
       transition: "background 0.3s, color 0.3s", minHeight: "100vh",
     }}>
       <style>{`
@@ -1773,19 +1888,18 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
       <aside style={{
         position: "fixed", top: 0, left: 0, bottom: 0, width: sidebarW,
         background: isDark
-          ? "rgba(14, 6, 11, 0.96)"
-          : "rgba(253, 248, 250, 0.96)",
-        borderRight: isDark
-          ? "1px solid rgba(225,73,109,0.12)"
-          : "1px solid rgba(148,41,69,0.10)",
+          ? "rgba(12, 4, 10, 0.88)"
+          : "rgba(255, 245, 248, 0.92)",
+        borderRight: "1px solid rgba(225, 73, 109, 0.22)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
         zIndex: 200,
         display: "flex", flexDirection: "column", alignItems: "center",
         padding: "16px 0 12px",
-        backdropFilter: "blur(20px) saturate(160%)",
-        WebkitBackdropFilter: "blur(20px) saturate(160%)",
+        backdropFilter: "blur(28px) saturate(180%)",
+        WebkitBackdropFilter: "blur(28px) saturate(180%)",
       }}>
-        {/* Avatar at Top */}
-        <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 12 }}>
+        {/* Avatar at top of sidebar */}
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", margin: "6px 0 10px" }}>
           {user ? (
             <div style={{ position: "relative" }}>
               <AvatarCircle size={40} onClick={() => onNavigate("profile")} showBorder />
@@ -1818,7 +1932,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
         }} />
 
         {/* Nav stack */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%", overflowY: "auto", overflowX: "hidden", padding: "4px 0" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: "100%", overflowY: "auto", overflowX: "hidden", padding: "4px 0" }}>
           <SidebarIcon
             THEME={THEME}
             active={activeNav === "home"}
@@ -1829,12 +1943,62 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           />
           <SidebarIcon
             THEME={THEME}
-            active={activeNav === "projects"}
-            label="Projects"
-            onClick={() => { setActiveNav("projects"); }}
+            active={activeNav === "projects" || activeNav === "vault"}
+            label="Vault"
+            onClick={() => {
+              setActiveNav("vault");
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }}
             icon={FolderOpen}
             animationType="scale"
           />
+          <SidebarIcon
+            THEME={THEME}
+            active={activeNav === "templates"}
+            label="Templates"
+            onClick={() => {
+              setActiveNav("templates");
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }}
+            icon={Compass}
+            animationType="rotate"
+          />
+          <SidebarIcon
+            THEME={THEME}
+            active={activeNav === "brand_kit"}
+            label="Brand Kit"
+            onClick={() => {
+              setActiveNav("brand_kit");
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }}
+            icon={Palette}
+            animationType="scale"
+          />
+          <SidebarIcon
+            THEME={THEME}
+            active={activeNav === "pipelines"}
+            label="Pipelines"
+            onClick={() => {
+              setActiveNav("pipelines");
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }}
+            icon={Zap}
+            animationType="bounce"
+          />
+          <SidebarIcon
+            THEME={THEME}
+            active={activeNav === "mockup_studio"}
+            label="3D Mockups"
+            onClick={() => {
+              setActiveNav("mockup_studio");
+              window.scrollTo({ top: 0, behavior: "instant" });
+            }}
+            icon={Box}
+            animationType="scale"
+          />
+
+          <div style={{ width: "60%", height: 1, background: "rgba(225,73,109,0.15)", margin: "2px 0" }} />
+
           <SidebarIcon
             THEME={THEME}
             active={activeNav === "tools"}
@@ -1849,191 +2013,784 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
             icon={Wrench}
             animationType="rotate"
           />
-
-          <div style={{ width: "60%", height: 1, background: "rgba(225,73,109,0.15)", margin: "4px 0" }} />
-
-          <SidebarIcon
-            THEME={THEME}
-            active={activeNav === "studio"}
-            label="Studio"
-            onClick={() => {
-              setActiveNav("home");
-              setTimeout(() => {
-                const el = document.getElementById("infinite-studio-section");
-                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-              }, 150);
-            }}
-            icon={InfinityIcon}
-            animationType="pulse"
-          />
-        </div>
-
-        {/* Bottom section with Settings & More */}
-        <div style={{ 
-          width: "70%", 
-          height: 1, 
-          background: `linear-gradient(90deg, transparent 0%, ${THEME.hexA(THEME.wine, 0.15)} 50%, transparent 100%)`,
-          margin: "8px 0 12px",
-          transition: "all 0.3s ease"
-        }} />
-
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%", paddingBottom: 8 }}>
-          <SidebarIcon
-            THEME={THEME}
-            active={activeNav === "more"}
-            label="More"
-            onClick={() => setActiveNav("more")}
-            icon={MoreHorizontal}
-            animationType="scale"
-          />
         </div>
       </aside>
 
-      {/* ─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢ MAIN CONTENT (full width with sidebar padding) ─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢ */}
-      <main style={{ width: "100%", position: "relative", overflow: "hidden", paddingLeft: `${sidebarW}px` }}>
+      {/* ────────────────── MAIN CONTENT (full width with sidebar padding) ────────────────── */}
+      <main style={{ width: "100%", position: "relative", overflowX: "clip", paddingLeft: `${sidebarW}px` }}>
 
         {/* Conditional rendering based on activeNav */}
-        {activeNav === "projects" ? (
-          /* ── INLINE PROJECTS VIEW — keeps sidebar visible ── */
-          <div style={{ padding: "48px", minHeight: "100vh" }}>
-            {/* Header */}
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:40 }}>
+        {(activeNav === "projects" || activeNav === "vault") ? (
+          /* ── CREATIVE VAULT COMPREHENSIVE VIEW — Keeps sidebar visible ── */
+          <div style={{ padding: "48px 48px 80px", minHeight: "100vh", maxWidth: "1440px", margin: "0 auto" }}>
+            
+            {/* Top Vault Header */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 20 }}>
               <div>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "5px 14px", borderRadius: 99,
+                  background: isDark ? "rgba(225, 73, 109, 0.16)" : "rgba(255, 255, 255, 0.9)",
+                  border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.35)" : "rgba(148, 41, 69, 0.2)"}`,
+                  marginBottom: 12,
+                }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#e1496d", boxShadow: "0 0 8px #e1496d" }} />
+                  <span style={{
+                    fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 700,
+                    letterSpacing: "0.08em", textTransform: "uppercase", color: isDark ? "#ff8da7" : "#831843",
+                  }}>
+                    CREATIVE VAULT • LIVING ECOSYSTEM
+                  </span>
+                </div>
+
                 <h1 style={{
-                  fontFamily:"Syne,sans-serif", fontSize:"clamp(28px,4vw,44px)",
-                  fontWeight:800, letterSpacing:"-0.04em", margin:"0 0 6px",
-                  color: THEME.wine,
-                }}>Your Projects</h1>
-                <p style={{ margin:0, fontSize:14, color:colors.textMuted, fontFamily:"'Instrument Sans',sans-serif" }}>
-                  {pastWorks.length} {pastWorks.length===1?"project":"projects"} created
+                  fontFamily: "Syne, sans-serif", fontSize: "clamp(32px, 4.5vw, 48px)",
+                  fontWeight: 800, letterSpacing: "-0.04em", margin: "0 0 8px",
+                  color: colors.text,
+                }}>
+                  Creative <span style={{
+                    background: "linear-gradient(135deg, #e1496d 0%, #ff8da7 100%)",
+                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  }}>Vault</span><span style={{ color: "#e1496d" }}>.</span>
+                </h1>
+                <p style={{ margin: 0, fontSize: 15, color: colors.textMuted, fontFamily: "'Instrument Sans', sans-serif", maxWidth: 640 }}>
+                  Your centralized creative archive. Explore your living ecosystem graph, manage project assets, and instantly resume any work.
                 </p>
               </div>
-              <button
-                onClick={() => { setActiveNav("home"); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }}
-                style={{
-                  display:"flex", alignItems:"center", gap:8,
-                  background:"none", border:`1px solid ${THEME.hexA(THEME.wine,0.2)}`,
-                  borderRadius:10, padding:"8px 16px", cursor:"pointer",
-                  color: THEME.wine, fontSize:13, fontWeight:600,
-                  fontFamily:"'Poppins',sans-serif", transition:"all 0.2s",
-                }}
-                onMouseEnter={e=>e.currentTarget.style.background=THEME.wineTint}
-                onMouseLeave={e=>e.currentTarget.style.background="none"}
-              >
-                ─  Back to Home
-              </button>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <button
+                  onClick={() => { setActiveNav("home"); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    background: "none", border: `1px solid ${isDark ? "rgba(225,73,109,0.3)" : "rgba(148,41,69,0.2)"}`,
+                    borderRadius: 12, padding: "10px 18px", cursor: "pointer",
+                    color: colors.text, fontSize: 13, fontWeight: 600,
+                    fontFamily: "'Poppins', sans-serif", transition: "all 0.2s",
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(225,73,109,0.12)" : "rgba(148,41,69,0.08)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "none"}
+                >
+                  ← Back to Home
+                </button>
+              </div>
             </div>
 
-            {/* Empty state */}
-            {pastWorks.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"80px 0" }}>
-                <div style={{ fontSize:48, marginBottom:16 }}>🎨</div>
-                <h3 style={{ fontFamily:"Syne,sans-serif", fontSize:22, fontWeight:700, color:colors.text, margin:"0 0 8px" }}>
-                  No projects yet
-                </h3>
-                <p style={{ color:colors.textMuted, fontSize:14, fontFamily:"'Instrument Sans',sans-serif" }}>
-                  Start creating to see your work here.
-                </p>
-              </div>
-            ) : (
-              <div style={{
-                display:"grid",
-                gridTemplateColumns:"repeat(auto-fill, minmax(280px, 1fr))",
-                gap:28,
-              }}>
-                {pastWorks.map((proj) => {
-                  const accent = proj.accent || THEME.wine;
-                  return (
-                    <div key={proj.id}
-                      style={{
-                        borderRadius:20, overflow:"hidden",
-                        background: isDark ? "#1a0f16" : "#fff",
-                        border:`1px solid ${THEME.hexA(accent, 0.15)}`,
-                        boxShadow:`0 4px 20px ${THEME.hexA(accent, 0.08)}`,
-                        transition:"all 0.25s cubic-bezier(0.4,0,0.2,1)",
-                        cursor:"pointer",
-                      }}
-                      onMouseEnter={e=>{
-                        e.currentTarget.style.transform="translateY(-4px)";
-                        e.currentTarget.style.boxShadow=`0 4px 20px ${THEME.hexA(accent,0.08)}`;
-                        e.currentTarget.style.borderColor=THEME.hexA(accent,0.4);
-                      }}
-                      onMouseLeave={e=>{
-                        e.currentTarget.style.transform="translateY(0)";
-                        e.currentTarget.style.boxShadow=`0 4px 20px ${THEME.hexA(accent,0.08)}`;
-                        e.currentTarget.style.borderColor=THEME.hexA(accent,0.15);
-                      }}
-                    >
-                      {/* Thumbnail */}
-                      <div style={{
-                        height:170, position:"relative", overflow:"hidden",
-                        background: proj.gradient || `linear-gradient(135deg, ${accent}22, ${accent}44)`,
-                      }}>
-                        {proj.image && typeof proj.image === "string" && proj.image.startsWith("data:") ? (
-                          <img src={proj.image} alt={proj.title}
-                            style={{ width:"100%", height:"100%", objectFit:"cover" }} />
-                        ) : proj.image && !proj.image.startsWith("data:") ? (
-                          <img src={proj.image} alt={proj.title}
-                            style={{ width:"100%", height:"100%", objectFit:"cover" }} />
-                        ) : (
-                          <div style={{
-                            width:"100%", height:"100%", display:"flex",
-                            alignItems:"center", justifyContent:"center",
-                            fontSize:40, opacity:0.4,
-                          }}>
-                            {proj.icon || "🎨"}
-                          </div>
-                        )}
-                        {/* Tool badge */}
-                        <div style={{
-                          position:"absolute", top:10, left:10,
-                          background:"rgba(0,0,0,0.55)", backdropFilter:"blur(8px)",
-                          borderRadius:99, padding:"3px 10px",
-                        }}>
-                          <span style={{ fontSize:10, color:"#fff", fontFamily:"'Poppins',sans-serif", fontWeight:600 }}>
-                            {proj.tool || proj.category || "Design"}
-                          </span>
-                        </div>
-                      </div>
+            {/* Vault Stats Bar */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: 16, marginBottom: 36,
+            }}>
+              {[
+                { label: "Total Projects", val: `${pastWorks.length} Files`, color: "#ff8da7" },
+                { label: "Connected Nodes", val: `${pastWorks.length + 4} Live`, color: "#38bdf8" },
+                { label: "Storage Engine", val: "100% Client-Side", color: "#22d3a8" },
+                { label: "Privacy Status", val: "Zero Server Leak", color: "#a855f7" },
+              ].map((stat, sIdx) => (
+                <div key={sIdx} style={{
+                  padding: "16px 20px", borderRadius: 16,
+                  background: isDark ? "rgba(22, 9, 18, 0.65)" : "rgba(255, 255, 255, 0.85)",
+                  border: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.12)"}`,
+                  boxShadow: isDark ? "0 8px 24px rgba(0,0,0,0.3)" : "0 4px 16px rgba(148,41,69,0.06)",
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                    {stat.label}
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: stat.color, fontFamily: "Syne, sans-serif" }}>
+                    {stat.val}
+                  </div>
+                </div>
+              ))}
+            </div>
 
-                      {/* Info */}
-                      <div style={{ padding:"16px 18px 18px" }}>
-                        <h3 style={{
-                          margin:"0 0 4px", fontSize:15, fontWeight:700,
-                          color: accent, fontFamily:"'Poppins',sans-serif",
-                          letterSpacing:"-0.02em",
-                          overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
-                        }}>{proj.title || "Untitled"}</h3>
-                        <p style={{
-                          margin:"0 0 10px", fontSize:12, color:colors.textMuted,
-                          fontFamily:"'Instrument Sans',sans-serif",
-                        }}>
-                          {proj.category || proj.tool || "Design"} · {proj.year || new Date().getFullYear()}
-                        </p>
-                        {/* Tags — real data only */}
-                        {proj.tags?.length > 0 && (
-                          <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                            {proj.tags.slice(0,3).map(tag => (
-                              <span key={tag} style={{
-                                fontSize:10, padding:"2px 8px", borderRadius:99,
-                                background:`${accent}15`, color:accent,
-                                fontFamily:"'Poppins',sans-serif", fontWeight:600,
-                              }}>{tag}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+            {/* Filter & View Mode Controls */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              flexWrap: "wrap", gap: 16, marginBottom: 32,
+              padding: "16px 20px", borderRadius: 18,
+              background: isDark ? "rgba(22, 9, 18, 0.75)" : "rgba(255, 255, 255, 0.9)",
+              border: `1px solid ${isDark ? "rgba(225,73,109,0.22)" : "rgba(148,41,69,0.14)"}`,
+            }}>
+              {/* Search Bar */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 240, maxWidth: 400 }}>
+                <Search size={16} color={isDark ? "#ff8da7" : "#942945"} />
+                <input
+                  type="text"
+                  placeholder="Search projects by title, category, or tool..."
+                  value={vaultSearch}
+                  onChange={(e) => setVaultSearch(e.target.value)}
+                  className="hero-transparent-input"
+                  style={{
+                    width: "100%", background: "transparent", border: "none", outline: "none",
+                    color: colors.text, fontSize: 13, fontFamily: "'Instrument Sans', sans-serif",
+                  }}
+                />
+                {vaultSearch && (
+                  <button onClick={() => setVaultSearch("")} style={{ background: "none", border: "none", color: colors.textMuted, cursor: "pointer", fontSize: 12 }}>✕</button>
+                )}
+              </div>
+
+              {/* View Mode Toggle */}
+              <div style={{ display: "flex", gap: 6, background: isDark ? "rgba(0,0,0,0.3)" : "rgba(148,41,69,0.06)", padding: 4, borderRadius: 12 }}>
+                {[
+                  { id: "both", label: "❖ Full View" },
+                  { id: "graph", label: "✦ Ecosystem Graph" },
+                  { id: "grid", label: "▤ Projects Archive" },
+                ].map((mode) => (
+                  <button
+                    key={mode.id}
+                    onClick={() => setVaultView(mode.id)}
+                    style={{
+                      padding: "6px 14px", borderRadius: 8,
+                      background: vaultView === mode.id ? "linear-gradient(135deg, #e1496d, #942945)" : "transparent",
+                      border: "none", color: vaultView === mode.id ? "#fff" : colors.textMuted,
+                      fontFamily: "'Poppins', sans-serif", fontSize: 11.5, fontWeight: 600,
+                      cursor: "pointer", transition: "all 0.2s ease",
+                    }}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ═══════════════ SECTION 1: REAL-TIME ECOSYSTEM GRAPH ═══════════════ */}
+            {(vaultView === "both" || vaultView === "graph") && (
+              <div style={{ marginBottom: 48 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                  <div>
+                    <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, fontWeight: 800, color: colors.text, margin: "0 0 4px" }}>
+                      Living Creative Ecosystem
+                    </h2>
+                    <p style={{ fontSize: 13, color: colors.textMuted, margin: 0, fontFamily: "'Instrument Sans', sans-serif" }}>
+                      Drag and inspect living project nodes. Real-time data pathways update automatically as you create.
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{
+                  borderRadius: 24, overflow: "hidden",
+                  border: `1px solid ${isDark ? "rgba(225,73,109,0.25)" : "rgba(148,41,69,0.18)"}`,
+                  boxShadow: isDark ? "0 16px 40px rgba(0,0,0,0.5)" : "0 12px 32px rgba(148,41,69,0.08)",
+                  background: isDark ? "#11060e" : "#fdf6f9",
+                }}>
+                  <MindMapGraph pastWorks={pastWorks} isDark={isDark} THEME={THEME} colors={colors} onNavigate={onNavigate} user={user} onSwitchTab={setActiveNav} />
+                </div>
               </div>
             )}
+
+            {/* ═══════════════ SECTION 2: LIVING PROJECTS ARCHIVE & GRID ═══════════════ */}
+            {(vaultView === "both" || vaultView === "grid") && (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                  <div>
+                    <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, fontWeight: 800, color: colors.text, margin: "0 0 4px" }}>
+                      Projects Library
+                    </h2>
+                    <p style={{ fontSize: 13, color: colors.textMuted, margin: 0, fontFamily: "'Instrument Sans', sans-serif" }}>
+                      Click any card to resume directly in that studio editor.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Filtered Projects */}
+                {(() => {
+                  const filtered = pastWorks.filter(p => {
+                    const matchSearch = vaultSearch === "" ||
+                      p.title?.toLowerCase().includes(vaultSearch.toLowerCase()) ||
+                      p.category?.toLowerCase().includes(vaultSearch.toLowerCase()) ||
+                      p.tool?.toLowerCase().includes(vaultSearch.toLowerCase());
+                    return matchSearch;
+                  });
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div style={{
+                        padding: "64px 32px", borderRadius: 24, textAlign: "center",
+                        background: isDark ? "rgba(22, 9, 18, 0.45)" : "rgba(255, 255, 255, 0.7)",
+                        border: `1.5px dashed ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.15)"}`,
+                      }}>
+                        <div style={{ fontSize: 42, marginBottom: 12 }}>🎨</div>
+                        <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 20, fontWeight: 700, color: colors.text, marginBottom: 6 }}>
+                          {vaultSearch ? "No matching projects found" : "Your Vault is ready for your first creation"}
+                        </h3>
+                        <p style={{ color: colors.textMuted, fontSize: 13.5, maxWidth: 420, margin: "0 auto 20px", fontFamily: "'Instrument Sans', sans-serif" }}>
+                          {vaultSearch ? `Try searching for something else or clear your search term.` : "Choose any creative tool from the Studio to build your first project!"}
+                        </p>
+                        <button
+                          onClick={() => { setActiveNav("home"); setTimeout(() => { const el = document.getElementById("tools-section"); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 100); }}
+                          style={{
+                            padding: "10px 24px", borderRadius: 12,
+                            background: "linear-gradient(135deg, #e1496d, #942945)",
+                            border: "none", color: "#fff", fontSize: 13, fontWeight: 700,
+                            fontFamily: "Syne, sans-serif", cursor: "pointer",
+                          }}
+                        >
+                          Explore Studio Tools →
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                      gap: 24,
+                    }}>
+                      {filtered.map((proj) => {
+                        const accentColor = TOOL_ACCENTS[proj.tool] || "#e1496d";
+                        return (
+                          <div
+                            key={proj.id}
+                            onClick={() => handlePastWorkClick(proj)}
+                            style={{
+                              borderRadius: 22,
+                              overflow: "hidden",
+                              background: isDark ? "rgba(22, 9, 18, 0.85)" : "rgba(255, 255, 255, 0.95)",
+                              border: `1.5px solid ${isDark ? "rgba(225,73,109,0.22)" : "rgba(148,41,69,0.12)"}`,
+                              boxShadow: isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)",
+                              transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+                              cursor: "pointer",
+                              display: "flex",
+                              flexDirection: "column",
+                              justifyContent: "space-between",
+                            }}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.transform = "translateY(-6px)";
+                              e.currentTarget.style.borderColor = "rgba(225,73,109,0.55)";
+                              e.currentTarget.style.boxShadow = "0 18px 40px rgba(225,73,109,0.22)";
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.transform = "translateY(0)";
+                              e.currentTarget.style.borderColor = isDark ? "rgba(225,73,109,0.22)" : "rgba(148,41,69,0.12)";
+                              e.currentTarget.style.boxShadow = isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)";
+                            }}
+                          >
+                            {/* Thumbnail Top Area */}
+                            <div style={{
+                              height: 160, position: "relative", overflow: "hidden",
+                              background: proj.gradient || `linear-gradient(135deg, ${accentColor}25, ${accentColor}08)`,
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                            }}>
+                              {proj.image && typeof proj.image === "string" && proj.image.startsWith("data:") ? (
+                                <img src={proj.image} alt={proj.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              ) : proj.image && !proj.image.startsWith("data:") ? (
+                                <img src={proj.image} alt={proj.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              ) : (
+                                <div style={{
+                                  width: 60, height: 60, borderRadius: 18,
+                                  background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)`,
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  color: "#fff", fontWeight: 800, fontSize: 24, fontFamily: "Syne, sans-serif",
+                                  boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+                                }}>
+                                  {proj.tool?.charAt(0) || "✦"}
+                                </div>
+                              )}
+
+                              {/* Tool Badge */}
+                              <div style={{
+                                position: "absolute", top: 12, left: 12, zIndex: 3,
+                                display: "flex", alignItems: "center", gap: 6,
+                                padding: "4px 12px", borderRadius: 99,
+                                background: isDark ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.85)",
+                                backdropFilter: "blur(10px)", border: `1px solid ${accentColor}40`,
+                              }}>
+                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: accentColor }} />
+                                <span style={{ fontSize: 10.5, fontWeight: 700, color: isDark ? "#fff" : "#1f2937", fontFamily: "'Poppins', sans-serif" }}>
+                                  {proj.tool || proj.category || "Studio"}
+                                </span>
+                              </div>
+
+                              {/* Delete Button */}
+                              <button
+                                onClick={(e) => handleDeleteProject(proj.id, e)}
+                                title="Delete Project"
+                                style={{
+                                  position: "absolute", top: 12, right: 12, zIndex: 3,
+                                  width: 28, height: 28, borderRadius: "50%",
+                                  background: isDark ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.85)",
+                                  border: "1px solid rgba(239, 68, 68, 0.3)",
+                                  color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center",
+                                  cursor: "pointer", outline: "none", transition: "all 0.2s",
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = "#ef4444"}
+                                onMouseLeave={e => e.currentTarget.style.background = isDark ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.85)"}
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+
+                            {/* Card Content Info */}
+                            <div style={{ padding: "18px 20px 20px" }}>
+                              <h3 style={{
+                                margin: "0 0 6px", fontSize: 16, fontWeight: 800,
+                                color: colors.text, fontFamily: "Syne, sans-serif",
+                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                              }}>
+                                {proj.title || "Untitled Project"}
+                              </h3>
+
+                              <p style={{
+                                margin: "0 0 14px", fontSize: 12, color: colors.textMuted,
+                                fontFamily: "'Instrument Sans', sans-serif", display: "flex", alignItems: "center", gap: 6,
+                              }}>
+                                <span>{proj.category || proj.tool}</span>
+                                <span style={{ opacity: 0.4 }}>•</span>
+                                <span>{proj.date || "Saved"}</span>
+                              </p>
+
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.08)"}` }}>
+                                <span style={{
+                                  fontSize: 10.5, padding: "3px 10px", borderRadius: 99,
+                                  background: `${accentColor}18`, color: accentColor, fontWeight: 700,
+                                  fontFamily: "'Poppins', sans-serif", border: `1px solid ${accentColor}30`,
+                                }}>
+                                  {proj.data?.layers ? `${proj.data.layers.length} Layers` : "Ready"}
+                                </span>
+
+                                <span style={{
+                                  fontSize: 12, color: accentColor, fontWeight: 700,
+                                  fontFamily: "Syne, sans-serif", display: "flex", alignItems: "center", gap: 4,
+                                }}>
+                                  Resume →
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+          </div>
+        ) : activeNav === "templates" ? (
+          /* ── TEMPLATES MARKETPLACE INLINE VIEW — Keeps sidebar visible ── */
+          <div style={{ minHeight: "100vh" }}>
+            <TemplatesMarketplace
+              onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onNavigate={onNavigate}
+              user={user}
+              isEmbedded={true}
+            />
+          </div>
+        ) : activeNav === "brand_kit" ? (
+          /* ── BRAND KIT DESIGN SYSTEM INLINE VIEW — Keeps sidebar visible ── */
+          <div style={{ minHeight: "100vh" }}>
+            <BrandKit
+              onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onNavigate={onNavigate}
+              user={user}
+              isEmbedded={true}
+            />
+          </div>
+        ) : activeNav === "pipelines" ? (
+          /* ── PIPELINES OVERVIEW & DETAIL PAGE — Keeps sidebar visible ── */
+          <div style={{ padding: "48px 48px 80px", minHeight: "100vh", maxWidth: "1440px", margin: "0 auto" }}>
+            
+            {/* Top Pipelines Header */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 20 }}>
+              <div>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "5px 14px", borderRadius: 99,
+                  background: isDark ? "rgba(168, 85, 247, 0.16)" : "rgba(255, 255, 255, 0.9)",
+                  border: `1px solid ${isDark ? "rgba(168, 85, 247, 0.35)" : "rgba(148, 41, 69, 0.2)"}`,
+                  marginBottom: 12,
+                }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#a855f7", boxShadow: "0 0 8px #a855f7" }} />
+                  <span style={{
+                    fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 700,
+                    letterSpacing: "0.08em", textTransform: "uppercase", color: isDark ? "#c084fc" : "#6b21a8",
+                  }}>
+                    AUTOMATION PIPELINES • BLUEPRINT ENGINE
+                  </span>
+                </div>
+
+                <h1 style={{
+                  fontFamily: "Syne, sans-serif", fontSize: "clamp(32px, 4.5vw, 48px)",
+                  fontWeight: 800, letterSpacing: "-0.04em", margin: "0 0 8px",
+                  color: colors.text,
+                }}>
+                  Visual Workflow <span style={{
+                    background: "linear-gradient(135deg, #a855f7 0%, #ff8da7 100%)",
+                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  }}>Pipelines</span><span style={{ color: "#a855f7" }}>.</span>
+                </h1>
+                <p style={{ margin: 0, fontSize: 15, color: colors.textMuted, fontFamily: "'Instrument Sans', sans-serif", maxWidth: 680 }}>
+                  Design, test, and execute multi-agent creative pipelines. Connect text prompts to neural image diffusion, voice synthesis, and multi-track video timeline rendering.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <button
+                  onClick={() => onNavigate("pipelines")}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    background: "linear-gradient(135deg, #a855f7, #e1496d)",
+                    border: "none", borderRadius: 12, padding: "12px 24px", cursor: "pointer",
+                    color: "#fff", fontSize: 13.5, fontWeight: 700,
+                    fontFamily: "Syne, sans-serif", boxShadow: "0 8px 24px rgba(168,85,247,0.35)",
+                  }}
+                >
+                  <Zap size={16} /> Open Blueprint Canvas →
+                </button>
+              </div>
+            </div>
+
+            {/* Pipelines Stats */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: 16, marginBottom: 36,
+            }}>
+              {[
+                { label: "Active Pipelines", val: "4 Online", color: "#c084fc" },
+                { label: "Average Speed", val: "1.4s Run Time", color: "#38bdf8" },
+                { label: "Compute Engine", val: "WebGL / GPU Turbo", color: "#22d3a8" },
+                { label: "Execution Leak", val: "Zero (100% Client)", color: "#ff8da7" },
+              ].map((stat, sIdx) => (
+                <div key={sIdx} style={{
+                  padding: "16px 20px", borderRadius: 16,
+                  background: isDark ? "rgba(22, 9, 18, 0.65)" : "rgba(255, 255, 255, 0.85)",
+                  border: `1px solid ${isDark ? "rgba(168,85,247,0.2)" : "rgba(148,41,69,0.12)"}`,
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                    {stat.label}
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: stat.color, fontFamily: "Syne, sans-serif" }}>
+                    {stat.val}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Production Blueprint Pipelines Grid */}
+            <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, fontWeight: 800, color: colors.text, margin: "0 0 20px" }}>
+              Production Blueprint Automations
+            </h2>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+              gap: 24,
+            }}>
+              {[
+                {
+                  id: "pipe_1",
+                  title: "Prompt ➔ Viral TikTok / Reel Auto-Generator",
+                  tag: "Video · Audio · Diffusion",
+                  color: "#a855f7",
+                  desc: "Generates a 3-scene narrative screenplay from a prompt, synthesizes 4K diffusion keyframes, clones neural voiceover, and renders a ready-to-post MP4 video.",
+                  steps: ["Prompt Tokenizer", "Neural LLM Script", "Diffusion 4K", "Voice Synthesizer", "Video Stitcher"],
+                },
+                {
+                  id: "pipe_2",
+                  title: "E-Commerce 3D Product Mockup Suite",
+                  tag: "Packaging · 3D PBR · Batch",
+                  color: "#38bdf8",
+                  desc: "Batch-processes raw product photos, strips backgrounds with AI rembg, applies PBR surface reflections, and exports 4K multi-angle packaging renders.",
+                  steps: ["Asset Ingest", "Rembg AI", "3D Texture Map", "PBR Shaders", "4K Render"],
+                },
+                {
+                  id: "pipe_3",
+                  title: "Vector Brand Identity & Logomark Suite",
+                  tag: "Design System · Vector · SVG",
+                  color: "#e1496d",
+                  desc: "Converts brand keywords and company taglines into scalable SVG emblems, extracts harmonic color palettes, and generates complete brand styleguides.",
+                  steps: ["Brand Prompt", "Vector Logo AI", "Palette Extractor", "Styleguide Spec"],
+                },
+                {
+                  id: "pipe_4",
+                  title: "AI Podcast to Multi-Clip Video Snippets",
+                  tag: "Audio · Waveforms · Captions",
+                  color: "#22d3a8",
+                  desc: "Extracts key highlights from long-form audio tracks, adds real-time dynamic reactive waveforms, auto-generates captions, and outputs formatted video snippets.",
+                  steps: ["Audio File", "Waveform Generator", "Whisper Subtitles", "MP4 Exporter"],
+                },
+              ].map((pipe) => (
+                <div
+                  key={pipe.id}
+                  style={{
+                    borderRadius: 22, overflow: "hidden",
+                    background: isDark ? "rgba(22, 9, 18, 0.85)" : "rgba(255, 255, 255, 0.95)",
+                    border: `1.5px solid ${isDark ? "rgba(168,85,247,0.22)" : "rgba(148,41,69,0.12)"}`,
+                    boxShadow: isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)",
+                    padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between",
+                    transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = "translateY(-6px)";
+                    e.currentTarget.style.borderColor = pipe.color;
+                    e.currentTarget.style.boxShadow = `0 18px 40px ${pipe.color}35`;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.borderColor = isDark ? "rgba(168,85,247,0.22)" : "rgba(148,41,69,0.12)";
+                    e.currentTarget.style.boxShadow = isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)";
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <span style={{
+                        fontSize: 10, padding: "3px 10px", borderRadius: 99,
+                        background: `${pipe.color}18`, color: pipe.color, fontWeight: 700,
+                        border: `1px solid ${pipe.color}35`, fontFamily: "'Poppins', sans-serif",
+                      }}>
+                        {pipe.tag}
+                      </span>
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: pipe.color }} />
+                    </div>
+
+                    <h3 style={{ margin: "0 0 8px", fontSize: 17, fontWeight: 800, color: colors.text, fontFamily: "Syne, sans-serif" }}>
+                      {pipe.title}
+                    </h3>
+
+                    <p style={{ margin: "0 0 18px", fontSize: 13, color: colors.textMuted, lineHeight: 1.5, fontFamily: "'Instrument Sans', sans-serif" }}>
+                      {pipe.desc}
+                    </p>
+
+                    {/* Step pills flow */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
+                      {pipe.steps.map((step, idx) => (
+                        <span key={idx} style={{
+                          fontSize: 10.5, padding: "3px 8px", borderRadius: 6,
+                          background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+                          color: isDark ? "rgba(255,255,255,0.7)" : "#374151",
+                          fontFamily: "monospace",
+                        }}>
+                          {idx + 1}. {step}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => onNavigate("pipelines")}
+                    style={{
+                      width: "100%", padding: "10px 0", borderRadius: 12,
+                      background: `linear-gradient(135deg, ${pipe.color}, #942945)`,
+                      border: "none", color: "#fff", fontSize: 12.5, fontWeight: 700,
+                      fontFamily: "Syne, sans-serif", cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}
+                  >
+                    <Zap size={14} /> Launch in Blueprint Canvas →
+                  </button>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        ) : activeNav === "mockup_studio" ? (
+          /* ── 3D MOCKUPS OVERVIEW & DETAIL PAGE — Keeps sidebar visible ── */
+          <div style={{ padding: "48px 48px 80px", minHeight: "100vh", maxWidth: "1440px", margin: "0 auto" }}>
+            
+            {/* Top 3D Mockups Header */}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 20 }}>
+              <div>
+                <div style={{
+                  display: "inline-flex", alignItems: "center", gap: 8,
+                  padding: "5px 14px", borderRadius: 99,
+                  background: isDark ? "rgba(56, 189, 248, 0.16)" : "rgba(255, 255, 255, 0.9)",
+                  border: `1px solid ${isDark ? "rgba(56, 189, 248, 0.35)" : "rgba(148, 41, 69, 0.2)"}`,
+                  marginBottom: 12,
+                }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#38bdf8", boxShadow: "0 0 8px #38bdf8" }} />
+                  <span style={{
+                    fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 700,
+                    letterSpacing: "0.08em", textTransform: "uppercase", color: isDark ? "#7dd3fc" : "#0369a1",
+                  }}>
+                    WEBGL 3D VIEWPORT • THREE.JS STAGES
+                  </span>
+                </div>
+
+                <h1 style={{
+                  fontFamily: "Syne, sans-serif", fontSize: "clamp(32px, 4.5vw, 48px)",
+                  fontWeight: 800, letterSpacing: "-0.04em", margin: "0 0 8px",
+                  color: colors.text,
+                }}>
+                  3D Device & Packaging <span style={{
+                    background: "linear-gradient(135deg, #38bdf8 0%, #ff8da7 100%)",
+                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  }}>Mockup Studio</span><span style={{ color: "#38bdf8" }}>.</span>
+                </h1>
+                <p style={{ margin: 0, fontSize: 15, color: colors.textMuted, fontFamily: "'Instrument Sans', sans-serif", maxWidth: 680 }}>
+                  Showcase your digital artwork, UI designs, and brand identities mapped in real-time onto photorealistic 3D hardware, apparel, and packaging.
+                </p>
+              </div>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <button
+                  onClick={() => onNavigate("mockup_studio")}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 8,
+                    background: "linear-gradient(135deg, #38bdf8, #942945)",
+                    border: "none", borderRadius: 12, padding: "12px 24px", cursor: "pointer",
+                    color: "#fff", fontSize: 13.5, fontWeight: 700,
+                    fontFamily: "Syne, sans-serif", boxShadow: "0 8px 24px rgba(56,189,248,0.35)",
+                  }}
+                >
+                  <Box size={16} /> Launch 3D WebGL Studio Viewport →
+                </button>
+              </div>
+            </div>
+
+            {/* 3D Stats */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: 16, marginBottom: 36,
+            }}>
+              {[
+                { label: "Render Engine", val: "Three.js WebGL", color: "#38bdf8" },
+                { label: "Lighting Models", val: "PBR & Softbox HDR", color: "#e1496d" },
+                { label: "Export Quality", val: "4K PNG + 360° Spin", color: "#22d3a8" },
+                { label: "Texture Resolution", val: "Up to 4096px", color: "#ff8da7" },
+              ].map((stat, sIdx) => (
+                <div key={sIdx} style={{
+                  padding: "16px 20px", borderRadius: 16,
+                  background: isDark ? "rgba(22, 9, 18, 0.65)" : "rgba(255, 255, 255, 0.85)",
+                  border: `1px solid ${isDark ? "rgba(56,189,248,0.2)" : "rgba(148,41,69,0.12)"}`,
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                    {stat.label}
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: stat.color, fontFamily: "Syne, sans-serif" }}>
+                    {stat.val}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 3D Stages Showcase Grid */}
+            <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, fontWeight: 800, color: colors.text, margin: "0 0 20px" }}>
+              Available 3D Stage Environments
+            </h2>
+
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+              gap: 24,
+            }}>
+              {[
+                {
+                  id: "stg_iphone",
+                  title: "iPhone 16 Pro Stage",
+                  category: "Hardware",
+                  tag: "Natural Titanium",
+                  color: "#e1496d",
+                  desc: "Curved aerospace titanium chassis with realistic Dynamic Island, screen texture mapping, and orbital softbox reflections.",
+                  specs: ["1080 × 2340 Screen", "PBR Titanium", "Curved Bevels"],
+                },
+                {
+                  id: "stg_macbook",
+                  title: "MacBook Pro M3 Stage",
+                  category: "Hardware",
+                  tag: "Space Black",
+                  color: "#38bdf8",
+                  desc: "Anodized aluminum unibody with Liquid Retina XDR display, glass specular highlights, and angled hinge rotation.",
+                  specs: ["16:10 Liquid Retina", "Space Black", "PBR Aluminum"],
+                },
+                {
+                  id: "stg_can",
+                  title: "Aluminum Beverage Can Packaging",
+                  category: "Packaging",
+                  tag: "PBR Metallic",
+                  color: "#ff8da7",
+                  desc: "Continuous cylindrical UV texture mapping with metallic reflections, customizable roughness, and rim lighting.",
+                  specs: ["Metallic Shaders", "360° Wrap", "Studio Rim Light"],
+                },
+                {
+                  id: "stg_glass",
+                  title: "Floating Frosted Glass Slab",
+                  category: "Showcase",
+                  tag: "Translucent Glass",
+                  color: "#22d3a8",
+                  desc: "High-refractive physical glass shader with translucent transmission, rainbow dispersion highlights, and floating badge elevation.",
+                  specs: ["Transmission Glass", "Refraction 1.5", "Beveled Edges"],
+                },
+              ].map((stage) => (
+                <div
+                  key={stage.id}
+                  style={{
+                    borderRadius: 22, overflow: "hidden",
+                    background: isDark ? "rgba(22, 9, 18, 0.85)" : "rgba(255, 255, 255, 0.95)",
+                    border: `1.5px solid ${isDark ? "rgba(56,189,248,0.22)" : "rgba(148,41,69,0.12)"}`,
+                    boxShadow: isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)",
+                    padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between",
+                    transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = "translateY(-6px)";
+                    e.currentTarget.style.borderColor = stage.color;
+                    e.currentTarget.style.boxShadow = `0 18px 40px ${stage.color}35`;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.borderColor = isDark ? "rgba(56,189,248,0.22)" : "rgba(148,41,69,0.12)";
+                    e.currentTarget.style.boxShadow = isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)";
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <span style={{
+                        fontSize: 10, padding: "3px 10px", borderRadius: 99,
+                        background: `${stage.color}18`, color: stage.color, fontWeight: 700,
+                        border: `1px solid ${stage.color}35`, fontFamily: "'Poppins', sans-serif",
+                      }}>
+                        {stage.tag}
+                      </span>
+                      <Box size={16} color={stage.color} />
+                    </div>
+
+                    <h3 style={{ margin: "0 0 8px", fontSize: 17, fontWeight: 800, color: colors.text, fontFamily: "Syne, sans-serif" }}>
+                      {stage.title}
+                    </h3>
+
+                    <p style={{ margin: "0 0 18px", fontSize: 13, color: colors.textMuted, lineHeight: 1.5, fontFamily: "'Instrument Sans', sans-serif" }}>
+                      {stage.desc}
+                    </p>
+
+                    {/* Specs */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
+                      {stage.specs.map((sp, idx) => (
+                        <span key={idx} style={{
+                          fontSize: 10.5, padding: "3px 8px", borderRadius: 6,
+                          background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
+                          color: isDark ? "rgba(255,255,255,0.7)" : "#374151",
+                          fontFamily: "monospace",
+                        }}>
+                          • {sp}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => onNavigate("mockup_studio")}
+                    style={{
+                      width: "100%", padding: "10px 0", borderRadius: 12,
+                      background: `linear-gradient(135deg, ${stage.color}, #942945)`,
+                      border: "none", color: "#fff", fontSize: 12.5, fontWeight: 700,
+                      fontFamily: "Syne, sans-serif", cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    }}
+                  >
+                    <Box size={14} /> Customize in 3D Viewport →
+                  </button>
+                </div>
+              ))}
+            </div>
+
           </div>
         ) : (
           <>
-        {/*  HERO SECTION  */}
-        <section style={{ position:"relative", padding:0, background:isDark?"linear-gradient(135deg,#1a0f14 0%,#0f0408 100%)":THEME.grad.hero, overflow:"hidden" }}>
-          <AnimatedCreateRow onNavigate={onNavigate} user={user} isDark={isDark} THEME={THEME} />
+        {/*  SHOWROOM 3D ROTATING HERO SECTION  */}
+        <section id="hero-showroom" style={{ position:"relative", padding:0, overflow:"hidden" }}>
+          <ShowroomHero onNavigate={onNavigate} user={user} isDark={isDark} THEME={THEME} />
         </section>
 
       {/* Live strip */}
@@ -2087,170 +2844,385 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
 
 
       {/* ── INFINITE STUDIO DEDICATED MEGA SECTION ──────────────────────¬ */}
-      <section className="reveal" id="infinite-studio-section" style={{
-        padding: "100px 48px",
-        background: `linear-gradient(180deg, ${colors.bg} 0%, rgba(148,41,69,0.06) 50%, ${colors.bg} 100%)`,
-        borderTop: `1px solid rgba(225,73,109,0.15)`,
-        borderBottom: `1px solid rgba(225,73,109,0.15)`,
-        opacity: revealedSections.has("infinite-studio-section") ? 1 : 0,
-        transform: revealedSections.has("infinite-studio-section") ? "translateY(0)" : "translateY(40px)",
-        transition: "opacity 0.7s, transform 0.7s",
-        position: "relative",
-        overflow: "hidden"
-      }}>
-        {/* Glow backdrop removed */}
+      {/* ── INFINITE STUDIO DEDICATED STICKY 3-STEP SCROLL MEGA SECTION ────────────────────── ¬ */}
+      <div
+        ref={infiniteStudioSectionRef}
+        id="infinite-studio-section"
+        style={{
+          position: "relative",
+          height: "280vh", // Tall track for 3 scroll stages
+          background: isDark
+            ? "linear-gradient(180deg, #0e060b 0%, #1a0814 35%, #150610 70%, #0e060b 100%)"
+            : "linear-gradient(180deg, #f7f6fb 0%, #fdf2f4 35%, #fae8ee 70%, #f7f6fb 100%)",
+        }}
+      >
+        {/* Sticky 100vh Viewport Stage */}
+        <div
+          style={{
+            position: "sticky",
+            top: 0,
+            height: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            overflow: "hidden",
+            padding: "32px 24px",
+            boxSizing: "border-box",
+          }}
+        >
+          {/* Ambient Glow Orb */}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "650px",
+              height: "450px",
+              background: "radial-gradient(circle, rgba(225, 73, 109, 0.2) 0%, rgba(148, 41, 69, 0.06) 50%, transparent 75%)",
+              filter: "blur(60px)",
+              pointerEvents: "none",
+            }}
+          />
 
-        <div style={{ maxWidth: "1350px", margin: "0 auto", position: "relative", zIndex: 1 }}>
-          {/* Header */}
-          <div style={{ textAlignment: "center", textAlign: "center", marginBottom: "64px" }}>
-            <h2 style={{
-              fontFamily: "Syne, sans-serif", fontSize: "clamp(40px, 5.5vw, 68px)", fontWeight: 800,
-              letterSpacing: "-0.04em", lineHeight: 1.05, color: colors.text, marginBottom: "20px"
-            }}>
-              Meet <span style={{
-                background: `linear-gradient(135deg, ${THEME.wine} 0%, ${THEME.roseGold} 100%)`,
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
-              }}>Infinite Studio</span><span style={{ color: THEME.wine }}>.</span>
-            </h2>
-
-            <p style={{
-              fontSize: "18px", color: colors.textMuted, maxWidth: "680px", margin: "0 auto 36px",
-              lineHeight: 1.6, fontFamily: "'Instrument Sans', sans-serif"
-            }}>
-              The world's first executable infinite graph canvas. Design code, connect live REST APIs, trigger AI layout engines, and collaborate with multiplayer ghost replays.
-            </p>
-
-            <button
-              onClick={() => {
-                if (!user) return onNavigate("auth", "signup");
-                onNavigate("infinite_studio");
-              }}
-              style={{
-                padding: "16px 42px", borderRadius: "16px",
-                background: `linear-gradient(135deg, ${THEME.wine}, ${THEME.roseGold})`,
-                border: "none", color: "#fff", fontSize: "16px", fontWeight: 700,
-                fontFamily: "Syne, sans-serif", cursor: "pointer",
-                boxShadow: "none",
-                display: "inline-flex", alignItems: "center", gap: "12px",
-                transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)"
-              }}
-              onMouseEnter={e => e.currentTarget.style.transform = "translateY(-3px) scale(1.03)"}
-              onMouseLeave={e => e.currentTarget.style.transform = "none"}
-            >
-              <span style={{ fontSize: "20px" }}>∞</span> Open Infinite Studio
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-            </button>
-          </div>
-
-          {/* 6 Killer Features Grid */}
-          <div style={{
-            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "24px"
-          }}>
-            {[
-              {
-                num: "01",
-                title: "Code-to-Canvas Bounding",
-                tag: "React & JSX Nodes",
-                desc: "Elements on canvas aren't static images—they are executable React & Web components. Inspect, modify live JSX/CSS, and export clean production code.",
-                Icon: Code,
-                iconColor: "#ff8da7",
-                gradient: "linear-gradient(135deg, rgba(225,73,109,0.15), rgba(148,41,69,0.05))"
-              },
-              {
-                num: "02",
-                title: "Spatial Infinite Node Graph",
-                tag: "Interactive Wireframes",
-                desc: "Infinite 2D spatial graph with pan & zoom. Draw logic bezier connections between component ports to craft interactive user journeys across artboards.",
-                Icon: Share2,
-                iconColor: "#ff8da7",
-                gradient: "linear-gradient(135deg, rgba(148,41,69,0.15), rgba(225,73,109,0.05))"
-              },
-              {
-                num: "03",
-                title: "Live API Data Pinning",
-                tag: "REST Endpoint Polling",
-                desc: "Bind any card, text, or graph node directly to live REST APIs or webhooks. See live server metrics and user data auto-update inside the design canvas.",
-                Icon: Globe,
-                iconColor: "#22d3a8",
-                gradient: "linear-gradient(135deg, rgba(34,211,168,0.15), rgba(16,185,129,0.05))"
-              },
-              {
-                num: "04",
-                title: "Dev-Mode Spatial Handoff",
-                tag: "CSS Rulers & Tailwind",
-                desc: "One click toggles Dev Mode—exposing pixel spacing between nodes, calculated CSS Flexbox/Grid properties, and instant Tailwind class copying.",
-                Icon: Cpu,
-                iconColor: "#f59e0b",
-                gradient: "linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.05))"
-              },
-              {
-                num: "05",
-                title: "Multiplayer & Ghost Replay",
-                tag: "Spatial Audio & Replays",
-                desc: "See live peer cursors in real time. Hit 'Record' and press 'Play' to watch an animated ghost cursor re-enact your teammate's exact design steps.",
-                Icon: Users,
-                iconColor: "#a855f7",
-                gradient: "linear-gradient(135deg, rgba(168,85,247,0.15), rgba(126,34,206,0.05))"
-              },
-              {
-                num: "06",
-                title: "AI Prompt-to-DOM Engine",
-                tag: "Structured Layout Generation",
-                desc: "Type 'Create a dark pricing table with 3 tiers' and AI outputs structured, fully-editable canvas DOM nodes with auto-layout constraints and text boxes.",
-                Icon: Sparkles,
-                iconColor: "#ff8da7",
-                gradient: "linear-gradient(135deg, rgba(225,73,109,0.2), rgba(255,141,167,0.1))"
-              }
-            ].map(f => {
-              const IconComp = f.Icon;
-              return (
-                <div
-                  key={f.num}
+          <div style={{ maxWidth: "860px", width: "100%", margin: "0 auto", position: "relative", zIndex: 10, textAlign: "center" }}>
+            
+            {/* Header */}
+            <div style={{ marginBottom: "28px" }}>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "5px 14px",
+                  borderRadius: 99,
+                  background: isDark ? "rgba(225, 73, 109, 0.16)" : "rgba(255, 255, 255, 0.9)",
+                  border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.35)" : "rgba(148, 41, 69, 0.2)"}`,
+                  backdropFilter: "blur(12px)",
+                  marginBottom: 12,
+                }}
+              >
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#e1496d", boxShadow: "0 0 8px #e1496d" }} />
+                <span
                   style={{
-                    padding: "32px", borderRadius: "24px",
-                    background: isDark ? "rgba(20,17,23,0.85)" : "#ffffff",
-                    border: `1px solid rgba(225,73,109,0.18)`,
-                    backdropFilter: "blur(12px)",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-                    transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-                    position: "relative", overflow: "hidden"
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = "translateY(-4px)";
-                    e.currentTarget.style.borderColor = "rgba(225,73,109,0.45)";
-                    e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.1)";
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = "none";
-                    e.currentTarget.style.borderColor = "rgba(225,73,109,0.18)";
-                    e.currentTarget.style.boxShadow = "0 10px 30px rgba(0,0,0,0.1)";
+                    fontFamily: "'Poppins', sans-serif",
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    textTransform: "uppercase",
+                    color: isDark ? "#ff8da7" : "#831843",
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-                    <div style={{
-                      width: "48px", height: "48px", borderRadius: "14px",
-                      background: f.gradient, border: "1px solid rgba(225,73,109,0.25)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      <IconComp size={22} color={f.iconColor} />
-                    </div>
-                    <span style={{ fontSize: "11px", fontWeight: 700, color: THEME.roseGold, background: "rgba(225,73,109,0.1)", padding: "4px 10px", borderRadius: "12px" }}>
-                      {f.tag}
-                    </span>
-                  </div>
+                  INFINITE STUDIO • FEATURE {studioScrollProgress < 0.33 ? "01" : studioScrollProgress < 0.66 ? "02" : "03"} OF 03
+                </span>
+              </div>
 
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "20px", fontWeight: 800, color: colors.text, marginBottom: "10px" }}>
-                    {f.title}
-                  </h3>
-                  <p style={{ fontSize: "14px", color: colors.textMuted, lineHeight: 1.65, fontFamily: "'Instrument Sans', sans-serif" }}>
-                    {f.desc}
-                  </p>
-                </div>
-              );
-            })}
+              <h2
+                style={{
+                  fontFamily: "Syne, sans-serif",
+                  fontSize: "clamp(32px, 4.5vw, 56px)",
+                  fontWeight: 800,
+                  letterSpacing: "-0.04em",
+                  lineHeight: 1.05,
+                  color: colors.text,
+                  margin: "0 0 10px",
+                }}
+              >
+                Meet <span style={{
+                  background: "linear-gradient(135deg, #e1496d 0%, #ff8da7 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}>Infinite Studio</span><span style={{ color: "#e1496d" }}>.</span>
+              </h2>
+
+              <p
+                style={{
+                  fontSize: "15px",
+                  color: colors.textMuted,
+                  maxWidth: "580px",
+                  margin: "0 auto",
+                  lineHeight: 1.5,
+                  fontFamily: "'Instrument Sans', sans-serif",
+                }}
+              >
+                The executable infinite graph canvas. Scroll down to discover all 3 core capabilities.
+              </p>
+            </div>
+
+            {/* ═══════════════ EXPANDED 2-COLUMN SHOWROOM STAGE ═══════════════ */}
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                maxWidth: "960px",
+                height: "420px",
+                margin: "0 auto 24px",
+              }}
+            >
+              {infiniteStudioCards.map((f, i) => {
+                const IconComp = f.Icon;
+                const activeIndex = studioScrollProgress < 0.33 ? 0 : studioScrollProgress < 0.66 ? 1 : 2;
+                const isActive = i === activeIndex;
+                const isPast = i < activeIndex;
+
+                return (
+                  <div
+                    key={f.num}
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      padding: "32px 36px",
+                      borderRadius: "28px",
+                      background: isDark ? "rgba(22, 8, 17, 0.92)" : "rgba(255, 255, 255, 0.97)",
+                      border: `1.5px solid ${isActive ? "rgba(225, 73, 109, 0.55)" : "rgba(225, 73, 109, 0.15)"}`,
+                      boxShadow: isActive
+                        ? isDark
+                          ? "0 28px 70px rgba(0, 0, 0, 0.75), 0 0 50px rgba(225, 73, 109, 0.22)"
+                          : "0 24px 60px rgba(148, 41, 69, 0.16), 0 0 35px rgba(225, 73, 109, 0.14)"
+                        : "none",
+                      backdropFilter: "blur(28px)",
+                      transition: "all 0.65s cubic-bezier(0.16, 1, 0.3, 1)",
+                      opacity: isActive ? 1 : 0,
+                      transform: isActive
+                        ? "translateY(0px) scale(1)"
+                        : isPast
+                          ? "translateY(-70px) scale(0.94)"
+                          : "translateY(70px) scale(0.94)",
+                      filter: isActive ? "blur(0px)" : "blur(6px)",
+                      pointerEvents: isActive ? "auto" : "none",
+                      display: "grid",
+                      gridTemplateColumns: "1.1fr 1fr",
+                      gap: "28px",
+                      alignItems: "center",
+                      textAlign: "left",
+                    }}
+                  >
+                    {/* LEFT COLUMN: Feature Info & Detailed Capabilities */}
+                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+                          <div
+                            style={{
+                              width: "48px",
+                              height: "48px",
+                              borderRadius: "14px",
+                              background: f.gradient,
+                              border: "1px solid rgba(225,73,109,0.35)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <IconComp size={22} color={f.iconColor} />
+                          </div>
+                          <span
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 700,
+                              color: "#ff8da7",
+                              background: "rgba(225,73,109,0.15)",
+                              padding: "5px 12px",
+                              borderRadius: 99,
+                              letterSpacing: "0.03em",
+                              border: "1px solid rgba(225,73,109,0.28)",
+                            }}
+                          >
+                            {f.tag}
+                          </span>
+                        </div>
+
+                        <div style={{ fontSize: "11px", fontWeight: 800, color: "#e1496d", letterSpacing: "0.08em", marginBottom: "6px", textTransform: "uppercase" }}>
+                          Feature {f.num} of 03
+                        </div>
+
+                        <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "24px", fontWeight: 800, color: colors.text, marginBottom: "10px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+                          {f.title}
+                        </h3>
+
+                        <p style={{ fontSize: "13.5px", color: colors.textMuted, lineHeight: 1.55, fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 16px" }}>
+                          {f.desc}
+                        </p>
+
+                        {/* Capabilities List */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                          {f.capabilities.map((cap, capIdx) => (
+                            <div key={capIdx} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "12px", color: isDark ? "rgba(255,255,255,0.85)" : "#374151" }}>
+                              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#e1496d" }} />
+                              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}>{cap}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          if (!user) return onNavigate("auth", "signup");
+                          onNavigate("infinite_studio");
+                        }}
+                        style={{
+                          alignSelf: "flex-start",
+                          marginTop: 16,
+                          padding: "9px 20px",
+                          borderRadius: "12px",
+                          background: "linear-gradient(135deg, #e1496d, #942945)",
+                          border: "none",
+                          color: "#fff",
+                          fontSize: "12.5px",
+                          fontWeight: 700,
+                          fontFamily: "Syne, sans-serif",
+                          cursor: "pointer",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          transition: "all 0.25s ease",
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                      >
+                        <span>Open in Studio</span>
+                        <span>→</span>
+                      </button>
+                    </div>
+
+                    {/* RIGHT COLUMN: Live Interactive Mockup Visual */}
+                    <div
+                      style={{
+                        height: "100%",
+                        borderRadius: "20px",
+                        background: isDark ? "rgba(10, 3, 8, 0.7)" : "rgba(245, 235, 240, 0.75)",
+                        border: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.15)"}`,
+                        padding: "18px",
+                        position: "relative",
+                        overflow: "hidden",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {f.demoType === "nodes" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 12, position: "relative" }}>
+                          {/* Node 1 */}
+                          <div style={{ padding: "10px 14px", borderRadius: 10, background: isDark ? "#1e0b17" : "#fff", border: "1px solid rgba(225,73,109,0.35)", width: "65%", boxShadow: "0 4px 14px rgba(0,0,0,0.2)" }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: "#ff8da7", textTransform: "uppercase" }}>Input Node</div>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: colors.text }}>User Prompt & Assets</div>
+                          </div>
+                          {/* Node 2 */}
+                          <div style={{ padding: "10px 14px", borderRadius: 10, background: isDark ? "#280d1f" : "#fff", border: "1.5px solid #e1496d", width: "70%", alignSelf: "flex-end", boxShadow: "0 6px 20px rgba(225,73,109,0.25)" }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: "#22d3a8", textTransform: "uppercase" }}>✦ Neural Engine</div>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: colors.text }}>Executable React Canvas</div>
+                          </div>
+                          {/* Node 3 */}
+                          <div style={{ padding: "10px 14px", borderRadius: 10, background: isDark ? "#1e0b17" : "#fff", border: "1px solid rgba(225,73,109,0.35)", width: "60%", boxShadow: "0 4px 14px rgba(0,0,0,0.2)" }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: "#38bdf8", textTransform: "uppercase" }}>Export Port</div>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: colors.text }}>Clean Production Code</div>
+                          </div>
+                        </div>
+                      )}
+
+                      {f.demoType === "code" && (
+                        <div style={{ fontFamily: "monospace", fontSize: 11, color: isDark ? "#e2e8f0" : "#1e293b", display: "flex", flexDirection: "column", gap: 6 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, paddingBottom: 6, borderBottom: "1px solid rgba(225,73,109,0.2)" }}>
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b" }} />
+                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981" }} />
+                            <span style={{ fontSize: 10, color: colors.textMuted, marginLeft: 6 }}>LiveComponent.jsx</span>
+                          </div>
+                          <div><span style={{ color: "#e1496d" }}>export default</span> <span style={{ color: "#38bdf8" }}>function</span> <span style={{ color: "#facc15" }}>Artboard</span>() &#123;</div>
+                          <div style={{ paddingLeft: 12 }}><span style={{ color: "#e1496d" }}>return</span> (</div>
+                          <div style={{ paddingLeft: 24, color: "#38bdf8" }}>&lt;<span style={{ color: "#ff8da7" }}>div</span> <span style={{ color: "#22d3a8" }}>className</span>=<span style={{ color: "#a855f7" }}>"canvas-node"</span>&gt;</div>
+                          <div style={{ paddingLeft: 36, color: "#facc15" }}>&lt;InteractiveDOM /&gt;</div>
+                          <div style={{ paddingLeft: 24, color: "#38bdf8" }}>&lt;/<span style={{ color: "#ff8da7" }}>div</span>&gt;</div>
+                          <div style={{ paddingLeft: 12 }}>);</div>
+                          <div>&#125;</div>
+                        </div>
+                      )}
+
+                      {f.demoType === "ai" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          <div style={{ padding: "8px 12px", borderRadius: 10, background: isDark ? "rgba(225,73,109,0.18)" : "#fff", border: "1px solid rgba(225,73,109,0.3)", fontSize: 11, color: colors.text, display: "flex", alignItems: "center", gap: 6 }}>
+                            <span>✨</span>
+                            <span style={{ fontWeight: 600 }}>"Generate 3-tier Pricing Table"</span>
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                            <div style={{ padding: 10, borderRadius: 10, background: isDark ? "#1b0a14" : "#fff", border: "1px solid rgba(225,73,109,0.25)", textAlign: "center" }}>
+                              <div style={{ fontSize: 9, color: "#ff8da7", fontWeight: 700 }}>PRO TIER</div>
+                              <div style={{ fontSize: 14, fontWeight: 800, color: colors.text }}>$29/mo</div>
+                            </div>
+                            <div style={{ padding: 10, borderRadius: 10, background: isDark ? "#280d1f" : "#fff", border: "1.5px solid #e1496d", textAlign: "center" }}>
+                              <div style={{ fontSize: 9, color: "#22d3a8", fontWeight: 700 }}>ENTERPRISE</div>
+                              <div style={{ fontSize: 14, fontWeight: 800, color: colors.text }}>$99/mo</div>
+                            </div>
+                          </div>
+                          <div style={{ fontSize: 10, color: "#22d3a8", textAlign: "center", fontWeight: 600 }}>
+                            ✓ 18 DOM Nodes Generated with Flexbox Auto-Layout
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Step Progress Indicators & Jump Controls */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", marginBottom: "20px" }}>
+              {[0, 1, 2].map((stepIdx) => {
+                const activeIndex = studioScrollProgress < 0.33 ? 0 : studioScrollProgress < 0.66 ? 1 : 2;
+                const isStepActive = stepIdx === activeIndex;
+
+                return (
+                  <button
+                    key={stepIdx}
+                    onClick={() => {
+                      const el = infiniteStudioSectionRef.current;
+                      if (!el) return;
+                      const targetY = el.offsetTop + (el.offsetHeight - window.innerHeight) * (stepIdx / 2.5);
+                      window.scrollTo({ top: targetY, behavior: "smooth" });
+                    }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "7px 18px",
+                      borderRadius: 99,
+                      background: isStepActive ? "linear-gradient(135deg, #e1496d, #942945)" : isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.08)",
+                      border: `1px solid ${isStepActive ? "transparent" : isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.15)"}`,
+                      color: isStepActive ? "#fff" : isDark ? "rgba(255,255,255,0.6)" : "rgba(148,41,69,0.6)",
+                      fontFamily: "'Poppins', sans-serif",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      outline: "none",
+                    }}
+                  >
+                    <span>Feature 0{stepIdx + 1}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Scroll Hint */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                fontSize: "12px",
+                fontFamily: "'Poppins', sans-serif",
+                color: isDark ? "rgba(255,255,255,0.45)" : "rgba(148,41,69,0.5)",
+                fontWeight: 500,
+              }}
+            >
+              <span>
+                {studioScrollProgress >= 0.85 ? "Keep scrolling to explore Tools ↓" : "Scroll down to advance feature ↓"}
+              </span>
+            </div>
+
           </div>
         </div>
-      </section>
+      </div>
 
       {/* ── BENTO GRID TOOLS SECTION ── */}
       <div id="tools">
@@ -2418,433 +3390,6 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light" 
           </div>
         </div>
       </div>
-      {/* ── PAST WORK —œ Horizontal Scrollable Showcase ── */}
-      <section className="reveal" id="past-work-section" style={{
-        padding: "96px 0 96px",
-        background: isDark
-          ? "linear-gradient(180deg, #1a0f14 0%, #23141b 50%, #1a0f14 100%)"
-          : "linear-gradient(180deg, #f7f4f7 0%, #fdf2f4 45%, #faf5ff 100%)",
-        opacity: revealedSections.has("past-work-section") ? 1 : 0,
-        transform: revealedSections.has("past-work-section") ? "translateY(0)" : "translateY(40px)",
-        transition: "opacity 0.7s, transform 0.7s",
-        overflow: "hidden",
-        position: "relative",
-      }}>
-        {/* Section ambient gradient blobs removed */}
-
-        {/* Section header */}
-        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 48px", marginBottom: "40px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
-            <div>
-              
-              <h2 style={{
-                fontFamily: "Syne,sans-serif", fontSize: "clamp(32px,4.5vw,52px)", fontWeight: 800,
-                letterSpacing: "-0.04em", lineHeight: 1.05, color: colors.text,
-              }}>
-                Your recent work<span style={{ color: THEME.wine }}>.</span>
-              </h2>
-            </div>
-            <p style={{
-              fontSize: "15px", color: colors.textMuted, maxWidth: "420px", lineHeight: 1.6,
-              fontWeight: 400, fontFamily: "'Instrument Sans',sans-serif",
-            }}>
-              Jump back into active projects or start a new creation from your personal workspace history.
-            </p>
-          </div>
-        </div>
-
-        {/* Scrollable track with cards */}
-        {pastWorks.length === 0 ? (
-          <div style={{
-            maxWidth: "1400px", margin: "0 auto", padding: "0 48px",
-          }}>
-            <div style={{
-              padding: "48px", borderRadius: "24px",
-              background: isDark ? "rgba(255,255,255,0.02)" : "rgba(148,41,69,0.03)",
-              border: `1.5px dashed ${colors.border}`,
-              textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "16px",
-            }}>
-              <div style={{
-                width: "56px", height: "56px", borderRadius: "16px",
-                background: "rgba(148,41,69,0.1)", display: "flex", alignItems: "center", justifyContent: "center",
-                color: THEME.wine, fontSize: "24px",
-              }}>
-                ✦
-              </div>
-              <div>
-                <h3 style={{ fontFamily: "Syne,sans-serif", fontSize: "20px", fontWeight: 700, color: colors.text, marginBottom: "6px" }}>
-                  No past projects yet
-                </h3>
-                <p style={{ fontSize: "14px", color: colors.textMuted, maxWidth: "380px", margin: "0 auto" }}>
-                  Pick any editor from above to create your first artwork, presentation, or video!
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div style={{
-            position: "relative", width: "100%", overflow: "hidden", padding: "12px 0 24px",
-          }}>
-            {/* Left/Right scroll fade gradients */}
-            <div aria-hidden style={{
-              position: "absolute", left: 0, top: 0, bottom: 0, width: "80px", zIndex: 10,
-              background: `linear-gradient(90deg, ${isDark ? "#1a0f14" : "#f7f4f7"} 0%, transparent 100%)`,
-              pointerEvents: "none",
-            }} />
-            <div aria-hidden style={{
-              position: "absolute", right: 0, top: 0, bottom: 0, width: "80px", zIndex: 10,
-              background: `linear-gradient(270deg, ${isDark ? "#1a0f14" : "#faf5ff"} 0%, transparent 100%)`,
-              pointerEvents: "none",
-            }} />
-
-            <div style={{
-              display: "flex", gap: "20px", overflowX: "auto", padding: "8px 48px 20px",
-              scrollSnapType: "x mandatory", scrollbarWidth: "none", msOverflowStyle: "none",
-              WebkitOverflowScrolling: "touch",
-            }}>
-              {pastWorks.map((pw) => {
-                const accentColor = TOOL_ACCENTS[pw.tool] || "#942945";
-                const isHovered = pastWorkHoveredId === pw.id;
-                return (
-                  <div
-                    key={pw.id}
-                    onMouseEnter={() => setPastWorkHoveredId(pw.id)}
-                    onMouseLeave={() => setPastWorkHoveredId(null)}
-                    onClick={() => handlePastWorkClick(pw)}
-                    style={{
-                      flexShrink: 0,
-                      width: "300px",
-                      borderRadius: "20px",
-                      position: "relative",
-                      overflow: "hidden",
-                      cursor: "pointer",
-                      scrollSnapAlign: "start",
-                      background: isDark
-                        ? `linear-gradient(145deg, #1e0f16 0%, #160b12 100%)`
-                        : `linear-gradient(145deg, #ffffff 0%, #fdf5f7 100%)`,
-                      border: `1.5px solid ${isHovered ? accentColor + "55" : (isDark ? "rgba(225,73,109,0.10)" : "rgba(148,41,69,0.08)")}`,
-                      boxShadow: isHovered
-                        ? `0 8px 24px rgba(0,0,0,0.12)`
-                        : `0 2px 16px rgba(0,0,0,0.06)`,
-                      transform: isHovered ? "translateY(-8px) scale(1.02)" : "translateY(0) scale(1)",
-                      transition: "all 0.35s cubic-bezier(0.16,1,0.3,1)",
-                    }}
-                  >
-                    {/* ── Cover area ── */}
-                    <div style={{
-                      height: "160px",
-                      position: "relative",
-                      overflow: "hidden",
-                      background: isDark
-                        ? `linear-gradient(135deg, ${accentColor}20 0%, #0f0408 100%)`
-                        : `linear-gradient(135deg, ${accentColor}14 0%, #faf3f6 100%)`,
-                    }}>
-                      {/* Animated mesh gradient orbs removed */}
-
-                      {/* Tool tag */}
-                      <div style={{
-                        position: "absolute", top: 12, left: 12, zIndex: 3,
-                        display: "flex", alignItems: "center", gap: 5,
-                        padding: "4px 10px", borderRadius: 99,
-                        background: isDark ? "rgba(0,0,0,0.55)" : "rgba(255,255,255,0.80)",
-                        backdropFilter: "blur(10px)",
-                        border: `1px solid ${accentColor}30`,
-                      }}>
-                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: accentColor, flexShrink: 0 }} />
-                        <span style={{ fontSize: 10, fontWeight: 600, color: isDark ? "rgba(255,255,255,0.85)" : "#2d2d2d", fontFamily: "'Poppins',sans-serif", letterSpacing: "0.03em" }}>
-                          {pw.tool}
-                        </span>
-                      </div>
-
-                      {/* Center avatar */}
-                      <div style={{
-                        position: "absolute", inset: 0,
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        transform: isHovered ? "scale(1.1) translateY(-4px)" : "scale(1) translateY(0)",
-                        transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1)",
-                      }}>
-                        <div style={{
-                          width: 56, height: 56, borderRadius: 16,
-                          background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)`,
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          color: "#fff", fontWeight: 800, fontSize: 22,
-                          fontFamily: "Syne,sans-serif",
-                          boxShadow: `0 4px 12px rgba(0,0,0,0.15)`,
-                          border: "2px solid rgba(255,255,255,0.2)",
-                        }}>
-                          {pw.tool?.charAt(0) || "C"}
-                        </div>
-                      </div>
-
-                      {/* Hover overlay */}
-                      <div style={{
-                        position: "absolute", inset: 0, zIndex: 4,
-                        background: `linear-gradient(180deg, transparent 30%, ${accentColor}dd 100%)`,
-                        opacity: isHovered ? 1 : 0,
-                        transition: "opacity 0.3s ease",
-                        display: "flex", alignItems: "flex-end", padding: "12px 14px",
-                      }}>
-                        <span style={{
-                          color: "#fff", fontSize: 12, fontWeight: 700,
-                          fontFamily: "Syne,sans-serif",
-                          display: "flex", alignItems: "center", gap: 6,
-                        }}>
-                          Resume Project
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* ── Footer ── */}
-                    <div style={{ padding: "14px 16px 16px" }}>
-                      <h4 style={{
-                        fontFamily: "Syne,sans-serif", fontSize: 14, fontWeight: 700,
-                        color: isDark ? "#fdf2f4" : "#0f0208", margin: "0 0 5px",
-                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                      }}>
-                        {pw.title}
-                      </h4>
-
-                      <p style={{
-                        fontSize: 11, color: isDark ? "rgba(255,255,255,0.38)" : "rgba(15,2,8,0.4)",
-                        margin: "0 0 12px", display: "flex", alignItems: "center", gap: 5,
-                        fontFamily: "'Poppins',sans-serif", fontWeight: 400,
-                      }}>
-                        <span>{pw.category}</span>
-                        <span style={{ opacity: 0.4 }}>·</span>
-                        <span>{pw.date}</span>
-                      </p>
-
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{
-                          fontSize: 10, padding: "3px 9px", borderRadius: 99,
-                          background: isDark ? `${accentColor}15` : `${accentColor}0d`,
-                          color: accentColor, fontWeight: 600, fontFamily: "'Poppins',sans-serif",
-                          border: `1px solid ${accentColor}25`,
-                        }}>
-                          {pw.data?.layers ? `${pw.data.layers.length} layers` : "Saved"}
-                        </span>
-                        <span style={{
-                          fontSize: 11, color: accentColor, fontWeight: 700,
-                          fontFamily: "'Poppins',sans-serif",
-                          display: "flex", alignItems: "center", gap: 4,
-                          opacity: isHovered ? 1 : 0.6, transition: "opacity 0.2s",
-                        }}>
-                          Open
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-              })}
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* ── REAL-TIME CREATIVE ECOSYSTEM (MIND MAP GRAPH) ────────────────¬ */}
-      <section className="reveal" id="mindmap-section" style={{
-        padding: "80px 0 100px",
-        background: isDark
-          ? "linear-gradient(180deg, #160d12 0%, #0d060a 100%)"
-          : "linear-gradient(180deg, #fdf2f4 0%, #f5ebf2 100%)",
-        borderTop: `1px solid ${colors.border}`,
-        borderBottom: `1px solid ${colors.border}`,
-        opacity: revealedSections.has("mindmap-section") ? 1 : 0,
-        transform: revealedSections.has("mindmap-section") ? "translateY(0)" : "translateY(40px)",
-        transition: "opacity 0.7s, transform 0.7s, background 0.3s",
-        position: "relative", overflow: "hidden",
-      }}>
-        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "0 48px" }}>
-          {/* Section header */}
-          <div style={{ marginBottom: "36px" }}>
-            
-            <h2 style={{
-              fontFamily: "Syne,sans-serif", fontSize: "clamp(32px,4.5vw,52px)", fontWeight: 800,
-              letterSpacing: "-0.04em", lineHeight: 1.05, color: colors.text,
-            }}>
-              Your creative graph,<br />
-              <span style={{
-                background: `linear-gradient(135deg, ${THEME.wine} 0%, ${THEME.roseGold} 100%)`,
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-              }}>alive & connected.</span>
-            </h2>
-            <p style={{ fontSize: "15px", color: colors.textMuted, marginTop: "12px", fontFamily: "'Instrument Sans',sans-serif", maxWidth: 480 }}>
-              Every project is a living node. Watch activity pulse through your creative ecosystem in real-time.
-            </p>
-          </div>
-
-          {/* Graph Canvas */}
-          <MindMapGraph pastWorks={pastWorks} isDark={isDark} THEME={THEME} colors={colors} onNavigate={onNavigate} user={user} onSwitchTab={setActiveNav} />
-        </div>
-      </section>
-      <section className="reveal" id="features-section" style={{ background:colors.marqueeBg, borderBottom:`1px solid ${colors.border}`, opacity: revealedSections.has("features-section") ? 1 : 0, transform: revealedSections.has("features-section") ? "translateY(0)" : "translateY(40px)", transition:"opacity 0.7s, transform 0.7s, background 0.3s, border-color 0.3s" }}>
-        <div style={{ maxWidth:"1400px", margin:"0 auto", padding:"100px 48px", display:"grid", gridTemplateColumns:"1fr 1fr", gap:"80px", alignItems:"center" }}>
-          <div>
-            <div style={{ fontSize:"11px", letterSpacing:"0.14em", color:"#942945", textTransform:"uppercase", marginBottom:"16px", fontWeight:500 }}>The Editor</div>
-            <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, marginBottom:"20px", color:colors.text }}>A canvas<br/>built for<br/><em style={{ fontFamily:"Instrument Serif,serif", color:"#942945" }}>flow.</em></h2>
-            <p style={{ fontSize:"16px", color:colors.textMuted, lineHeight:1.7, margin:"0 0 32px", fontWeight:300 }}>Every tool is one click away. No buried menus. No learning curve. Just your ideas, amplified.</p>
-            <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
-              {[
-                { icon:"🎨", title:"Smart layers & artboards",  desc:"Unlimited layers with blend modes and masks",      color:"#942945" },
-                { icon:"✦", title:"Real-time collaboration",   desc:"Edit with your team simultaneously",               color:"#22d3a8" },
-                { icon:"✨", title:"Export anywhere",           desc:"PNG, SVG, MP4, PPTX, PDF — all from browser",     color:"#e1496d" },
-              ].map((f,i) => (
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:"14px", padding:"16px 18px", background: isDark ? "rgba(225,73,109,0.06)" : "rgba(148,41,69,0.05)", border: isDark ? "1px solid rgba(225,73,109,0.15)" : "1px solid rgba(148,41,69,0.1)", borderRadius:"12px" }}>
-                  <div style={{ width:"36px", height:"36px", background:`${f.color}20`, borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{f.icon}</div>
-                  <div><div style={{ fontSize:"14px", fontWeight:500, marginBottom:"2px", color:colors.text }}>{f.title}</div><div style={{ fontSize:"12px", color:colors.textMuted }}>{f.desc}</div></div>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Visual mockup */}
-          <div style={{ position:"relative", aspectRatio:"4/3", borderRadius:"24px", overflow:"hidden", background:isDark?"#111318":"#fff", border:`1px solid ${isDark?"rgba(148,41,69,0.15)":"rgba(148,41,69,0.12)"}` }}>
-            <div style={{ position:"absolute", inset:0, background:"linear-gradient(135deg, rgba(148,41,69,0.12), rgba(34,211,168,0.06))" }} />
-            <div style={{ position:"absolute", width:"52px", top:0, bottom:0, left:0, background:isDark?"rgba(255,255,255,0.03)":"rgba(148,41,69,0.04)", borderRight:isDark?"1px solid rgba(255,255,255,0.06)":"1px solid rgba(148,41,69,0.08)", display:"flex", flexDirection:"column", alignItems:"center", padding:"16px 0", gap:"8px" }}>
-              {["”“","","®","”","T"].map((ic,i) => <div key={i} style={{ width:"32px", height:"32px", borderRadius:"8px", display:"flex", alignItems:"center", justifyContent:"center", fontSize:"13px", background:i===0?"#942945":isDark?"rgba(255,255,255,0.05)":"rgba(148,41,69,0.06)", color:i===0?"#fff":isDark?"rgba(255,255,255,0.5)":"rgba(148,41,69,0.45)" }}>{ic}</div>)}
-            </div>
-            <div style={{ position:"absolute", inset:0, left:"52px", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <div style={{ fontFamily:"Syne,sans-serif", fontSize:"28px", fontWeight:800, color:isDark?"rgba(255,255,255,0.06)":"rgba(148,41,69,0.08)", letterSpacing:"-0.04em" }}>CREATIFY</div>
-            </div>
-            <div style={{ position:"absolute", width:"120px", height:"80px", top:"20px", left:"80px", borderRadius:"12px", background:isDark?"linear-gradient(135deg,rgba(225,73,109,0.3),rgba(196,154,108,0.2))":"linear-gradient(135deg,rgba(225,73,109,0.2),rgba(196,154,108,0.15))", border:"1px solid rgba(225,73,109,0.3)", animation:"float1 4s ease-in-out infinite" }} />
-            <div style={{ position:"absolute", width:"80px", height:"100px", top:"40px", right:"30px", borderRadius:"12px", background:isDark?"linear-gradient(135deg,rgba(148,41,69,0.3),rgba(245,200,66,0.2))":"linear-gradient(135deg,rgba(148,41,69,0.2),rgba(245,200,66,0.15))", border:"1px solid rgba(148,41,69,0.3)", animation:"float2 5s ease-in-out infinite" }} />
-          </div>
-        </div>
-      </section>
-
-      {/* ── ABOUT SECTION ── */}
-      <section className="reveal" id="about-section" style={{
-        opacity: revealedSections.has("about-section") ? 1 : 0,
-        transform: revealedSections.has("about-section") ? "translateY(0)" : "translateY(40px)",
-        transition: "opacity 0.8s, transform 0.8s",
-        position: "relative",
-        overflow: "hidden",
-      }}>
-
-        {/* Top rule */}
-        <div style={{ height:"1px", background: `linear-gradient(90deg, transparent, ${colors.border}, transparent)` }} />
-
-        {/* ─¬ Top editorial band: full-width dark */}
-        <div style={{
-          background: isDark ? "#0d060a" : "#180d12",
-          padding: "80px 48px",
-          position: "relative",
-          overflow: "hidden",
-        }}>
-          {/* Subtle grid */}
-          <div style={{
-            position:"absolute", inset:0, pointerEvents:"none",
-            backgroundImage: `linear-gradient(rgba(225,73,109,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(225,73,109,0.04) 1px, transparent 1px)`,
-            backgroundSize: "64px 64px",
-          }} />
-          {/* Glow orb removed */}
-
-          <div style={{ maxWidth:"1400px", margin:"0 auto", position:"relative" }}>
-            {/* Eyebrow */}
-            <div style={{ fontSize:"11px", letterSpacing:"0.18em", color:"#942945", textTransform:"uppercase", fontWeight:600, marginBottom:"32px", display:"flex", alignItems:"center", gap:"12px" }}>
-              <div style={{ width:"24px", height:"1px", background:"#942945" }} /> Our Story
-            </div>
-
-            {/* Pull quote */}
-            <div style={{ maxWidth:"900px" }}>
-              <h2 style={{
-                fontFamily: "Syne,sans-serif",
-                fontSize: "clamp(36px,5.5vw,72px)",
-                fontWeight: 800,
-                letterSpacing: "-0.04em",
-                lineHeight: 1,
-                color: "#fdf2f4",
-                margin: 0,
-              }}>
-                Built for creators,<br/>
-                <em style={{ fontFamily:"Instrument Serif,serif", fontWeight:400, color:"#e1496d", fontStyle:"italic" }}>by creators.</em>
-              </h2>
-              <p style={{ fontSize:"17px", color:"rgba(255,255,255,0.38)", lineHeight:1.7, fontWeight:300, maxWidth:"620px", marginTop:"28px" }}>
-                Creatify was born from a simple frustration—¯— professional design tools demanded years of training and steep subscriptions. We built an entirely browser-native suite so anyone can create at a professional level, instantly.
-              </p>
-            </div>
-
-            {/* Stat strip */}
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4,1fr)",
-              gap: "0",
-              marginTop: "64px",
-              borderTop: "1px solid rgba(255,255,255,0.07)",
-              borderLeft: "1px solid rgba(255,255,255,0.07)",
-            }}>
-              {[
-                { value:"2021", label:"Founded" },
-                { value:"3.8M+", label:"Creators worldwide" },
-                { value:"120M+", label:"Projects exported" },
-                { value:"140", label:"Countries reached" },
-              ].map((s, i) => (
-                <div key={i} style={{
-                  padding: "32px 28px",
-                  borderRight: "1px solid rgba(255,255,255,0.07)",
-                  borderBottom: "1px solid rgba(255,255,255,0.07)",
-                }}>
-                  <div style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(28px,3.5vw,44px)", fontWeight:800, letterSpacing:"-0.04em", background:"linear-gradient(135deg,#fdf2f4,#e1496d)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text", lineHeight:1, marginBottom:"8px" }}>{s.value}</div>
-                  <div style={{ fontSize:"12px", color:"rgba(255,255,255,0.3)", letterSpacing:"0.04em", fontWeight:400 }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ─¬ Bottom split: mission + principles */}
-        <div style={{
-          background: isDark ? "#120810" : "#faf5f8",
-          padding: "80px 48px",
-          borderTop: `1px solid ${colors.border}`,
-        }}>
-          <div style={{ maxWidth:"1400px", margin:"0 auto", display:"grid", gridTemplateColumns:"1fr 1fr", gap:"80px", alignItems:"start" }}>
-
-            {/* Left — Mission statement */}
-            <div>
-              <div style={{ fontSize:"11px", letterSpacing:"0.16em", color:"#942945", textTransform:"uppercase", fontWeight:600, marginBottom:"20px", display:"flex", alignItems:"center", gap:"10px" }}>
-                <div style={{ width:"20px", height:"1px", background:"#942945" }} /> Mission
-              </div>
-              <p style={{ fontSize:"18px", color:colors.text, lineHeight:1.75, fontWeight:300, margin:0, letterSpacing:"-0.01em" }}>
-                We believe creativity is a human right, not a premium feature. Every tool in Creatify is designed to collapse the distance between an idea and a finished, professional piece of work.
-              </p>
-              <div style={{ marginTop:"36px", paddingTop:"36px", borderTop:`1px solid ${colors.border}` }}>
-                <p style={{ fontSize:"14px", color:colors.textMuted, lineHeight:1.7, fontWeight:300, margin:0 }}>
-                  From a first-time freelancer to a studio of fifty—¯— Creatify scales with you. Everything runs in your browser. Nothing ever leaves your machine without your say.
-                </p>
-              </div>
-            </div>
-
-            {/* Right — Principles (clean list, no emoji boxes) */}
-            <div>
-              <div style={{ fontSize:"11px", letterSpacing:"0.16em", color:"#942945", textTransform:"uppercase", fontWeight:600, marginBottom:"20px", display:"flex", alignItems:"center", gap:"10px" }}>
-                <div style={{ width:"20px", height:"1px", background:"#942945" }} /> Principles
-              </div>
-              <div style={{ display:"flex", flexDirection:"column" }}>
-                {[
-                  { num:"01", title:"Browser-native",     body:"Zero downloads. Zero plugins. Your work is always a tab away, on any machine." },
-                  { num:"02", title:"Privacy by default",  body:"Raw footage never touches our servers. Rendering happens locally, always." },
-                  { num:"03", title:"Radical simplicity",  body:"Professional power, stripped of unnecessary complexity. Opinionated and fast." },
-                ].map((p, i, arr) => (
-                  <div key={p.num} style={{
-                    display:"grid", gridTemplateColumns:"48px 1fr", gap:"16px", alignItems:"start",
-                    padding:"24px 0",
-                    borderBottom: i < arr.length-1 ? `1px solid ${colors.border}` : "none",
-                  }}>
-                    <div style={{ fontFamily:"Syne,sans-serif", fontSize:"11px", fontWeight:700, color: isDark ? "rgba(225,73,109,0.3)" : "rgba(148,41,69,0.3)", letterSpacing:"0.06em", paddingTop:"3px" }}>{p.num}</div>
-                    <div>
-                      <div style={{ fontSize:"15px", fontWeight:600, color:colors.text, marginBottom:"6px", letterSpacing:"-0.01em" }}>{p.title}</div>
-                      <div style={{ fontSize:"13px", color:colors.textMuted, lineHeight:1.6, fontWeight:300 }}>{p.body}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── CONTACT ── */}
       <section id="contact-section" style={{

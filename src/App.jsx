@@ -14,6 +14,10 @@ import AiMagic from "./components/AiMagic";
 import ProjectsDetail from "./components/ProjectsDetail";
 import Whiteboard from "./components/Whiteboard";
 import InfiniteStudio from "./components/InfiniteStudio";
+import BrandKit from "./components/BrandKit";
+import TemplatesMarketplace from "./components/TemplatesMarketplace";
+import WorkflowPipelines from "./components/WorkflowPipelines";
+import MockupStudio from "./components/MockupStudio";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -276,12 +280,14 @@ export default function App() {
     );
   }
 
-  if (currentPage === "projects") {
+  if (currentPage === "projects" || currentPage === "vault") {
     return (
-      <ProjectsDetail
-        onBack={() => setCurrentPage("home")}
+      <HomePage
         onNavigate={navigate}
         user={user}
+        onSignOut={handleSignOut}
+        theme={appTheme}
+        initialNav="vault"
       />
     );
   }
@@ -300,6 +306,46 @@ export default function App() {
     return (
       <InfiniteStudio
         onBack={() => setCurrentPage("home")}
+        user={user}
+      />
+    );
+  }
+
+  if (currentPage === "brand_kit") {
+    return (
+      <BrandKit
+        onBack={() => setCurrentPage("home")}
+        onNavigate={navigate}
+        user={user}
+      />
+    );
+  }
+
+  if (currentPage === "templates") {
+    return (
+      <TemplatesMarketplace
+        onBack={() => setCurrentPage("home")}
+        onNavigate={navigate}
+        user={user}
+      />
+    );
+  }
+
+  if (currentPage === "pipelines") {
+    return (
+      <WorkflowPipelines
+        onBack={() => setCurrentPage("home")}
+        onNavigate={navigate}
+        user={user}
+      />
+    );
+  }
+
+  if (currentPage === "mockup_studio") {
+    return (
+      <MockupStudio
+        onBack={() => setCurrentPage("home")}
+        onNavigate={navigate}
         user={user}
       />
     );

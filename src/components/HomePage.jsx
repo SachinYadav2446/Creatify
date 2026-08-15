@@ -7,7 +7,7 @@ import {
   Video, Image as ImageIcon, PenTool, Presentation, FileText, Infinity as InfinityIcon, Edit3, Layers,
   Code, Share2, Globe, Cpu, Users, Zap,
   Search, Trash2, Plus, ArrowRight, Check, X,
-  Palette, Box, Compass,
+  Palette, Box, Compass, ChevronLeft, ChevronRight,
   Send, MessageSquare, Copy, CheckCheck, Bug, Lightbulb, Briefcase, Mail, Clock, ShieldCheck
 } from "lucide-react";
 
@@ -25,6 +25,7 @@ import BrandKit from "./BrandKit";
 import TemplatesMarketplace from "./TemplatesMarketplace";
 import WorkflowPipelines from "./WorkflowPipelines";
 import MockupStudio from "./MockupStudio";
+import CreativeCityscapeArt from "./CreativeCityscapeArt";
 
 const TOOL_ACCENTS = {
   "Video Editor": "#ef4444",
@@ -97,13 +98,12 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    const W = container.offsetWidth;
+    const W = container.offsetWidth || 900;
     const H = container.offsetHeight || 600;
     setDimensions({ w: W, h: H });
 
     const cx = W / 2, cy = H / 2;
-    const projects = pastWorks.slice(0, 7);
-    if (projects.length === 0) return;
+    const projects = (pastWorks || []).slice(0, 7);
 
     const TOOL_COLORS = {
       "Video Editor": "#ef4444", "Presentations": "#3b82f6",
@@ -116,12 +116,19 @@ function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSw
     const hubNode = {
       id: "hub", label: "Studio", sublabel: user?.name?.split(" ")[0] || "Your",
       x: cx, y: cy, r: 52,
-      color: THEME.wine, type: "hub",
+      color: THEME?.wine || "#e1496d", type: "hub",
       pulse: 0, floatOffset: 0, isActive: true,
       glowIntensity: 1,
     };
 
-    // Project nodes — golden spiral placement
+    if (projects.length === 0) {
+      nodesRef.current = [hubNode];
+      edgesRef.current = [];
+      setStats({ nodes: 1, edges: 0, active: 0 });
+      return;
+    }
+
+    // Project nodes —  golden spiral placement
     const mainNodes = projects.map((proj, i) => {
       const angle = (i / projects.length) * 2 * Math.PI - Math.PI / 2;
       const orbitR = Math.min(W, H - 100) * 0.3 + (i % 2) * 20;
@@ -881,26 +888,18 @@ function StudioPicker({ onClose, onSelect, isDark }) {
   );
 }
 
-// ─── Luxury Executive Feedback & Contact Form Component ─────────────────────────────
+// ─── Clean, Minimalist & Premium Contact Form ────────────────────────────────
 function ContactForm({ isDark, user }) {
-  const [feedbackType, setFeedbackType] = useState("feature"); // "feature" | "bug" | "feedback" | "partnership"
-  const [sentiment, setSentiment] = useState("loving");
+  const [feedbackType, setFeedbackType] = useState("feature"); // "feature" | "bug" | "feedback" | "general"
   const [form, setForm] = useState({ name: user?.name || "", subject: "", message: "" });
   const [status, setStatus] = useState(null); // null | "sending" | "sent" | "error"
   const [errMsg, setErrMsg] = useState("");
 
-  const feedbackTypes = [
-    { id: "feature", label: "Feature Request", icon: Lightbulb, color: "#e1496d" },
-    { id: "feedback", label: "Product Feedback", icon: Sparkles, color: "#38bdf8" },
-    { id: "bug", label: "Bug Report", icon: Bug, color: "#f87171" },
-    { id: "partnership", label: "Partnership / Pro", icon: Briefcase, color: "#a855f7" },
-  ];
-
-  const quickPrompts = [
-    "Timeline rendering speed",
-    "More 3D Stage models",
-    "Custom LUT Presets",
-    "Multiplayer collaboration",
+  const categories = [
+    { id: "feature", label: "Feature" },
+    { id: "feedback", label: "Feedback" },
+    { id: "bug", label: "Bug Report" },
+    { id: "general", label: "General" },
   ];
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -908,7 +907,7 @@ function ContactForm({ isDark, user }) {
   const handleSubmit = async e => {
     e.preventDefault();
     if (!form.name || !form.message) {
-      setErrMsg("Please fill in both your name and message details.");
+      setErrMsg("Please fill in your name and message.");
       return;
     }
     setStatus("sending");
@@ -918,7 +917,7 @@ function ContactForm({ isDark, user }) {
       const token = localStorage.getItem("creatify_token");
       const fullPayload = {
         ...form,
-        subject: `[${feedbackType.toUpperCase()}] ${form.subject || "General Creator Note"} (${sentiment})`,
+        subject: `[${feedbackType.toUpperCase()}] ${form.subject || "Feedback Note"}`,
       };
       const res = await fetch(`${apiBase}/contact`, {
         method: "POST",
@@ -927,67 +926,64 @@ function ContactForm({ isDark, user }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setErrMsg(data.error || "Something went wrong sending your note.");
+        setErrMsg(data.error || "Failed to send message.");
         setStatus("error");
         return;
       }
       setStatus("sent");
       setForm({ name: user?.name || "", subject: "", message: "" });
     } catch (err) {
-      setErrMsg("Connection error. Please check your network and try again.");
+      setErrMsg("Connection error. Please try again.");
       setStatus("error");
     }
   };
 
   const inp = {
-    background: "rgba(255, 255, 255, 0.035)",
+    background: "rgba(255, 255, 255, 0.03)",
     border: "1px solid rgba(225, 73, 109, 0.18)",
-    borderRadius: 12,
-    padding: "12px 16px",
-    fontSize: 13.5,
+    borderRadius: 8,
+    padding: "9px 12px",
+    fontSize: 12.5,
     color: "#fff",
     fontFamily: "'Instrument Sans', sans-serif",
     width: "100%",
     boxSizing: "border-box",
     outline: "none",
-    transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
   };
 
   if (status === "sent") {
     return (
       <div style={{
-        background: "linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(225, 73, 109, 0.06) 100%)",
-        border: "1.5px solid rgba(34, 197, 94, 0.35)",
-        borderRadius: 24,
-        padding: "48px 36px",
+        background: "rgba(34, 197, 94, 0.06)",
+        border: "1px solid rgba(34, 197, 94, 0.25)",
+        borderRadius: 14,
+        padding: "28px 24px",
         textAlign: "center",
-        boxShadow: "0 20px 50px rgba(0, 0, 0, 0.4)",
-        backdropFilter: "blur(20px)",
       }}>
         <div style={{
-          width: 64, height: 64, borderRadius: "50%",
+          width: 44, height: 44, borderRadius: "50%",
           background: "linear-gradient(135deg, #22c55e, #16a34a)",
           color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-          margin: "0 auto 18px", boxShadow: "0 8px 24px rgba(34, 197, 94, 0.4)",
+          margin: "0 auto 12px",
         }}>
-          <CheckCheck size={32} />
+          <CheckCheck size={20} />
         </div>
-        <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 22, color: "#fff", margin: "0 0 10px" }}>
-          Feedback Received & Logged!
+        <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16, color: "#fff", margin: "0 0 6px" }}>
+          Message sent!
         </h3>
-        <p style={{ fontSize: 14, color: "rgba(255, 255, 255, 0.65)", fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 24px", lineHeight: 1.6, maxWidth: 360, marginInline: "auto" }}>
-          Your message has been directly dispatched to our core engineering pipeline. We'll reply to <strong style={{ color: "#38bdf8" }}>{user?.email}</strong> within 4 hours.
+        <p style={{ fontSize: 12.5, color: "rgba(255, 255, 255, 0.55)", fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 16px" }}>
+          We'll reply to <strong style={{ color: "#38bdf8" }}>{user?.email}</strong> within 24 hours.
         </p>
         <button
           onClick={() => setStatus(null)}
           style={{
-            background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255, 255, 255, 0.18)",
-            color: "#fff", borderRadius: 99, padding: "10px 24px", fontSize: 13,
-            fontFamily: "Syne, sans-serif", fontWeight: 700, cursor: "pointer",
-            transition: "all 0.2s",
+            background: "none", border: "1px solid rgba(255, 255, 255, 0.18)",
+            color: "rgba(255, 255, 255, 0.7)", borderRadius: 99, padding: "6px 16px",
+            fontSize: 11.5, fontFamily: "'Poppins', sans-serif", cursor: "pointer",
           }}
         >
-          Send Another Feedback Note
+          Send another
         </button>
       </div>
     );
@@ -995,178 +991,108 @@ function ContactForm({ isDark, user }) {
 
   return (
     <form onSubmit={handleSubmit} style={{
-      display: "flex", flexDirection: "column", gap: 16,
-      background: "rgba(20, 8, 16, 0.75)",
-      border: "1px solid rgba(225, 73, 109, 0.22)",
-      borderRadius: 24,
-      padding: "28px 28px 24px",
-      backdropFilter: "blur(24px)",
-      boxShadow: "0 24px 60px rgba(0, 0, 0, 0.45)",
+      display: "flex", flexDirection: "column", gap: 10,
+      background: "rgba(20, 8, 16, 0.65)",
+      border: "1px solid rgba(225, 73, 109, 0.16)",
+      borderRadius: 16,
+      padding: "18px 20px",
+      backdropFilter: "blur(16px)",
     }}>
 
-      {/* Verified User Strip */}
+      {/* Clean Category Segment */}
       <div style={{
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 14px", borderRadius: 12,
-        background: "rgba(56, 189, 248, 0.08)", border: "1px solid rgba(56, 189, 248, 0.25)",
+        display: "flex", background: "rgba(0, 0, 0, 0.35)",
+        borderRadius: 8, padding: 2, border: "1px solid rgba(255, 255, 255, 0.06)",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
-          <span style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.75)", fontFamily: "'Instrument Sans', sans-serif" }}>
-            Replying directly to <strong style={{ color: "#38bdf8" }}>{user?.email}</strong>
-          </span>
-        </div>
-        <span style={{ fontSize: 10.5, fontWeight: 700, color: "#38bdf8", letterSpacing: "0.05em", textTransform: "uppercase", fontFamily: "'Poppins', sans-serif" }}>
-          PRIORITY QUEUE
-        </span>
-      </div>
-
-      {/* Feedback Category Chips */}
-      <div>
-        <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "rgba(255, 255, 255, 0.5)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8, fontFamily: "'Poppins', sans-serif" }}>
-          Select Category
-        </label>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-          {feedbackTypes.map((t) => {
-            const Icon = t.icon;
-            const isSel = feedbackType === t.id;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setFeedbackType(t.id)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 8,
-                  padding: "8px 12px", borderRadius: 10,
-                  background: isSel ? "linear-gradient(135deg, #e1496d, #942945)" : "rgba(255, 255, 255, 0.03)",
-                  border: `1px solid ${isSel ? "#e1496d" : "rgba(255, 255, 255, 0.08)"}`,
-                  color: isSel ? "#fff" : "rgba(255, 255, 255, 0.6)",
-                  fontSize: 12, fontWeight: 600, cursor: "pointer",
-                  fontFamily: "'Poppins', sans-serif",
-                  transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-              >
-                <Icon size={14} color={isSel ? "#fff" : t.color} />
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Name + Subject Inputs */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <div>
-          <label style={{ display: "block", fontSize: 10.5, fontWeight: 600, color: "rgba(255, 255, 255, 0.45)", letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase", fontFamily: "'Poppins', sans-serif" }}>
-            Your Name *
-          </label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="e.g. Alex Mercer"
-            style={inp}
-            onFocus={e => { e.target.style.borderColor = "#e1496d"; e.target.style.boxShadow = "0 0 0 3px rgba(225,73,109,0.2)"; }}
-            onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; e.target.style.boxShadow = "none"; }}
-          />
-        </div>
-        <div>
-          <label style={{ display: "block", fontSize: 10.5, fontWeight: 600, color: "rgba(255, 255, 255, 0.45)", letterSpacing: "0.05em", marginBottom: 6, textTransform: "uppercase", fontFamily: "'Poppins', sans-serif" }}>
-            Subject / Topic
-          </label>
-          <input
-            name="subject"
-            value={form.subject}
-            onChange={handleChange}
-            placeholder="e.g. 4K Video export query"
-            style={inp}
-            onFocus={e => { e.target.style.borderColor = "#e1496d"; e.target.style.boxShadow = "0 0 0 3px rgba(225,73,109,0.2)"; }}
-            onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; e.target.style.boxShadow = "none"; }}
-          />
-        </div>
-      </div>
-
-      {/* Quick Suggestion Chips */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.4)", fontFamily: "'Poppins', sans-serif" }}>Quick topics:</span>
-        {quickPrompts.map((qp, idx) => (
+        {categories.map((c) => (
           <button
-            key={idx}
+            key={c.id}
             type="button"
-            onClick={() => setForm(f => ({ ...f, subject: qp }))}
+            onClick={() => setFeedbackType(c.id)}
             style={{
-              fontSize: 10.5, padding: "3px 8px", borderRadius: 6,
-              background: "rgba(255, 255, 255, 0.05)", border: "1px solid rgba(255, 255, 255, 0.1)",
-              color: "rgba(255, 255, 255, 0.7)", cursor: "pointer",
+              flex: 1, padding: "5px 0", borderRadius: 6,
+              background: feedbackType === c.id ? "linear-gradient(135deg, #e1496d, #942945)" : "transparent",
+              border: "none",
+              color: feedbackType === c.id ? "#fff" : "rgba(255, 255, 255, 0.5)",
+              fontSize: 11, fontWeight: 600, fontFamily: "'Poppins', sans-serif",
+              cursor: "pointer", transition: "all 0.15s ease",
             }}
           >
-            + {qp}
+            {c.label}
           </button>
         ))}
       </div>
 
-      {/* Message Textarea */}
-      <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-          <label style={{ fontSize: 10.5, fontWeight: 600, color: "rgba(255, 255, 255, 0.45)", letterSpacing: "0.05em", textTransform: "uppercase", fontFamily: "'Poppins', sans-serif" }}>
-            Detailed Message *
-          </label>
-          <span style={{ fontSize: 10, color: "rgba(255, 255, 255, 0.35)", fontFamily: "monospace" }}>
-            {form.message.length} chars
-          </span>
-        </div>
-        <textarea
-          name="message"
-          value={form.message}
+      {/* Name & Subject Inputs */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <input
+          name="name"
+          value={form.name}
           onChange={handleChange}
-          placeholder="Share your feature idea, workflow bottleneck, or technical feedback..."
-          rows={4}
-          style={{ ...inp, resize: "vertical", lineHeight: 1.6 }}
-          onFocus={e => { e.target.style.borderColor = "#e1496d"; e.target.style.boxShadow = "0 0 0 3px rgba(225,73,109,0.2)"; }}
-          onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; e.target.style.boxShadow = "none"; }}
+          placeholder="Your name *"
+          style={inp}
+          onFocus={e => { e.target.style.borderColor = "#e1496d"; }}
+          onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; }}
+        />
+        <input
+          name="subject"
+          value={form.subject}
+          onChange={handleChange}
+          placeholder="Topic / Subject"
+          style={inp}
+          onFocus={e => { e.target.style.borderColor = "#e1496d"; }}
+          onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; }}
         />
       </div>
 
+      {/* Message Textarea */}
+      <textarea
+        name="message"
+        value={form.message}
+        onChange={handleChange}
+        placeholder="Write your note or feature request here... *"
+        rows={3}
+        style={{ ...inp, resize: "none", lineHeight: 1.5 }}
+        onFocus={e => { e.target.style.borderColor = "#e1496d"; }}
+        onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; }}
+      />
+
       {errMsg && (
-        <div style={{
-          padding: "8px 12px", borderRadius: 8,
-          background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)",
-          color: "#fca5a5", fontSize: 12, fontFamily: "'Poppins', sans-serif",
-        }}>
+        <div style={{ fontSize: 11.5, color: "#f87171", fontFamily: "'Poppins', sans-serif" }}>
           {errMsg}
         </div>
       )}
 
-      {/* Submit Button */}
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        style={{
-          background: status === "sending"
-            ? "rgba(148, 41, 69, 0.5)"
-            : "linear-gradient(135deg, #e1496d 0%, #942945 100%)",
-          color: "#fff",
-          border: "none",
-          borderRadius: 12,
-          padding: "14px 0",
-          fontSize: 14,
-          fontWeight: 700,
-          fontFamily: "Syne, sans-serif",
-          cursor: status === "sending" ? "not-allowed" : "pointer",
-          boxShadow: "0 8px 24px rgba(225, 73, 109, 0.35)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-          letterSpacing: "-0.01em",
-        }}
-        onMouseEnter={e => { if (status !== "sending") e.currentTarget.style.transform = "translateY(-2px)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}
-      >
-        <Send size={15} />
-        {status === "sending" ? "Transmitting Feedback…" : "Submit Feedback to Engineering →"}
-      </button>
+      {/* Bottom Action Row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: "'Instrument Sans', sans-serif" }}>
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
+          <span>Reply sent to <strong style={{ color: "rgba(255,255,255,0.7)" }}>{user?.email}</strong></span>
+        </div>
+
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          style={{
+            background: "linear-gradient(135deg, #e1496d 0%, #942945 100%)",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            padding: "8px 18px",
+            fontSize: 12.5,
+            fontWeight: 700,
+            fontFamily: "Syne, sans-serif",
+            cursor: status === "sending" ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            boxShadow: "0 4px 14px rgba(225, 73, 109, 0.3)",
+          }}
+        >
+          <Send size={12} />
+          {status === "sending" ? "Sending…" : "Send message →"}
+        </button>
+      </div>
     </form>
   );
 }
@@ -1471,24 +1397,31 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
   };
 
   const handlePastWorkClick = (work) => {
-    if (!user) return onNavigate("auth", "signup");
-    if (work.category === "Video Edit" || work.tool === "Video Editor") {
+    if (!work) return;
+    const cat = (work.category || "").toLowerCase();
+    const tool = (work.tool || "").toLowerCase();
+
+    if (cat.includes("video") || tool.includes("video")) {
       onNavigate("editor_load", work);
-    } else if (work.category === "Presentation" || work.tool === "Presentations") {
+    } else if (cat.includes("presentation") || tool.includes("presentation") || tool.includes("slide")) {
       onNavigate("presentation_load", work);
-    } else if (work.category === "Image Edit" || work.tool === "Image Editor") {
+    } else if (cat.includes("image") || tool.includes("image")) {
       onNavigate("image_editor_load", work);
-    } else if (work.category === "Logo Design" || work.tool === "Logo Maker") {
+    } else if (cat.includes("logo") || tool.includes("logo")) {
       onNavigate("logo_maker_load", work);
-    } else if (work.category === "Social Post" || work.tool === "Social Studio") {
+    } else if (cat.includes("social") || tool.includes("social")) {
       onNavigate("social_studio_load", work);
-    } else if (work.category === "Document" || work.tool === "Documents") {
+    } else if (cat.includes("document") || tool.includes("document") || tool.includes("doc")) {
       onNavigate("documents_load", work);
-    } else if (work.category === "Print Layout" || work.tool === "Print Design") {
+    } else if (cat.includes("print") || tool.includes("print")) {
       onNavigate("print_design_load", work);
-    } else if (work.tool === "Whiteboard") {
+    } else if (tool.includes("whiteboard") || cat.includes("whiteboard")) {
       onNavigate("whiteboard_load", work);
-    } else if (work.tool === "Infinite Studio") {
+    } else if (tool.includes("pipeline") || cat.includes("pipeline")) {
+      onNavigate("pipelines");
+    } else if (tool.includes("mockup") || cat.includes("mockup")) {
+      onNavigate("mockup_studio");
+    } else if (tool.includes("infinite") || cat.includes("infinite")) {
       onNavigate("infinite_studio");
     } else {
       onNavigate("editor_load", work);
@@ -2200,30 +2133,37 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
 
         {/* Conditional rendering based on activeNav */}
         {(activeNav === "projects" || activeNav === "vault") ? (
-          /* ── CREATIVE VAULT COMPREHENSIVE VIEW — Keeps sidebar visible ── */
-          <div style={{ padding: "48px 48px 80px", minHeight: "100vh", maxWidth: "1440px", margin: "0 auto" }}>
+          /* ── LUXURY CELESTIAL CREATIVE VAULT VIEW ── */
+          <div style={{ padding: "40px 48px 80px", minHeight: "100vh", maxWidth: "1440px", margin: "0 auto" }}>
             
+            {/* Ambient Background Illumination */}
+            <div style={{
+              position: "absolute", top: 0, left: "20%", width: "60%", height: 350,
+              background: "radial-gradient(circle, rgba(225, 73, 109, 0.08) 0%, transparent 70%)",
+              pointerEvents: "none", filter: "blur(60px)", zIndex: 0,
+            }} />
+
             {/* Top Vault Header */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 20 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 20, position: "relative", zIndex: 1 }}>
               <div>
                 <div style={{
                   display: "inline-flex", alignItems: "center", gap: 8,
                   padding: "5px 14px", borderRadius: 99,
-                  background: isDark ? "rgba(225, 73, 109, 0.16)" : "rgba(255, 255, 255, 0.9)",
+                  background: isDark ? "rgba(225, 73, 109, 0.14)" : "rgba(255, 255, 255, 0.9)",
                   border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.35)" : "rgba(148, 41, 69, 0.2)"}`,
                   marginBottom: 12,
                 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#e1496d", boxShadow: "0 0 8px #e1496d" }} />
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
                   <span style={{
-                    fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 700,
+                    fontFamily: "'Poppins', sans-serif", fontSize: 10.5, fontWeight: 700,
                     letterSpacing: "0.08em", textTransform: "uppercase", color: isDark ? "#ff8da7" : "#831843",
                   }}>
-                    CREATIVE VAULT • LIVING ECOSYSTEM
+                    ENCRYPTED CREATIVE VAULT • LOCAL-FIRST
                   </span>
                 </div>
 
                 <h1 style={{
-                  fontFamily: "Syne, sans-serif", fontSize: "clamp(32px, 4.5vw, 48px)",
+                  fontFamily: "Syne, sans-serif", fontSize: "clamp(30px, 4vw, 44px)",
                   fontWeight: 800, letterSpacing: "-0.04em", margin: "0 0 8px",
                   color: colors.text,
                 }}>
@@ -2232,76 +2172,110 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                     WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                   }}>Vault</span><span style={{ color: "#e1496d" }}>.</span>
                 </h1>
-                <p style={{ margin: 0, fontSize: 15, color: colors.textMuted, fontFamily: "'Instrument Sans', sans-serif", maxWidth: 640 }}>
-                  Your centralized creative archive. Explore your living ecosystem graph, manage project assets, and instantly resume any work.
+                <p style={{ margin: 0, fontSize: 14.5, color: colors.textMuted, fontFamily: "'Instrument Sans', sans-serif", maxWidth: 620, lineHeight: 1.5 }}>
+                  Your centralized high-fidelity creative archive. Inspect connected project topologies, manage project assets, and instantly resume work with zero latency.
                 </p>
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <button
-                  onClick={() => { setActiveNav("home"); setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50); }}
+                  onClick={() => setShowStudioPicker(true)}
                   style={{
                     display: "flex", alignItems: "center", gap: 8,
-                    background: "none", border: `1px solid ${isDark ? "rgba(225,73,109,0.3)" : "rgba(148,41,69,0.2)"}`,
-                    borderRadius: 12, padding: "10px 18px", cursor: "pointer",
-                    color: colors.text, fontSize: 13, fontWeight: 600,
-                    fontFamily: "'Poppins', sans-serif", transition: "all 0.2s",
+                    background: "linear-gradient(135deg, #e1496d, #942945)",
+                    border: "none", borderRadius: 10, padding: "10px 20px", cursor: "pointer",
+                    color: "#fff", fontSize: 13, fontWeight: 700,
+                    fontFamily: "Syne, sans-serif", boxShadow: "0 6px 20px rgba(225,73,109,0.35)",
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = isDark ? "rgba(225,73,109,0.12)" : "rgba(148,41,69,0.08)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "none"}
                 >
-                  ← Back to Home
+                  <Plus size={15} /> + New Creation
                 </button>
               </div>
             </div>
 
-            {/* Vault Stats Bar */}
+            {/* Unified Luxury Telemetry Bar */}
             <div style={{
-              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: 16, marginBottom: 36,
+              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 12, marginBottom: 28, position: "relative", zIndex: 1,
             }}>
               {[
-                { label: "Total Projects", val: `${pastWorks.length} Files`, color: "#ff8da7" },
-                { label: "Connected Nodes", val: `${pastWorks.length + 4} Live`, color: "#38bdf8" },
-                { label: "Storage Engine", val: "100% Client-Side", color: "#22d3a8" },
-                { label: "Privacy Status", val: "Zero Server Leak", color: "#a855f7" },
+                { label: "Vault Holdings", val: `${pastWorks.length} Projects Saved`, color: "#ff8da7" },
+                { label: "Living Nodes", val: `${pastWorks.length + 8} Neural Links`, color: "#38bdf8" },
+                { label: "Storage Engine", val: "IndexedDB / Local-First", color: "#22d3a8" },
+                { label: "Privacy Shield", val: "Zero Server Leak", color: "#c084fc" },
               ].map((stat, sIdx) => (
                 <div key={sIdx} style={{
-                  padding: "16px 20px", borderRadius: 16,
-                  background: isDark ? "rgba(22, 9, 18, 0.65)" : "rgba(255, 255, 255, 0.85)",
-                  border: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.12)"}`,
-                  boxShadow: isDark ? "0 8px 24px rgba(0,0,0,0.3)" : "0 4px 16px rgba(148,41,69,0.06)",
+                  padding: "14px 18px", borderRadius: 14,
+                  background: isDark ? "rgba(22, 8, 18, 0.65)" : "rgba(255, 255, 255, 0.85)",
+                  border: `1px solid ${isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)"}`,
+                  backdropFilter: "blur(12px)",
                 }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 600, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
                     {stat.label}
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: stat.color, fontFamily: "Syne, sans-serif" }}>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: stat.color, fontFamily: "Syne, sans-serif" }}>
                     {stat.val}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Filter & View Mode Controls */}
+            {/* Tool Category Pill Bar */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8, overflowX: "auto",
+              paddingBottom: 8, marginBottom: 20, position: "relative", zIndex: 1,
+            }}>
+              {[
+                { id: "all", label: "All Projects" },
+                { id: "video", label: "🎬 Video" },
+                { id: "image", label: "🎨 Image" },
+                { id: "presentation", label: "📊 Slides" },
+                { id: "pipelines", label: "⚡ Pipelines" },
+                { id: "mockup", label: "📦 3D Mockup" },
+                { id: "logo", label: "💎 Logos" },
+                { id: "document", label: "📄 Docs" },
+                { id: "whiteboard", label: "🧠 Whiteboard" },
+              ].map((cat) => {
+                const isSel = vaultCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setVaultCategory(cat.id)}
+                    style={{
+                      padding: "6px 14px", borderRadius: 99,
+                      background: isSel ? "linear-gradient(135deg, #e1496d, #942945)" : isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
+                      border: `1px solid ${isSel ? "#e1496d" : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`,
+                      color: isSel ? "#fff" : colors.textMuted,
+                      fontSize: 11.5, fontWeight: 600, fontFamily: "'Poppins', sans-serif",
+                      cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.15s ease",
+                    }}
+                  >
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Search & Viewport Toggle Bar */}
             <div style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
-              flexWrap: "wrap", gap: 16, marginBottom: 32,
-              padding: "16px 20px", borderRadius: 18,
-              background: isDark ? "rgba(22, 9, 18, 0.75)" : "rgba(255, 255, 255, 0.9)",
-              border: `1px solid ${isDark ? "rgba(225,73,109,0.22)" : "rgba(148,41,69,0.14)"}`,
+              flexWrap: "wrap", gap: 14, marginBottom: 28,
+              padding: "12px 18px", borderRadius: 14,
+              background: isDark ? "rgba(20, 8, 16, 0.65)" : "rgba(255, 255, 255, 0.9)",
+              border: `1px solid ${isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)"}`,
+              position: "relative", zIndex: 1,
             }}>
               {/* Search Bar */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 240, maxWidth: 400 }}>
-                <Search size={16} color={isDark ? "#ff8da7" : "#942945"} />
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 220, maxWidth: 360 }}>
+                <Search size={15} color={isDark ? "#ff8da7" : "#942945"} />
                 <input
                   type="text"
-                  placeholder="Search projects by title, category, or tool..."
+                  placeholder="Search projects..."
                   value={vaultSearch}
                   onChange={(e) => setVaultSearch(e.target.value)}
-                  className="hero-transparent-input"
                   style={{
                     width: "100%", background: "transparent", border: "none", outline: "none",
-                    color: colors.text, fontSize: 13, fontFamily: "'Instrument Sans', sans-serif",
+                    color: colors.text, fontSize: 12.5, fontFamily: "'Instrument Sans', sans-serif",
                   }}
                 />
                 {vaultSearch && (
@@ -2310,21 +2284,21 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
               </div>
 
               {/* View Mode Toggle */}
-              <div style={{ display: "flex", gap: 6, background: isDark ? "rgba(0,0,0,0.3)" : "rgba(148,41,69,0.06)", padding: 4, borderRadius: 12 }}>
+              <div style={{ display: "flex", gap: 4, background: isDark ? "rgba(0,0,0,0.3)" : "rgba(148,41,69,0.06)", padding: 3, borderRadius: 10 }}>
                 {[
-                  { id: "both", label: "❖ Full View" },
+                  { id: "both", label: "❖ Split View" },
                   { id: "graph", label: "✦ Ecosystem Graph" },
-                  { id: "grid", label: "▤ Projects Archive" },
+                  { id: "grid", label: "▤ Archive Grid" },
                 ].map((mode) => (
                   <button
                     key={mode.id}
                     onClick={() => setVaultView(mode.id)}
                     style={{
-                      padding: "6px 14px", borderRadius: 8,
+                      padding: "5px 12px", borderRadius: 7,
                       background: vaultView === mode.id ? "linear-gradient(135deg, #e1496d, #942945)" : "transparent",
                       border: "none", color: vaultView === mode.id ? "#fff" : colors.textMuted,
-                      fontFamily: "'Poppins', sans-serif", fontSize: 11.5, fontWeight: 600,
-                      cursor: "pointer", transition: "all 0.2s ease",
+                      fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 600,
+                      cursor: "pointer", transition: "all 0.15s ease",
                     }}
                   >
                     {mode.label}
@@ -2333,42 +2307,88 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
               </div>
             </div>
 
-            {/* ═══════════════ SECTION 1: REAL-TIME ECOSYSTEM GRAPH ═══════════════ */}
+            {/* ═══════════════ SECTION 1: LIVING ECOSYSTEM GRAPH ═══════════════ */}
             {(vaultView === "both" || vaultView === "graph") && (
-              <div style={{ marginBottom: 48 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+              <div style={{ marginBottom: 40, position: "relative", zIndex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                   <div>
-                    <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, fontWeight: 800, color: colors.text, margin: "0 0 4px" }}>
-                      Living Creative Ecosystem
+                    <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 19, fontWeight: 800, color: colors.text, margin: "0 0 2px" }}>
+                      Living Creative Topology Graph
                     </h2>
-                    <p style={{ fontSize: 13, color: colors.textMuted, margin: 0, fontFamily: "'Instrument Sans', sans-serif" }}>
-                      Drag and inspect living project nodes. Real-time data pathways update automatically as you create.
+                    <p style={{ fontSize: 12.5, color: colors.textMuted, margin: 0, fontFamily: "'Instrument Sans', sans-serif" }}>
+                      Inspect interactive node connectivity and data pathways.
                     </p>
                   </div>
                 </div>
 
                 <div style={{
-                  borderRadius: 24, overflow: "hidden",
-                  border: `1px solid ${isDark ? "rgba(225,73,109,0.25)" : "rgba(148,41,69,0.18)"}`,
+                  borderRadius: 20, overflow: "hidden",
+                  border: `1px solid ${isDark ? "rgba(225,73,109,0.22)" : "rgba(148,41,69,0.16)"}`,
                   boxShadow: isDark ? "0 16px 40px rgba(0,0,0,0.5)" : "0 12px 32px rgba(148,41,69,0.08)",
-                  background: isDark ? "#11060e" : "#fdf6f9",
+                  background: isDark ? "#10050d" : "#fdf6f9",
                 }}>
                   <MindMapGraph pastWorks={pastWorks} isDark={isDark} THEME={THEME} colors={colors} onNavigate={onNavigate} user={user} onSwitchTab={setActiveNav} />
                 </div>
               </div>
             )}
 
-            {/* ═══════════════ SECTION 2: LIVING PROJECTS ARCHIVE & GRID ═══════════════ */}
+            {/* ═══════════════ SECTION 2: LIVING PROJECTS ARCHIVE (3 PER SCREEN HORIZONTAL SLIDER) ═══════════════ */}
             {(vaultView === "both" || vaultView === "grid") && (
-              <div>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <div style={{ position: "relative", zIndex: 1 }}>
+                {/* Section Header with Left/Right Controls */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 12 }}>
                   <div>
-                    <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, fontWeight: 800, color: colors.text, margin: "0 0 4px" }}>
-                      Projects Library
+                    <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 19, fontWeight: 800, color: colors.text, margin: "0 0 2px" }}>
+                      Project Holdings Archive
                     </h2>
-                    <p style={{ fontSize: 13, color: colors.textMuted, margin: 0, fontFamily: "'Instrument Sans', sans-serif" }}>
-                      Click any card to resume directly in that studio editor.
+                    <p style={{ fontSize: 12.5, color: colors.textMuted, margin: 0, fontFamily: "'Instrument Sans', sans-serif" }}>
+                      Showing recent 3 projects on screen. Scroll or use controls to browse next.
                     </p>
+                  </div>
+
+                  {/* Slider Navigation Buttons */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 11.5, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", marginRight: 4 }}>
+                      {pastWorks.length} {pastWorks.length === 1 ? "project" : "projects"}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (pastWorkScrollRef.current) {
+                          pastWorkScrollRef.current.scrollBy({ left: -pastWorkScrollRef.current.clientWidth, behavior: "smooth" });
+                        }
+                      }}
+                      title="Previous 3 Projects"
+                      style={{
+                        width: 34, height: 34, borderRadius: 10,
+                        background: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
+                        border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.25)" : "rgba(148, 41, 69, 0.15)"}`,
+                        color: colors.text, display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: "pointer", transition: "all 0.15s ease",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.1)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)"; }}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (pastWorkScrollRef.current) {
+                          pastWorkScrollRef.current.scrollBy({ left: pastWorkScrollRef.current.clientWidth, behavior: "smooth" });
+                        }
+                      }}
+                      title="Next 3 Projects"
+                      style={{
+                        width: 34, height: 34, borderRadius: 10,
+                        background: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
+                        border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.25)" : "rgba(148, 41, 69, 0.15)"}`,
+                        color: colors.text, display: "flex", alignItems: "center", justifyContent: "center",
+                        cursor: "pointer", transition: "all 0.15s ease",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.1)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)"; }}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
                   </div>
                 </div>
 
@@ -2379,44 +2399,106 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                       p.title?.toLowerCase().includes(vaultSearch.toLowerCase()) ||
                       p.category?.toLowerCase().includes(vaultSearch.toLowerCase()) ||
                       p.tool?.toLowerCase().includes(vaultSearch.toLowerCase());
-                    return matchSearch;
+
+                    const matchCategory = vaultCategory === "all" ||
+                      (vaultCategory === "video" && (p.tool?.toLowerCase().includes("video") || p.category?.toLowerCase().includes("video"))) ||
+                      (vaultCategory === "image" && (p.tool?.toLowerCase().includes("image") || p.category?.toLowerCase().includes("image"))) ||
+                      (vaultCategory === "presentation" && (p.tool?.toLowerCase().includes("presentation") || p.category?.toLowerCase().includes("presentation"))) ||
+                      (vaultCategory === "pipelines" && (p.tool?.toLowerCase().includes("pipeline") || p.category?.toLowerCase().includes("pipeline"))) ||
+                      (vaultCategory === "mockup" && (p.tool?.toLowerCase().includes("mockup") || p.category?.toLowerCase().includes("mockup"))) ||
+                      (vaultCategory === "logo" && (p.tool?.toLowerCase().includes("logo") || p.category?.toLowerCase().includes("logo"))) ||
+                      (vaultCategory === "document" && (p.tool?.toLowerCase().includes("doc") || p.category?.toLowerCase().includes("doc"))) ||
+                      (vaultCategory === "whiteboard" && (p.tool?.toLowerCase().includes("whiteboard") || p.category?.toLowerCase().includes("whiteboard")));
+
+                    return matchSearch && matchCategory;
                   });
 
                   if (filtered.length === 0) {
                     return (
                       <div style={{
-                        padding: "64px 32px", borderRadius: 24, textAlign: "center",
-                        background: isDark ? "rgba(22, 9, 18, 0.45)" : "rgba(255, 255, 255, 0.7)",
+                        padding: "54px 32px", borderRadius: 20, textAlign: "center",
+                        background: isDark ? "rgba(20, 8, 16, 0.45)" : "rgba(255, 255, 255, 0.7)",
                         border: `1.5px dashed ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.15)"}`,
                       }}>
-                        <div style={{ fontSize: 42, marginBottom: 12 }}>🎨</div>
-                        <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 20, fontWeight: 700, color: colors.text, marginBottom: 6 }}>
-                          {vaultSearch ? "No matching projects found" : "Your Vault is ready for your first creation"}
+                        <div style={{
+                          width: 54, height: 54, borderRadius: "50%",
+                          background: "linear-gradient(135deg, rgba(225,73,109,0.2), rgba(148,41,69,0.3))",
+                          color: "#ff8da7", display: "flex", alignItems: "center", justifyContent: "center",
+                          margin: "0 auto 16px", border: "1px solid rgba(225,73,109,0.3)",
+                        }}>
+                          <Sparkles size={24} />
+                        </div>
+                        <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 700, color: colors.text, marginBottom: 6 }}>
+                          {vaultSearch || vaultCategory !== "all" ? "No matching projects in this view" : "Your Creative Vault is Pristine"}
                         </h3>
-                        <p style={{ color: colors.textMuted, fontSize: 13.5, maxWidth: 420, margin: "0 auto 20px", fontFamily: "'Instrument Sans', sans-serif" }}>
-                          {vaultSearch ? `Try searching for something else or clear your search term.` : "Choose any creative tool from the Studio to build your first project!"}
+                        <p style={{ color: colors.textMuted, fontSize: 13, maxWidth: 400, margin: "0 auto 20px", fontFamily: "'Instrument Sans', sans-serif" }}>
+                          {vaultSearch || vaultCategory !== "all" ? "Try clearing your filters to see all projects." : "Choose any studio tool below to start creating your first masterpiece."}
                         </p>
-                        <button
-                          onClick={() => { setActiveNav("home"); setTimeout(() => { const el = document.getElementById("tools-section"); if (el) el.scrollIntoView({ behavior: "smooth" }); }, 100); }}
-                          style={{
-                            padding: "10px 24px", borderRadius: 12,
-                            background: "linear-gradient(135deg, #e1496d, #942945)",
-                            border: "none", color: "#fff", fontSize: 13, fontWeight: 700,
-                            fontFamily: "Syne, sans-serif", cursor: "pointer",
-                          }}
-                        >
-                          Explore Studio Tools →
-                        </button>
+                        
+                        <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
+                          <button
+                            onClick={() => onNavigate("editor")}
+                            style={{
+                              padding: "8px 18px", borderRadius: 10,
+                              background: "linear-gradient(135deg, #e1496d, #942945)",
+                              border: "none", color: "#fff", fontSize: 12.5, fontWeight: 700,
+                              fontFamily: "Syne, sans-serif", cursor: "pointer",
+                            }}
+                          >
+                            🎬 Video Editor
+                          </button>
+                          <button
+                            onClick={() => onNavigate("image_editor")}
+                            style={{
+                              padding: "8px 18px", borderRadius: 10,
+                              background: "rgba(255,255,255,0.06)",
+                              border: "1px solid rgba(255,255,255,0.15)", color: "#fff", fontSize: 12.5, fontWeight: 700,
+                              fontFamily: "Syne, sans-serif", cursor: "pointer",
+                            }}
+                          >
+                            🎨 Image Studio
+                          </button>
+                          <button
+                            onClick={() => onNavigate("pipelines")}
+                            style={{
+                              padding: "8px 18px", borderRadius: 10,
+                              background: "rgba(255,255,255,0.06)",
+                              border: "1px solid rgba(255,255,255,0.15)", color: "#fff", fontSize: 12.5, fontWeight: 700,
+                              fontFamily: "Syne, sans-serif", cursor: "pointer",
+                            }}
+                          >
+                            ⚡ Pipelines
+                          </button>
+                          <button
+                            onClick={() => onNavigate("mockup_studio")}
+                            style={{
+                              padding: "8px 18px", borderRadius: 10,
+                              background: "rgba(255,255,255,0.06)",
+                              border: "1px solid rgba(255,255,255,0.15)", color: "#fff", fontSize: 12.5, fontWeight: 700,
+                              fontFamily: "Syne, sans-serif", cursor: "pointer",
+                            }}
+                          >
+                            📦 3D Mockups
+                          </button>
+                        </div>
                       </div>
                     );
                   }
 
                   return (
-                    <div style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-                      gap: 24,
-                    }}>
+                    <div
+                      ref={pastWorkScrollRef}
+                      style={{
+                        display: "flex",
+                        gap: 20,
+                        overflowX: "auto",
+                        scrollSnapType: "x mandatory",
+                        scrollBehavior: "smooth",
+                        paddingBottom: 16,
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "rgba(225, 73, 109, 0.3) transparent",
+                      }}
+                    >
                       {filtered.map((proj) => {
                         const accentColor = TOOL_ACCENTS[proj.tool] || "#e1496d";
                         return (
@@ -2424,31 +2506,35 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                             key={proj.id}
                             onClick={() => handlePastWorkClick(proj)}
                             style={{
-                              borderRadius: 22,
+                              flex: "0 0 calc((100% - 40px) / 3)",
+                              minWidth: "calc((100% - 40px) / 3)",
+                              maxWidth: "calc((100% - 40px) / 3)",
+                              scrollSnapAlign: "start",
+                              borderRadius: 18,
                               overflow: "hidden",
-                              background: isDark ? "rgba(22, 9, 18, 0.85)" : "rgba(255, 255, 255, 0.95)",
-                              border: `1.5px solid ${isDark ? "rgba(225,73,109,0.22)" : "rgba(148,41,69,0.12)"}`,
-                              boxShadow: isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)",
-                              transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+                              background: isDark ? "rgba(20, 8, 16, 0.8)" : "rgba(255, 255, 255, 0.95)",
+                              border: `1px solid ${isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)"}`,
+                              boxShadow: isDark ? "0 10px 28px rgba(0,0,0,0.35)" : "0 6px 20px rgba(148,41,69,0.06)",
+                              transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
                               cursor: "pointer",
                               display: "flex",
                               flexDirection: "column",
                               justifyContent: "space-between",
                             }}
                             onMouseEnter={e => {
-                              e.currentTarget.style.transform = "translateY(-6px)";
-                              e.currentTarget.style.borderColor = "rgba(225,73,109,0.55)";
-                              e.currentTarget.style.boxShadow = "0 18px 40px rgba(225,73,109,0.22)";
+                              e.currentTarget.style.transform = "translateY(-4px)";
+                              e.currentTarget.style.borderColor = accentColor;
+                              e.currentTarget.style.boxShadow = `0 14px 36px ${accentColor}30`;
                             }}
                             onMouseLeave={e => {
                               e.currentTarget.style.transform = "translateY(0)";
-                              e.currentTarget.style.borderColor = isDark ? "rgba(225,73,109,0.22)" : "rgba(148,41,69,0.12)";
-                              e.currentTarget.style.boxShadow = isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)";
+                              e.currentTarget.style.borderColor = isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)";
+                              e.currentTarget.style.boxShadow = isDark ? "0 10px 28px rgba(0,0,0,0.35)" : "0 6px 20px rgba(148,41,69,0.06)";
                             }}
                           >
                             {/* Thumbnail Top Area */}
                             <div style={{
-                              height: 160, position: "relative", overflow: "hidden",
+                              height: 145, position: "relative", overflow: "hidden",
                               background: proj.gradient || `linear-gradient(135deg, ${accentColor}25, ${accentColor}08)`,
                               display: "flex", alignItems: "center", justifyContent: "center",
                             }}>
@@ -2458,10 +2544,10 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                                 <img src={proj.image} alt={proj.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                               ) : (
                                 <div style={{
-                                  width: 60, height: 60, borderRadius: 18,
+                                  width: 52, height: 52, borderRadius: 14,
                                   background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)`,
                                   display: "flex", alignItems: "center", justifyContent: "center",
-                                  color: "#fff", fontWeight: 800, fontSize: 24, fontFamily: "Syne, sans-serif",
+                                  color: "#fff", fontWeight: 800, fontSize: 20, fontFamily: "Syne, sans-serif",
                                   boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
                                 }}>
                                   {proj.tool?.charAt(0) || "✦"}
@@ -2470,14 +2556,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
 
                               {/* Tool Badge */}
                               <div style={{
-                                position: "absolute", top: 12, left: 12, zIndex: 3,
-                                display: "flex", alignItems: "center", gap: 6,
-                                padding: "4px 12px", borderRadius: 99,
-                                background: isDark ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.85)",
+                                position: "absolute", top: 10, left: 10, zIndex: 3,
+                                display: "flex", alignItems: "center", gap: 5,
+                                padding: "3px 10px", borderRadius: 99,
+                                background: isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.85)",
                                 backdropFilter: "blur(10px)", border: `1px solid ${accentColor}40`,
                               }}>
-                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: accentColor }} />
-                                <span style={{ fontSize: 10.5, fontWeight: 700, color: isDark ? "#fff" : "#1f2937", fontFamily: "'Poppins', sans-serif" }}>
+                                <span style={{ width: 5, height: 5, borderRadius: "50%", background: accentColor }} />
+                                <span style={{ fontSize: 10, fontWeight: 700, color: isDark ? "#fff" : "#1f2937", fontFamily: "'Poppins', sans-serif" }}>
                                   {proj.tool || proj.category || "Studio"}
                                 </span>
                               </div>
@@ -2487,24 +2573,24 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                                 onClick={(e) => handleDeleteProject(proj.id, e)}
                                 title="Delete Project"
                                 style={{
-                                  position: "absolute", top: 12, right: 12, zIndex: 3,
-                                  width: 28, height: 28, borderRadius: "50%",
-                                  background: isDark ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.85)",
+                                  position: "absolute", top: 10, right: 10, zIndex: 3,
+                                  width: 26, height: 26, borderRadius: "50%",
+                                  background: isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.85)",
                                   border: "1px solid rgba(239, 68, 68, 0.3)",
                                   color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center",
-                                  cursor: "pointer", outline: "none", transition: "all 0.2s",
+                                  cursor: "pointer", outline: "none", transition: "all 0.15s",
                                 }}
                                 onMouseEnter={e => e.currentTarget.style.background = "#ef4444"}
-                                onMouseLeave={e => e.currentTarget.style.background = isDark ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.85)"}
+                                onMouseLeave={e => e.currentTarget.style.background = isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.85)"}
                               >
-                                <Trash2 size={13} />
+                                <Trash2 size={12} />
                               </button>
                             </div>
 
                             {/* Card Content Info */}
-                            <div style={{ padding: "18px 20px 20px" }}>
+                            <div style={{ padding: "14px 16px 16px" }}>
                               <h3 style={{
-                                margin: "0 0 6px", fontSize: 16, fontWeight: 800,
+                                margin: "0 0 4px", fontSize: 15, fontWeight: 800,
                                 color: colors.text, fontFamily: "Syne, sans-serif",
                                 overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
                               }}>
@@ -2512,7 +2598,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                               </h3>
 
                               <p style={{
-                                margin: "0 0 14px", fontSize: 12, color: colors.textMuted,
+                                margin: "0 0 12px", fontSize: 11.5, color: colors.textMuted,
                                 fontFamily: "'Instrument Sans', sans-serif", display: "flex", alignItems: "center", gap: 6,
                               }}>
                                 <span>{proj.category || proj.tool}</span>
@@ -2520,9 +2606,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                                 <span>{proj.date || "Saved"}</span>
                               </p>
 
-                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.08)"}` }}>
+                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.08)"}` }}>
                                 <span style={{
-                                  fontSize: 10.5, padding: "3px 10px", borderRadius: 99,
+                                  fontSize: 10, padding: "2px 8px", borderRadius: 99,
                                   background: `${accentColor}18`, color: accentColor, fontWeight: 700,
                                   fontFamily: "'Poppins', sans-serif", border: `1px solid ${accentColor}30`,
                                 }}>
@@ -2530,7 +2616,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                                 </span>
 
                                 <span style={{
-                                  fontSize: 12, color: accentColor, fontWeight: 700,
+                                  fontSize: 11.5, color: accentColor, fontWeight: 700,
                                   fontFamily: "Syne, sans-serif", display: "flex", alignItems: "center", gap: 4,
                                 }}>
                                   Resume →
@@ -2967,63 +3053,19 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
           </div>
         ) : (
           <>
-        {/*  SHOWROOM 3D ROTATING HERO SECTION  */}
-        <section id="hero-showroom" style={{ position:"relative", padding:0, overflow:"hidden" }}>
+        {/* SHOWROOM 3D ROTATING HERO SECTION */}
+        <section id="hero-showroom" style={{ position:"relative", padding:0, overflow:"hidden", minHeight: "100vh", width: "100%" }}>
           <ShowroomHero onNavigate={onNavigate} user={user} isDark={isDark} THEME={THEME} />
         </section>
 
-      {/* Live strip */}
+      {/* ── SPACIOUS GAP TRACK BETWEEN HERO AND INFINITE STUDIO ── */}
       <div style={{
-        borderTop: `1px solid ${colors.border}`,
-        borderBottom: `1px solid ${colors.border}`,
-        background: isDark ? "rgba(14,6,11,0.8)" : "rgba(253,248,250,0.9)",
-        backdropFilter: "blur(8px)",
-        overflow: "hidden",
-        position: "relative",
-      }}>
-        {/* Left fade */}
-        <div style={{ position:"absolute", left:0, top:0, bottom:0, width:80, background:`linear-gradient(90deg,${isDark?"#0e060b":"#f7f6fb"},transparent)`, zIndex:2, pointerEvents:"none" }} />
-        {/* Right fade */}
-        <div style={{ position:"absolute", right:0, top:0, bottom:0, width:80, background:`linear-gradient(270deg,${isDark?"#0e060b":"#f7f6fb"},transparent)`, zIndex:2, pointerEvents:"none" }} />
+        height: "120px",
+        width: "100%",
+        background: isDark ? "#0e060b" : "#f7f6fb",
+      }} />
 
-        <div style={{ display:"flex", padding:"0", overflow:"hidden" }}>
-          <div style={{ display:"flex", whiteSpace:"nowrap", animation:"marquee 35s linear infinite", alignItems:"stretch" }}>
-            {[...Array(2)].flatMap((_, gi) =>
-              [
-                { label:"Video Editor",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>, color:"#e1496d" },
-                { label:"Presentations",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="13" rx="2"/><path d="M8 21h8M12 16v5"/></svg>, color:"#942945" },
-                { label:"Whiteboard",      icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>, color:"#b13453" },
-                { label:"Logo Maker",      icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, color:"#e1496d" },
-                { label:"Social Studio",   icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>, color:"#942945" },
-                { label:"Image Editor",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>, color:"#b13453" },
-                { label:"Documents",       icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>, color:"#e1496d" },
-                { label:"Infinite Studio", icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg>, color:"#942945" },
-                { label:"AI Magic",        icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, color:"#b13453" },
-                { label:"Print Design",    icon:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>, color:"#e1496d" },
-              ].map((t, i) => (
-                <span key={`${gi}-${i}`} style={{
-                  display:"inline-flex", alignItems:"center", gap:8,
-                  padding:"16px 32px",
-                  fontSize:12, fontFamily:"'Poppins',sans-serif", fontWeight:500,
-                  letterSpacing:"0.03em",
-                  color: isDark ? "rgba(255,255,255,0.45)" : "rgba(15,2,8,0.45)",
-                  borderRight: `1px solid ${colors.border}`,
-                  whiteSpace:"nowrap",
-                  transition:"color 0.2s",
-                  cursor:"default",
-                }}>
-                  <span style={{ color: t.color, opacity: 0.7 }}>{t.icon}</span>
-                  {t.label}
-                </span>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-
-
-      {/* ── INFINITE STUDIO DEDICATED MEGA SECTION ──────────────────────¬ */}
-      {/* ── INFINITE STUDIO DEDICATED STICKY 3-STEP SCROLL MEGA SECTION ────────────────────── ¬ */}
+      {/* ── INFINITE STUDIO DEDICATED STICKY 3-STEP SCROLL MEGA SECTION ── */}
       <div
         ref={infiniteStudioSectionRef}
         id="infinite-studio-section"
@@ -3046,7 +3088,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
             justifyContent: "center",
             alignItems: "center",
             overflow: "hidden",
-            padding: "32px 24px",
+            padding: "60px 24px 40px",
             boxSizing: "border-box",
           }}
         >
@@ -3065,38 +3107,19 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
             }}
           />
 
-          <div style={{ maxWidth: "860px", width: "100%", margin: "0 auto", position: "relative", zIndex: 10, textAlign: "center" }}>
+          <div
+            style={{
+              maxWidth: "860px",
+              width: "100%",
+              margin: "0 auto",
+              position: "relative",
+              zIndex: 10,
+              textAlign: "center",
+            }}
+          >
             
             {/* Header */}
             <div style={{ marginBottom: "28px" }}>
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "5px 14px",
-                  borderRadius: 99,
-                  background: isDark ? "rgba(225, 73, 109, 0.16)" : "rgba(255, 255, 255, 0.9)",
-                  border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.35)" : "rgba(148, 41, 69, 0.2)"}`,
-                  backdropFilter: "blur(12px)",
-                  marginBottom: 12,
-                }}
-              >
-                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#e1496d", boxShadow: "0 0 8px #e1496d" }} />
-                <span
-                  style={{
-                    fontFamily: "'Poppins', sans-serif",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    color: isDark ? "#ff8da7" : "#831843",
-                  }}
-                >
-                  INFINITE STUDIO • FEATURE {studioScrollProgress < 0.33 ? "01" : studioScrollProgress < 0.66 ? "02" : "03"} OF 03
-                </span>
-              </div>
-
               <h2
                 style={{
                   fontFamily: "Syne, sans-serif",
@@ -3569,224 +3592,248 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         </div>
       </div>
 
-      {/* ── LUXURY CLASSY CONTACT & FEEDBACK SECTION ── */}
-      <section id="contact-section" style={{
+      {/* ── DELIGHTFUL PANORAMIC VECTOR CITYSCAPE ART BANNER ── */}
+      <CreativeCityscapeArt onNavigate={onNavigate} isDark={isDark} THEME={THEME} />
+
+      {/* ── CELESTIAL CREATIVE PULSE LIVE STRIP (JUST ABOVE FEEDBACK) ── */}
+      <div style={{
+        borderTop: "1px solid rgba(225, 73, 109, 0.16)",
+        borderBottom: "1px solid rgba(225, 73, 109, 0.16)",
         background: isDark
-          ? "radial-gradient(ellipse at 80% 30%, rgba(225, 73, 109, 0.12) 0%, #0a0408 70%)"
-          : "radial-gradient(ellipse at 80% 30%, rgba(225, 73, 109, 0.08) 0%, #12050e 70%)",
-        borderTop: "1px solid rgba(225, 73, 109, 0.18)",
+          ? "linear-gradient(90deg, #090307 0%, #150510 50%, #090307 100%)"
+          : "linear-gradient(90deg, #fdf8fa 0%, #faeef3 50%, #fdf8fa 100%)",
+        overflow: "hidden",
+        position: "relative",
+        padding: "16px 0",
+      }}>
+        {/* Deep Left Mirror Fade */}
+        <div style={{
+          position: "absolute", left: 0, top: 0, bottom: 0, width: 140,
+          background: `linear-gradient(90deg, ${isDark ? "#090307" : "#fdf8fa"}, transparent)`,
+          zIndex: 3, pointerEvents: "none",
+        }} />
+
+        {/* Deep Right Mirror Fade */}
+        <div style={{
+          position: "absolute", right: 0, top: 0, bottom: 0, width: 140,
+          background: `linear-gradient(270deg, ${isDark ? "#090307" : "#fdf8fa"}, transparent)`,
+          zIndex: 3, pointerEvents: "none",
+        }} />
+
+        <div style={{ display: "flex", overflow: "hidden", width: "100%", padding: "4px 0" }}>
+          <div
+            className="creative-live-ticker"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              whiteSpace: "nowrap",
+              animation: "marquee 42s linear infinite",
+              willChange: "transform",
+              padding: "4px 0",
+            }}
+          >
+            {[...Array(2)].flatMap((_, gi) =>
+              [
+                { toolId: "editor", label: "4K Multi-Track Video Timeline", tag: "GPU ACCELERATED", icon: Video, color: "#ef4444", live: true },
+                { toolId: "pipelines", label: "Visual Workflow Blueprints", tag: "NODE ENGINE", icon: Zap, color: "#38bdf8", live: true },
+                { toolId: "mockup_studio", label: "3D WebGL Mockup Studio", tag: "PBR RAYTRACING", icon: Box, color: "#c084fc", live: true },
+                { toolId: "image_editor", label: "Layered 32-Bit Image Studio", tag: "LUT PRESETS", icon: ImageIcon, color: "#f59e0b", live: true },
+                { toolId: "brand_kit", label: "Procedural Brand Identity", tag: "COLOR PALETTES", icon: Palette, color: "#e1496d", live: true },
+                { toolId: "presentation", label: "Interactive Pitch Slide Studio", tag: "AUTO LAYOUT", icon: Presentation, color: "#10b981", live: true },
+                { toolId: "whiteboard", label: "Spatial Infinite Whiteboard", tag: "REAL-TIME", icon: PenTool, color: "#a855f7", live: true },
+                { toolId: "ai_magic", label: "Neural Prompt-to-DOM Engine", tag: "JSX COMPILER", icon: Sparkles, color: "#ec4899", live: true },
+                { toolId: "documents", label: "Rich Markdown Document Publisher", tag: "EXPORT PDF", icon: FileText, color: "#06b6d4", live: true },
+                { toolId: "vault", label: "Encrypted Creative Vault", tag: "ZERO LEAK", icon: FolderOpen, color: "#4ade80", live: true },
+              ].map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={`${gi}-${idx}`}
+                    onClick={() => {
+                      if (item.toolId === "vault") setActiveNav("vault");
+                      else onNavigate(item.toolId);
+                    }}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 10,
+                      padding: "6px 14px 6px 10px",
+                      borderRadius: 99,
+                      background: isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(255, 255, 255, 0.8)",
+                      border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.18)" : "rgba(148, 41, 69, 0.12)"}`,
+                      cursor: "pointer",
+                      transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                      boxShadow: isDark ? "0 4px 14px rgba(0,0,0,0.25)" : "0 2px 8px rgba(148,41,69,0.04)",
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = isDark ? "rgba(225, 73, 109, 0.15)" : "rgba(225, 73, 109, 0.1)";
+                      e.currentTarget.style.borderColor = item.color;
+                      e.currentTarget.style.boxShadow = `0 6px 20px ${item.color}35`;
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(255, 255, 255, 0.8)";
+                      e.currentTarget.style.borderColor = isDark ? "rgba(225, 73, 109, 0.18)" : "rgba(148, 41, 69, 0.12)";
+                      e.currentTarget.style.boxShadow = isDark ? "0 4px 14px rgba(0,0,0,0.25)" : "0 2px 8px rgba(148,41,69,0.04)";
+                    }}
+                  >
+                    {/* Glowing Icon Pip */}
+                    <div style={{
+                      width: 22, height: 22, borderRadius: "50%",
+                      background: `linear-gradient(135deg, ${item.color}30, ${item.color}15)`,
+                      border: `1px solid ${item.color}60`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: item.color, flexShrink: 0,
+                    }}>
+                      <Icon size={12} />
+                    </div>
+
+                    {/* Title */}
+                    <span style={{
+                      fontSize: 12,
+                      fontFamily: "Syne, sans-serif",
+                      fontWeight: 700,
+                      color: colors.text,
+                      letterSpacing: "-0.01em",
+                    }}>
+                      {item.label}
+                    </span>
+
+                    {/* Pill Tag */}
+                    <span style={{
+                      fontSize: 9.5,
+                      fontWeight: 800,
+                      fontFamily: "'Poppins', sans-serif",
+                      padding: "2px 7px",
+                      borderRadius: 6,
+                      background: `${item.color}18`,
+                      color: item.color,
+                      letterSpacing: "0.06em",
+                      border: `1px solid ${item.color}30`,
+                    }}>
+                      {item.tag}
+                    </span>
+
+                    {/* Live Green Pulsing Dot */}
+                    <div style={{
+                      width: 5, height: 5, borderRadius: "50%",
+                      background: "#22c55e",
+                      boxShadow: "0 0 6px #22c55e",
+                      marginLeft: 2,
+                    }} />
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── CLEAN & PREMIUM CONTACT & FEEDBACK SECTION ── */}
+      <section id="contact-section" style={{
+        background: isDark ? "#090307" : "#0d040a",
+        borderTop: "1px solid rgba(225, 73, 109, 0.14)",
         width: "100%",
-        padding: "96px 48px",
+        padding: "54px 40px 36px",
         boxSizing: "border-box",
         position: "relative",
-        overflow: "hidden",
       }}>
-        
-        {/* Soft Cosmic Ambient Illumination */}
-        <div style={{
-          position: "absolute", top: "-15%", right: "-10%", width: 500, height: 500,
-          background: "radial-gradient(circle, rgba(225,73,109,0.18) 0%, transparent 70%)",
-          filter: "blur(60px)", pointerEvents: "none", zIndex: 0,
-        }} />
-        <div style={{
-          position: "absolute", bottom: "-10%", left: "5%", width: 400, height: 400,
-          background: "radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 70%)",
-          filter: "blur(60px)", pointerEvents: "none", zIndex: 0,
-        }} />
 
         <div style={{
-          maxWidth: 1180, margin: "0 auto",
-          display: "grid", gridTemplateColumns: "1.1fr 1.2fr",
-          gap: 64, alignItems: "center", position: "relative", zIndex: 1,
+          maxWidth: 1040, margin: "0 auto",
+          display: "grid", gridTemplateColumns: "1fr 1.15fr",
+          gap: 48, alignItems: "center", position: "relative", zIndex: 1,
         }}>
 
-          {/* Left Column — Creator Hotline & Brand Presence */}
+          {/* Left Column — Clean Copy */}
           <div>
-            {/* Pill Eyebrow */}
             <div style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "6px 14px", borderRadius: 99,
-              background: "rgba(225, 73, 109, 0.14)", border: "1px solid rgba(225, 73, 109, 0.35)",
-              marginBottom: 18,
+              fontSize: 10.5, fontWeight: 700, color: "#e1496d",
+              letterSpacing: "0.08em", textTransform: "uppercase",
+              fontFamily: "'Poppins', sans-serif", marginBottom: 8,
             }}>
-              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
-              <span style={{
-                fontFamily: "'Poppins', sans-serif", fontSize: 10.5, fontWeight: 700,
-                letterSpacing: "0.08em", textTransform: "uppercase", color: "#ff8da7",
-              }}>
-                DIRECT CREATOR HOTLINE • CORE TEAM
-              </span>
+              GET IN TOUCH
             </div>
 
-            {/* Headline */}
             <h2 style={{
-              fontFamily: "Syne, sans-serif", fontSize: "clamp(32px, 4vw, 48px)",
+              fontFamily: "Syne, sans-serif", fontSize: "clamp(26px, 3.2vw, 36px)",
               fontWeight: 800, letterSpacing: "-0.04em", color: "#fff",
-              margin: "0 0 16px", lineHeight: 1.12,
+              margin: "0 0 12px", lineHeight: 1.15,
             }}>
-              Shape the future of <span style={{
-                background: "linear-gradient(135deg, #e1496d 0%, #ff8da7 100%)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>Creatify</span><span style={{ color: "#e1496d" }}>.</span>
+              Have a question<br />or feedback?
             </h2>
 
-            {/* Description */}
             <p style={{
-              fontSize: 15, color: "rgba(255, 255, 255, 0.65)",
-              lineHeight: 1.7, fontFamily: "'Instrument Sans', sans-serif",
-              margin: "0 0 32px", maxWidth: 460,
+              fontSize: 13.5, color: "rgba(255, 255, 255, 0.55)",
+              lineHeight: 1.6, fontFamily: "'Instrument Sans', sans-serif",
+              margin: "0 0 24px", maxWidth: 360,
             }}>
-              Every idea, workflow suggestion, and critique goes directly into our core engineering room. We prioritize community-requested features in our weekly production updates.
+              We read every message. Whether it's a bug, feature request, or just a hello — reach out and our team will reply within 24 hours.
             </p>
 
-            {/* Classy Telemetry Channel Cards */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 440 }}>
-              
-              {/* Card 1: Fast Turnaround */}
-              <div style={{
-                display: "flex", alignItems: "center", gap: 14,
-                padding: "14px 18px", borderRadius: 14,
-                background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(225, 73, 109, 0.16)",
-                backdropFilter: "blur(12px)",
-              }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: "rgba(56, 189, 248, 0.15)", border: "1px solid rgba(56, 189, 248, 0.3)",
-                  display: "flex", alignItems: "center", justifyContent: "center", color: "#38bdf8",
-                }}>
-                  <Clock size={18} />
-                </div>
-                <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", fontFamily: "Syne, sans-serif" }}>
-                    &lt; 4 Hours Response
-                  </div>
-                  <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.45)", fontFamily: "'Instrument Sans', sans-serif" }}>
-                    Live priority queue for all creator tickets
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 2: Direct Email with Copy */}
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "14px 18px", borderRadius: 14,
-                background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(225, 73, 109, 0.16)",
-                backdropFilter: "blur(12px)",
-              }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10,
-                    background: "rgba(225, 73, 109, 0.15)", border: "1px solid rgba(225, 73, 109, 0.3)",
-                    display: "flex", alignItems: "center", justifyContent: "center", color: "#ff8da7",
-                  }}>
-                    <Mail size={18} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", fontFamily: "Syne, sans-serif" }}>
-                      demandsightsupport@gmail.com
-                    </div>
-                    <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.45)", fontFamily: "'Instrument Sans', sans-serif" }}>
-                      Official developer inbox
-                    </div>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText("demandsightsupport@gmail.com");
-                    alert("Copied email address to clipboard!");
-                  }}
-                  title="Copy email to clipboard"
-                  style={{
-                    background: "rgba(255, 255, 255, 0.06)", border: "1px solid rgba(255, 255, 255, 0.14)",
-                    color: "rgba(255, 255, 255, 0.8)", borderRadius: 8, padding: "6px 10px",
-                    cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
-                    fontSize: 11, fontWeight: 600, fontFamily: "'Poppins', sans-serif",
-                  }}
-                >
-                  <Copy size={12} /> Copy
-                </button>
-              </div>
-
-              {/* Card 3: Priority Triage */}
-              <div style={{
-                display: "flex", alignItems: "center", gap: 14,
-                padding: "14px 18px", borderRadius: 14,
-                background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(225, 73, 109, 0.16)",
-                backdropFilter: "blur(12px)",
-              }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  background: "rgba(34, 197, 94, 0.15)", border: "1px solid rgba(34, 197, 94, 0.3)",
-                  display: "flex", alignItems: "center", justifyContent: "center", color: "#4ade80",
-                }}>
-                  <ShieldCheck size={18} />
-                </div>
-                <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", fontFamily: "Syne, sans-serif" }}>
-                    Continuous CI/CD Shipping
-                  </div>
-                  <div style={{ fontSize: 12, color: "rgba(255, 255, 255, 0.45)", fontFamily: "'Instrument Sans', sans-serif" }}>
-                    Critical bug patches deployed in &lt; 24h
-                  </div>
-                </div>
-              </div>
-
+            {/* Email snippet */}
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 10,
+              padding: "8px 14px", borderRadius: 10,
+              background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(225, 73, 109, 0.16)",
+            }}>
+              <Mail size={14} color="#ff8da7" />
+              <span style={{ fontSize: 12.5, color: "#fff", fontFamily: "'Instrument Sans', sans-serif" }}>
+                demandsightsupport@gmail.com
+              </span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText("demandsightsupport@gmail.com");
+                  alert("Copied email to clipboard!");
+                }}
+                title="Copy email"
+                style={{
+                  background: "none", border: "none", color: "rgba(255,255,255,0.4)",
+                  cursor: "pointer", display: "flex", alignItems: "center", padding: 2,
+                }}
+              >
+                <Copy size={12} />
+              </button>
             </div>
           </div>
 
-          {/* Right Column — Luxury Glass Console */}
+          {/* Right Column — Compact Form or Sign-in */}
           <div>
             {user ? (
               <ContactForm isDark={isDark} user={user} />
             ) : (
               <div style={{
                 display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                padding: "54px 36px", background: "rgba(20, 8, 16, 0.8)",
-                border: "1px solid rgba(225, 73, 109, 0.25)", borderRadius: 24, textAlign: "center",
-                backdropFilter: "blur(24px)", boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
+                padding: "32px 24px", background: "rgba(20, 8, 16, 0.65)",
+                border: "1px solid rgba(225, 73, 109, 0.18)", borderRadius: 16, textAlign: "center",
               }}>
-                <div style={{
-                  width: 64, height: 64, borderRadius: "50%",
-                  background: "linear-gradient(135deg, rgba(225,73,109,0.2), rgba(148,41,69,0.3))",
-                  border: "1px solid rgba(225,73,109,0.4)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  color: "#ff8da7", marginBottom: 20,
-                  boxShadow: "0 8px 24px rgba(225,73,109,0.25)",
-                }}>
-                  <MessageSquare size={28} />
-                </div>
-                
-                <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 20, color: "#fff", margin: "0 0 10px" }}>
-                  Sign in to Access Direct Hotline
+                <MessageSquare size={24} color="#ff8da7" style={{ marginBottom: 12 }} />
+                <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16, color: "#fff", margin: "0 0 6px" }}>
+                  Sign in to send a message
                 </h3>
-                <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.55)", fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 28px", lineHeight: 1.6, maxWidth: 320 }}>
-                  Signed-in creators get direct priority engineering triage and live email responses.
+                <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)", fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 18px", maxWidth: 280 }}>
+                  You need to be signed in so our engineering team can reply to your email.
                 </p>
-
-                <div style={{ display: "flex", gap: 12, width: "100%", maxWidth: 300 }}>
+                <div style={{ display: "flex", gap: 10 }}>
                   <button
                     onClick={() => onNavigate("auth", "signin")}
                     style={{
-                      flex: 1, background: "linear-gradient(135deg, #e1496d, #942945)",
-                      color: "#fff", border: "none", padding: "12px 0", borderRadius: 12,
-                      fontSize: 13.5, fontFamily: "Syne, sans-serif", fontWeight: 700,
-                      cursor: "pointer", boxShadow: "0 6px 20px rgba(225,73,109,0.4)",
+                      background: "linear-gradient(135deg, #e1496d, #942945)", color: "#fff",
+                      border: "none", padding: "8px 20px", borderRadius: 8, fontSize: 12.5,
+                      fontFamily: "Syne, sans-serif", fontWeight: 700, cursor: "pointer",
                     }}
                   >
-                    Sign In
+                    Sign in
                   </button>
                   <button
                     onClick={() => onNavigate("auth", "signup")}
                     style={{
-                      flex: 1, background: "rgba(255,255,255,0.06)",
-                      color: "#fff", border: "1px solid rgba(255,255,255,0.15)",
-                      padding: "12px 0", borderRadius: 12,
-                      fontSize: 13.5, fontFamily: "Syne, sans-serif", fontWeight: 700,
-                      cursor: "pointer",
+                      background: "none", color: "rgba(255,255,255,0.7)",
+                      border: "1px solid rgba(255,255,255,0.18)", padding: "8px 18px",
+                      borderRadius: 8, fontSize: 12.5, fontFamily: "Syne, sans-serif", cursor: "pointer",
                     }}
                   >
-                    Register
+                    Create account
                   </button>
                 </div>
               </div>
@@ -3796,7 +3843,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         </div>
 
         {/* Bottom bar */}
-        <div style={{ maxWidth:960, margin:"48px auto 0", paddingTop:24, borderTop:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
+        <div style={{ maxWidth: 1040, margin: "32px auto 0", paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <div style={{ width:20, height:20, borderRadius:5, background:"linear-gradient(135deg,#942945,#e1496d)", display:"flex", alignItems:"center", justifyContent:"center" }}>
               <svg width="9" height="9" viewBox="0 0 16 16" fill="none"><path d="M3 8 L8 2 L13 8 L8 14 Z" fill="white" opacity="0.9"/><circle cx="8" cy="8" r="2" fill="white"/></svg>
@@ -3839,6 +3886,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         @keyframes slideInFromRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes pulse      { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
         @keyframes marquee    { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+        .creative-live-ticker:hover { animation-play-state: paused !important; }
         @keyframes scrollAnim { 0% { transform:scaleY(0); transform-origin:top; } 50% { transform:scaleY(1); transform-origin:top; } 51% { transform:scaleY(1); transform-origin:bottom; } 100% { transform:scaleY(0); transform-origin:bottom; } }
         @keyframes float1     { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
         @keyframes float2     { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }

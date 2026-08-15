@@ -11,8 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Instrument+Serif:ital@0;1&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { width: 100%; height: 100%; overflow-x: hidden; background: #0c0a09; color: #e5e5e5; font-family: 'Poppins', sans-serif; }
-      body { margin: 0; padding: 0; }
+      html { width: 100%; min-height: 100%; overflow-x: clip; }
+      body { width: 100%; min-height: 100%; overflow-x: clip; margin: 0; padding: 0; background: #0c0a09; color: #e5e5e5; font-family: 'Poppins', sans-serif; }
       #root { width: 100%; min-height: 100vh; }
 
       /* Custom scrollbar styling */
@@ -30,21 +30,21 @@
         box-shadow: 0 20px 50px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05) !important;
       }
 
-      /* Global inputs & select buttons */
-      input[type="text"], input[type="number"], input[type="date"], input[type="time"], textarea, select {
-        background: #0c0a09 !important;
-        color: #fff !important;
-        border: 1px solid rgba(212,165,116,0.15) !important;
-        border-radius: 8px !important;
-        padding: 8px 12px !important;
-        font-family: 'Poppins', sans-serif !important;
-        font-size: 12px !important;
-        outline: none !important;
-        transition: all 0.2s ease-in-out !important;
+      /* Global inputs & select buttons (scoped defaults) */
+      input:not(.hero-transparent-input)[type="text"], input[type="number"], input[type="date"], input[type="time"], textarea, select {
+        background: #0c0a09;
+        color: #fff;
+        border: 1px solid rgba(212,165,116,0.15);
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 12px;
+        outline: none;
+        transition: all 0.2s ease-in-out;
       }
-      input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, input[type="time"]:focus, textarea:focus, select:focus {
-        border-color: #f5c842 !important;
-        box-shadow: 0 0 10px rgba(245, 200, 66, 0.15) !important;
+      input:not(.hero-transparent-input)[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, input[type="time"]:focus, textarea:focus, select:focus {
+        border-color: #f5c842;
+        box-shadow: 0 0 10px rgba(245, 200, 66, 0.15);
       }
 
       /* Global tool button styling */

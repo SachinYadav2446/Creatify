@@ -8,12 +8,23 @@ const BRAND_PALETTES = [
 ];
 
 const PRESET_ICONS = {
+  terminal: "M4 17l6-6-6-6m8 14h8", // Terminal >_ prompt
+  brackets: "M16 18l6-6-6-6M8 6l-6 6 6 6", // Code brackets < />
+  cloud_node: "M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z", // Cloud node
+  binary_cube: "M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.27 6.96L12 12.01l8.73-5.05M12 22.08V12", // 3D Cube
+  circuit_chip: "M18 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zM9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3", // Microchip
+  quantum_orbit: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zM12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6z", // Quantum orbit
+  lambda: "M6 20l5-10-3-6h3l2 4 4-8h3l-6 12 5 8h-3.5l-3.5-6-2 6z", // Lambda symbol
+  git_fork: "M6 3a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm12 0a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-6 12a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM6 9v3a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V9M12 15V9", // Git branching
+  database: "M12 2C6.48 2 2 3.79 2 6v12c0 2.21 4.48 4 10 4s10-1.79 10-4V6c0-2.21-4.48-4-10-4zm0 2c4.42 0 8 1.34 8 2s-3.58 2-8 2-8-1.34-8-2 3.58-2 8-2zm0 16c-4.42 0-8-1.34-8-2v-2.23c1.88 1.37 4.77 2.23 8 2.23s6.12-.86 8-2.23V18c0 .66-3.58 2-8 2zm0-5c-4.42 0-8-1.34-8-2v-2.23c1.88 1.37 4.77 2.23 8 2.23s6.12-.86 8-2.23V13c0 .66-3.58 2-8 2z", // Database
+  shield_lock: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10zm-2-9a2 2 0 1 1 4 0v1h1v3H9v-3h1v-1zm1-1a1 1 0 0 1 2 0v1h-2v-1z", // Zero-trust shield
+  lightning: "M13 2L3 14h9l-1 8 10-12h-9l1-8z", // Turbo lightning
   rocket: "M12 2S4.5 8.5 4.5 14.5A7.5 7.5 0 0 0 12 22a7.5 7.5 0 0 0 7.5-7.5C19.5 8.5 12 2 12 2zm0 18a5.5 5.5 0 0 1-5.5-5.5c0-4.4 5.5-9.5 5.5-9.5s5.5 5.1 5.5 9.5A5.5 5.5 0 0 1 12 20z",
   shield: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
-  leaf: "M12 2C6.48 2 2 6.48 2 12c0 3.06 1.38 5.8 3.56 7.66l.07.06C7.54 18.23 10 16 12 16c2 0 4.46 2.23 6.37 3.72a9.96 9.96 0 0 0 3.63-7.72c0-5.52-4.48-10-10-10zm-1 12V8h2v6h-2z",
-  crown: "M2 4l3 7 7-7 7 7 3-7-3 14H5L2 4z",
   gear: "M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z",
-  helix: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"
+  helix: "M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z",
+  leaf: "M12 2C6.48 2 2 6.48 2 12c0 3.06 1.38 5.8 3.56 7.66l.07.06C7.54 18.23 10 16 12 16c2 0 4.46 2.23 6.37 3.72a9.96 9.96 0 0 0 3.63-7.72c0-5.52-4.48-10-10-10zm-1 12V8h2v6h-2z",
+  crown: "M2 4l3 7 7-7 7 7 3-7-3 14H5L2 4z"
 };
 
 const FONT_FAMILIES = ["Syne","Poppins","Outfit","Cinzel","Pacifico","Montserrat","Inter","Playfair Display"];
@@ -643,18 +654,19 @@ export default function LogoMaker({ onBack, user, initialProject }) {
         {/* ===================== LEFT PANEL ===================== */}
         <div style={{ width:"320px", minWidth:"320px", borderRight:"1px solid rgba(225,73,109,0.12)", background:"rgba(10,8,7,0.5)", display:"flex", flexDirection:"column" }}>
 
-          {/* Tabs bar — 5 tabs */}
+          {/* Tabs bar — 6 tabs */}
           <div style={{ display:"flex", borderBottom:"1px solid rgba(225,73,109,0.08)", overflowX:"auto" }}>
             {[
               { id:"ai", label:"AI" },
               { id:"editor", label:"Layers" },
-              { id:"mockups", label:"Mockups" },
+              { id:"code_export", label:"React & Code" },
+              { id:"mockups", label:"SaaS Mockups" },
               { id:"templates", label:"Templates" },
               { id:"fontpairs", label:"Font Pairs" }
             ].map(tab => {
               const isActive = activeTab === tab.id;
               return (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex:1, minWidth:"52px", padding:"11px 4px 9px", background:"none", border:"none", borderBottom: isActive ? "2px solid #ec4899" : "2px solid transparent", color: isActive ? "#ec4899" : "#666", fontWeight: isActive ? 600 : 400, fontSize:"10px", cursor:"pointer", transition:"all 0.2s", fontFamily:"'Poppins',sans-serif", whiteSpace:"nowrap" }}>
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ flex:1, minWidth:"48px", padding:"10px 4px 8px", background:"none", border:"none", borderBottom: isActive ? "2px solid #ec4899" : "2px solid transparent", color: isActive ? "#ec4899" : "#666", fontWeight: isActive ? 600 : 400, fontSize:"10px", cursor:"pointer", transition:"all 0.2s", fontFamily:"'Poppins',sans-serif", whiteSpace:"nowrap" }}>
                   {tab.label}
                 </button>
               );
@@ -662,6 +674,86 @@ export default function LogoMaker({ onBack, user, initialProject }) {
           </div>
 
           <div style={{ flex:1, overflowY:"auto", padding:"18px" }}>
+
+            {/* ---- React & Code Export Panel ---- */}
+            {activeTab === "code_export" && (
+              <div style={{ display:"flex", flexDirection:"column", gap:"14px" }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                  <span style={{ fontSize:"10.5px", color:"#ec4899", fontWeight:700, letterSpacing:"0.05em" }}>DEVELOPER CODE EXPORT</span>
+                  <span style={{ fontSize:"9px", background:"rgba(56, 189, 248, 0.15)", color:"#38bdf8", padding:"2px 6px", borderRadius:"4px", fontWeight:700 }}>TSX / REACT</span>
+                </div>
+
+                {/* React TSX Component */}
+                <div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"4px" }}>
+                    <label style={labelStyle}>React JSX Component</label>
+                    <button
+                      onClick={() => {
+                        const code = `import React from "react";\n\nexport interface BrandLogoProps extends React.SVGProps<SVGSVGElement> {\n  size?: number;\n  primaryColor?: string;\n}\n\nexport const BrandLogo = React.forwardRef<SVGSVGElement, BrandLogoProps>(({ size = 32, primaryColor = "${canvasBg === "transparent" ? "#e1496d" : "#ffffff"}", className = "", ...props }, ref) => (\n  <svg ref={ref} width={size} height={size} viewBox="0 0 300 300" fill="none" className={className} {...props}>\n    ${logoElements.map(el => `<g transform="translate(${el.x}, ${el.y}) rotate(${el.rotate||0})"><path d="${PRESET_ICONS[el.shape]||""}" fill="${el.color}" /></g>`).join("\n    ")}\n  </svg>\n));\nBrandLogo.displayName = "BrandLogo";`;
+                        navigator.clipboard.writeText(code);
+                        alert("✓ React TSX Component code copied to clipboard!");
+                      }}
+                      style={{ background:"none", border:"none", color:"#38bdf8", fontSize:"10px", fontWeight:700, cursor:"pointer" }}
+                    >
+                      Copy Component
+                    </button>
+                  </div>
+                  <textarea
+                    readOnly
+                    rows={6}
+                    value={`import React from "react";\n\nexport const BrandLogo = ({ size = 32, className = "" }) => (\n  <svg width={size} height={size} viewBox="0 0 300 300" fill="none" className={className}>\n    {/* Vector nodes */}\n  </svg>\n);`}
+                    style={{ ...inputStyle, fontFamily:"'JetBrains Mono', monospace", fontSize:"10px", resize:"none", background:"#0d050c", color:"#38bdf8" }}
+                  />
+                </div>
+
+                {/* Favicon Tags */}
+                <div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"4px" }}>
+                    <label style={labelStyle}>HTML Favicon Meta Tags</label>
+                    <button
+                      onClick={() => {
+                        const tags = `<link rel="icon" type="image/svg+xml" href="/favicon.svg" />\n<link rel="apple-touch-icon" href="/apple-touch-icon.png" />\n<link rel="manifest" href="/site.webmanifest" />\n<meta name="theme-color" content="${canvasBg === "transparent" ? "#1a0f14" : canvasBg}" />`;
+                        navigator.clipboard.writeText(tags);
+                        alert("✓ HTML Favicon tags copied!");
+                      }}
+                      style={{ background:"none", border:"none", color:"#38bdf8", fontSize:"10px", fontWeight:700, cursor:"pointer" }}
+                    >
+                      Copy Tags
+                    </button>
+                  </div>
+                  <textarea
+                    readOnly
+                    rows={4}
+                    value={`<link rel="icon" type="image/svg+xml" href="/favicon.svg" />\n<link rel="apple-touch-icon" href="/apple-touch-icon.png" />\n<meta name="theme-color" content="${canvasBg === "transparent" ? "#1a0f14" : canvasBg}" />`}
+                    style={{ ...inputStyle, fontFamily:"'JetBrains Mono', monospace", fontSize:"10px", resize:"none", background:"#0d050c", color:"#ff8da7" }}
+                  />
+                </div>
+
+                {/* Tailwind Config */}
+                <div>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"4px" }}>
+                    <label style={labelStyle}>Tailwind CSS Color Tokens</label>
+                    <button
+                      onClick={() => {
+                        const tw = `module.exports = {\n  theme: {\n    extend: {\n      colors: {\n        brand: {\n          primary: "${logoElements[0]?.color || "#e1496d"}",\n          background: "${canvasBg}",\n        }\n      }\n    }\n  }\n};`;
+                        navigator.clipboard.writeText(tw);
+                        alert("✓ Tailwind color config copied!");
+                      }}
+                      style={{ background:"none", border:"none", color:"#38bdf8", fontSize:"10px", fontWeight:700, cursor:"pointer" }}
+                    >
+                      Copy Tailwind
+                    </button>
+                  </div>
+                  <textarea
+                    readOnly
+                    rows={4}
+                    value={`colors: {\n  brand: {\n    primary: "${logoElements[0]?.color || "#e1496d"}",\n    bg: "${canvasBg}"\n  }\n}`}
+                    style={{ ...inputStyle, fontFamily:"'JetBrains Mono', monospace", fontSize:"10px", resize:"none", background:"#0d050c", color:"#22c55e" }}
+                  />
+                </div>
+
+              </div>
+            )}
 
             {/* ---- AI Panel ---- */}
             {activeTab === "ai" && (
@@ -692,6 +784,36 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* ---- Mockups Tab Panel ---- */}
+            {activeTab === "mockups" && (
+              <div style={{ display:"flex", flexDirection:"column", gap:"12px" }}>
+                <span style={{ fontSize:"10px", color:"#ec4899", fontWeight:700, letterSpacing:"0.05em" }}>DEVELOPER SAAS MOCKUPS</span>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr", gap:"8px" }}>
+                  {[
+                    { id:"github_repo", label:"GitHub Repo Header & Avatar", desc:"Repo avatar, stars & release badges" },
+                    { id:"browser_tab", label:"Browser Favicon Tab", desc:"Chrome / Safari active tab simulation" },
+                    { id:"terminal_splash", label:"Terminal CLI Splash Banner", desc:"Developer CLI prompt & welcome art" },
+                    { id:"menubar_icon", label:"macOS Menubar App Status", desc:"Top status bar menu icon" },
+                    { id:"card", label:"Dark Developer Card", desc:"Titanium NFC hardware pass" },
+                  ].map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => setActiveMockup(m.id)}
+                      style={{
+                        padding:"10px 12px", borderRadius:"8px",
+                        background: activeMockup === m.id ? "rgba(236,72,153,0.22)" : "rgba(255,255,255,0.03)",
+                        border: `1px solid ${activeMockup === m.id ? "#ec4899" : "rgba(255,255,255,0.08)"}`,
+                        color:"#fff", textAlign:"left", cursor:"pointer",
+                      }}
+                    >
+                      <div style={{ fontSize:"11.5px", fontWeight:700 }}>{m.label}</div>
+                      <div style={{ fontSize:"9.5px", color:"rgba(255,255,255,0.5)", marginTop:"2px" }}>{m.desc}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -741,12 +863,25 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                   {showIconPicker && (
                     <div style={{ background:"rgba(10,8,7,0.9)", border:"1px solid rgba(225,73,109,0.2)", borderRadius:"8px", padding:"10px", marginBottom:"8px", display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"6px" }}>
                       {Object.keys(PRESET_ICONS).map(ic => (
-                        <button key={ic} onClick={() => addIcon(ic)} style={{ padding:"8px 4px", background:"rgba(255,255,255,0.05)", border:"1px solid rgba(225,73,109,0.15)", borderRadius:"6px", color:"#ddd", cursor:"pointer", fontSize:"11px", textTransform:"capitalize", fontFamily:"'Poppins',sans-serif" }}>
-                          {ic}
+                        <button key={ic} onClick={() => addIcon(ic)} style={{ padding:"8px 4px", background:"rgba(255,255,255,0.05)", border:"1px solid rgba(225,73,109,0.15)", borderRadius:"6px", color:"#ddd", cursor:"pointer", fontSize:"10px", textTransform:"capitalize", fontFamily:"'Poppins',sans-serif" }}>
+                          {ic.replace("_", " ")}
                         </button>
                       ))}
                     </div>
                   )}
+                </div>
+
+                {/* Layer list */}
+                <div>
+                  <span style={sectionLabel}>LAYERS ({logoElements.length})</span>
+                  <div style={{ display:"flex", flexDirection:"column", gap:"4px" }}>
+                    {logoElements.map((el) => (
+                      <div key={el.id} onClick={() => setActiveElementId(el.id)} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"6px 8px", background: el.id === activeElementId ? "rgba(236,72,153,0.18)" : "rgba(255,255,255,0.02)", border: `1px solid ${el.id === activeElementId ? "#ec4899" : "rgba(255,255,255,0.05)"}`, borderRadius:"6px", cursor:"pointer" }}>
+                        <span style={{ fontSize:"11px", fontWeight:500 }}>{el.type === "text" ? `Text: ${el.text}` : el.type === "icon" ? `Icon: ${el.shape}` : `Shape: ${el.shapeType}`}</span>
+                        <button onClick={(e) => { e.stopPropagation(); deleteElement(el.id); }} style={{ background:"none", border:"none", color:"#f87171", cursor:"pointer", fontSize:"11px" }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div style={{ height:"1px", background:"rgba(225,73,109,0.08)" }} />
@@ -791,28 +926,6 @@ export default function LogoMaker({ onBack, user, initialProject }) {
                     </div>
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* ---- Mockups Panel ---- */}
-            {activeTab === "mockups" && (
-              <div style={{ display:"flex", flexDirection:"column", gap:"16px" }}>
-                <span style={sectionLabel}>MOCKUP SELECTION</span>
-                <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
-                  {[
-                    { id:"card", name:"Premium Black Card", desc:"Minimalist business layout" },
-                    { id:"mug", name:"Ceramic Coffee Mug", desc:"Centered cylinder product stamp" },
-                    { id:"sticker", name:"Modern Laptop Sticker", desc:"Glow background laptop skin" }
-                  ].map(mock => {
-                    const isAct = activeMockup === mock.id;
-                    return (
-                      <div key={mock.id} onClick={() => setActiveMockup(mock.id)} style={{ padding:"12px", borderRadius:"10px", background: isAct ? "rgba(236,72,153,0.1)" : "rgba(255,255,255,0.02)", border:`1px solid ${isAct ? "#ec4899" : "rgba(255,255,255,0.05)"}`, cursor:"pointer", transition:"all 0.2s" }}>
-                        <div style={{ fontSize:"12px", fontWeight:600, color: isAct ? "#ec4899" : "#fff" }}>{mock.name}</div>
-                        <div style={{ fontSize:"10px", color:"#666", marginTop:"2px" }}>{mock.desc}</div>
-                      </div>
-                    );
-                  })}
-                </div>
               </div>
             )}
 
@@ -962,26 +1075,99 @@ export default function LogoMaker({ onBack, user, initialProject }) {
           {/* Canvas Area */}
           <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", padding:"40px", overflow:"hidden" }} onClick={() => setShowBgPicker(false)}>
             {activeTab === "mockups" ? (
-              <div style={{ width:"100%", maxWidth:"600px", height:"100%", maxHeight:"400px", borderRadius:"20px", overflow:"hidden", boxShadow:"0 20px 50px rgba(0,0,0,0.6)", border:"1px solid rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", background: activeMockup==="card" ? "#111" : activeMockup==="mug" ? "#e5e7eb" : "#2d3748", position:"relative" }}>
-                {activeMockup === "card" && (
-                  <div style={{ width:"380px", height:"210px", background:"#1c1917", borderRadius:"12px", border:"1px solid #292524", boxShadow:"0 10px 30px rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", transform:"rotateX(20deg) rotateY(-20deg)", transformStyle:"preserve-3d" }}>
-                    <svg width="220" height="150" viewBox="0 0 300 300">{renderSVGNodes()}</svg>
-                  </div>
-                )}
-                {activeMockup === "mug" && (
-                  <div style={{ width:"160px", height:"220px", background:"#fcfaf2", borderRadius:"0 0 40px 40px", borderTop:"2px solid #e5e5e5", boxShadow:"0 15px 35px rgba(0,0,0,0.15)", position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <div style={{ position:"absolute", right:"-35px", top:"50px", width:"45px", height:"110px", borderRadius:"0 40px 40px 0", border:"16px solid #fcfaf2", borderLeft:"none", zIndex:-1 }} />
-                    <svg width="100" height="120" viewBox="0 0 300 300">{renderSVGNodes()}</svg>
-                  </div>
-                )}
-                {activeMockup === "sticker" && (
-                  <div style={{ width:"240px", height:"240px", borderRadius:"50%", background:"#ffffff", padding:"10px", boxShadow:"0 10px 30px rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <div style={{ width:"100%", height:"100%", borderRadius:"50%", background:canvasBg, display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
-                      <svg width="140" height="140" viewBox="0 0 300 300">{renderSVGNodes()}</svg>
+              <div style={{ width:"100%", maxWidth:"680px", height:"100%", maxHeight:"440px", borderRadius:"20px", overflow:"hidden", boxShadow:"0 20px 50px rgba(0,0,0,0.6)", border:"1px solid rgba(255,255,255,0.08)", display:"flex", alignItems:"center", justifyContent:"center", background: "#0b050c", position:"relative" }}>
+                
+                {/* 1. GitHub Repo Mockup */}
+                {activeMockup === "github_repo" && (
+                  <div style={{ width:"540px", background:"#0d1117", border:"1px solid #30363d", borderRadius:"12px", padding:"20px", boxShadow:"0 15px 35px rgba(0,0,0,0.5)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:"14px", borderBottom:"1px solid #21262d", paddingBottom:"14px" }}>
+                      <div style={{ width:"48px", height:"48px", borderRadius:"10px", background: canvasBg==="transparent" ? "#161b22" : canvasBg, border:"1px solid rgba(255,255,255,0.15)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden" }}>
+                        <svg width="40" height="40" viewBox="0 0 300 300">{renderSVGNodes()}</svg>
+                      </div>
+                      <div>
+                        <div style={{ display:"flex", alignItems:"center", gap:"8px" }}>
+                          <span style={{ color:"#58a6ff", fontSize:"15px", fontWeight:700, fontFamily:"'JetBrains Mono', monospace" }}>creatify-labs / {brandName.toLowerCase()}</span>
+                          <span style={{ fontSize:"9px", border:"1px solid #30363d", padding:"1px 6px", borderRadius:"10px", color:"#8b949e" }}>Public</span>
+                        </div>
+                        <p style={{ color:"#8b949e", fontSize:"11.5px", margin:"4px 0 0 0" }}>{tagline || "High-performance developer creative engine"}</p>
+                      </div>
+                    </div>
+                    <div style={{ display:"flex", gap:"12px", marginTop:"14px", fontSize:"11px", color:"#8b949e" }}>
+                      <span>⭐ 8.4k stars</span>
+                      <span>🔱 642 forks</span>
+                      <span>MIT License</span>
                     </div>
                   </div>
                 )}
-                <div style={{ position:"absolute", top:"16px", left:"16px", background:"rgba(0,0,0,0.6)", padding:"4px 10px", borderRadius:"20px", fontSize:"10px", border:"1px solid rgba(255,255,255,0.12)", color:"#ec4899", fontWeight:600 }}>MOCKUP SIMULATION</div>
+
+                {/* 2. Browser Tab Mockup */}
+                {activeMockup === "browser_tab" && (
+                  <div style={{ width:"520px", background:"#161b22", border:"1px solid #30363d", borderRadius:"12px", overflow:"hidden", boxShadow:"0 15px 35px rgba(0,0,0,0.5)" }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:"6px", padding:"10px 14px", background:"#0d1117", borderBottom:"1px solid #21262d" }}>
+                      <div style={{ width:"8px", height:"8px", borderRadius:"50%", background:"#ff5f56" }} />
+                      <div style={{ width:"8px", height:"8px", borderRadius:"50%", background:"#ffbd2e" }} />
+                      <div style={{ width:"8px", height:"8px", borderRadius:"50%", background:"#27c93f" }} />
+                      <div style={{ marginLeft:"14px", display:"flex", alignItems:"center", gap:"8px", background:"#161b22", padding:"4px 14px", borderRadius:"8px 8px 0 0", border:"1px solid #30363d", borderBottom:"none" }}>
+                        <div style={{ width:"18px", height:"18px", borderRadius:"4px", background: canvasBg==="transparent" ? "#0d1117" : canvasBg, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          <svg width="14" height="14" viewBox="0 0 300 300">{renderSVGNodes()}</svg>
+                        </div>
+                        <span style={{ fontSize:"11px", color:"#e6edf3", fontWeight:600 }}>{brandName} · Dashboard</span>
+                      </div>
+                    </div>
+                    <div style={{ padding:"30px", textAlign:"center", background:"#0d1117" }}>
+                      <h4 style={{ color:"#e6edf3", fontSize:"18px", margin:0 }}>Welcome to {brandName} Cloud</h4>
+                      <p style={{ color:"#8b949e", fontSize:"12px", marginTop:"6px" }}>{tagline}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. Terminal CLI Splash Mockup */}
+                {activeMockup === "terminal_splash" && (
+                  <div style={{ width:"500px", background:"#040a06", border:"1px solid #00ff6640", borderRadius:"12px", padding:"18px", fontFamily:"'JetBrains Mono', monospace", boxShadow:"0 15px 35px rgba(0,0,0,0.7)" }}>
+                    <div style={{ color:"#00ff66", fontSize:"11px", marginBottom:"10px" }}>$ npx {brandName.toLowerCase()} init</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:"14px", margin:"14px 0" }}>
+                      <div style={{ width:"60px", height:"60px", border:"1px solid #00ff6660", display:"flex", alignItems:"center", justifyContent:"center", background:"#020603" }}>
+                        <svg width="48" height="48" viewBox="0 0 300 300">{renderSVGNodes()}</svg>
+                      </div>
+                      <div>
+                        <div style={{ color:"#00ff66", fontWeight:700, fontSize:"14px" }}>{brandName.toUpperCase()} CLI v2.4.0</div>
+                        <div style={{ color:"#80ffaa", fontSize:"10.5px" }}>{tagline}</div>
+                      </div>
+                    </div>
+                    <div style={{ color:"rgba(0,255,100,0.6)", fontSize:"10px" }}>✓ Initialized 14 core procedural modules in 2.1ms</div>
+                  </div>
+                )}
+
+                {/* 4. macOS Menubar Mockup */}
+                {activeMockup === "menubar_icon" && (
+                  <div style={{ width:"480px", background:"#18181b", border:"1px solid rgba(255,255,255,0.12)", borderRadius:"10px", overflow:"hidden" }}>
+                    <div style={{ height:"28px", background:"rgba(0,0,0,0.6)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 12px", fontSize:"11px", color:"#e4e4e7" }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:"14px" }}>
+                        <span style={{ fontWeight:700 }}></span>
+                        <span style={{ fontWeight:700 }}>{brandName}</span>
+                        <span>File</span>
+                        <span>Edit</span>
+                        <span>View</span>
+                      </div>
+                      <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
+                        <div style={{ width:"16px", height:"16px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                          <svg width="14" height="14" viewBox="0 0 300 300">{renderSVGNodes()}</svg>
+                        </div>
+                        <span style={{ fontSize:"10px" }}>100%</span>
+                        <span style={{ fontSize:"10px" }}>Sun 10:42 AM</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 5. Titanium Card */}
+                {activeMockup === "card" && (
+                  <div style={{ width:"380px", height:"210px", background:"#1c1917", borderRadius:"12px", border:"1px solid #292524", boxShadow:"0 10px 30px rgba(0,0,0,0.5)", display:"flex", alignItems:"center", justifyContent:"center", transform:"rotateX(15deg) rotateY(-15deg)", transformStyle:"preserve-3d" }}>
+                    <svg width="220" height="150" viewBox="0 0 300 300">{renderSVGNodes()}</svg>
+                  </div>
+                )}
+
+                <div style={{ position:"absolute", top:"16px", left:"16px", background:"rgba(0,0,0,0.6)", padding:"4px 10px", borderRadius:"20px", fontSize:"10px", border:"1px solid rgba(255,255,255,0.12)", color:"#ec4899", fontWeight:600 }}>SAAS MOCKUP PREVIEW</div>
               </div>
             ) : (
               <div style={{ background: canvasBg==="transparent" ? "repeating-conic-gradient(#141210 0% 25%, #24201c 0% 50%) 0% 0% / 24px 24px" : canvasBg, width:`${zoom}%`, maxWidth:"500px", aspectRatio:"1/1", borderRadius:"24px", boxShadow:"0 25px 60px rgba(0,0,0,0.55)", border:"1px solid rgba(255,255,255,0.06)", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", transition:"background 0.3s, width 0.2s" }}>

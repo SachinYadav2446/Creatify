@@ -2,22 +2,26 @@ import { useState, useEffect } from "react";
 
 export default function Documents({ onBack, user, initialProject }) {
   const [projectTitle, setProjectTitle] = useState(() => {
-    return initialProject ? initialProject.title : "Corporate Brand Report";
+    return initialProject ? initialProject.title : "RFC-042: Distributed GPU Raytracing Architecture";
   });
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [docBlocks, setDocBlocks] = useState([
-    { id: "b_title", type: "h1", content: "Q2 Marketing Strategy & Projections" },
-    { id: "b_intro", type: "p", content: "This document outlines the projected customer acquisition costs (CAC) and conversion trends for our newly launched omni-channel campaigns." },
-    { id: "b_quote", type: "quote", content: "Design is not just what it looks like and feels like. Design is how it works. — Steve Jobs" },
-    { id: "b_table", type: "table", headers: ["Quarter", "Conversion (%)", "Budget ($K)"], rows: [
-      ["Q1 Launch", "2.4", "45"],
-      ["Q2 Expansion", "3.8", "80"],
-      ["Q3 Optimize", "5.2", "110"]
+    { id: "b_title", type: "h1", content: "RFC-042: Distributed GPU Raytracing Architecture" },
+    { id: "b_badge", type: "callout", calloutType: "info", content: "STATUS: APPROVED · Target Release: v2.4.0 · Author: Core Engine Team" },
+    { id: "b_intro", type: "p", content: "This document formalizes the memory model, parallel dispatch topology, and AST vector projection pipeline for the Creatify web runtime." },
+    { id: "b_h2_arch", type: "h2", content: "1. Core Architectural Invariants" },
+    { id: "b_code", type: "code", language: "rust", content: `// Zero-copy SharedArrayBuffer dispatch\npub fn dispatch_pipeline(ctx: &RenderContext) -> Result<TextureHandle, Error> {\n    let memory_view = ctx.acquire_direct_buffer()?;\n    simd_matrix_transform(memory_view)\n}` },
+    { id: "b_h2_api", type: "h2", content: "2. Ingress API Endpoint" },
+    { id: "b_api", type: "api_endpoint", method: "POST", route: "/v1/raytracer/bake", reqType: "application/json", resCode: "200 OK", resBody: `{\n  "status": "compiled",\n  "latency_ms": 3.4,\n  "buffer_size_kb": 128\n}` },
+    { id: "b_h2_env", type: "h2", content: "3. Environment Configuration" },
+    { id: "b_table", type: "table", headers: ["Environment Variable", "Type", "Default", "Description"], rows: [
+      ["RAYTRACER_MAX_THREADS", "int", "8", "Worker cluster concurrency threadpool"],
+      ["GPU_BACKEND_DRIVER", "enum", "webgl2", "Fallback driver (webgl2 | webgpu)"],
+      ["CACHE_STORAGE_MB", "int", "512", "L2 Memory cache allocation size"]
     ]},
-    { id: "b_chart", type: "chart", chartType: "bar", title: "Conversion Growth Trend" },
-    { id: "b_sign", type: "signature", name: "Sarah Jenkins", role: "VP of Brand Strategy" }
+    { id: "b_warn", type: "callout", calloutType: "warning", content: "CRITICAL: Changing GPU_BACKEND_DRIVER requires client WebAssembly cache invalidation." }
   ]);
-  const [activeBlockId, setActiveBlockId] = useState("b_intro");
+  const [activeBlockId, setActiveBlockId] = useState("b_code");
 
   useEffect(() => {
     if (initialProject && initialProject.data) {
@@ -28,6 +32,10 @@ export default function Documents({ onBack, user, initialProject }) {
 
   const updateBlockContent = (id, newContent) => {
     setDocBlocks(prev => prev.map(b => b.id === id ? { ...b, content: newContent } : b));
+  };
+
+  const updateBlockProp = (id, prop, val) => {
+    setDocBlocks(prev => prev.map(b => b.id === id ? { ...b, [prop]: val } : b));
   };
 
   // Table manipulation helpers
@@ -67,26 +75,36 @@ export default function Documents({ onBack, user, initialProject }) {
   const addBlock = (type) => {
     const id = `block_${Date.now()}`;
     let newBlock = { id, type, content: "New block content..." };
-    if (type === "table") {
+    if (type === "code") {
       newBlock = {
         id,
         type,
-        headers: ["Category", "Metric A", "Metric B"],
-        rows: [["Category A", "10", "20"], ["Category B", "15", "25"]]
+        language: "typescript",
+        content: `export async function handleRequest(req: Request): Promise<Response> {\n  return new Response(JSON.stringify({ status: "ok" }));\n}`
       };
-    } else if (type === "chart") {
+    } else if (type === "callout") {
       newBlock = {
         id,
         type,
-        chartType: "bar",
-        title: "New Interactive Data Chart"
+        calloutType: "info",
+        content: "NOTE: This endpoint requires Bearer authentication token in the Authorization header."
       };
-    } else if (type === "signature") {
+    } else if (type === "api_endpoint") {
       newBlock = {
         id,
         type,
-        name: user?.name || "John Doe",
-        role: "Project Representative"
+        method: "GET",
+        route: "/v1/health",
+        reqType: "None",
+        resCode: "200 OK",
+        resBody: `{\n  "status": "healthy",\n  "uptime": "99.99%"\n}`
+      };
+    } else if (type === "table") {
+      newBlock = {
+        id,
+        type,
+        headers: ["Variable", "Type", "Default", "Description"],
+        rows: [["PORT", "int", "3000", "Server listening port"], ["ENV", "string", "production", "Runtime deployment stage"]]
       };
     }
     setDocBlocks(prev => [...prev, newBlock]);
@@ -478,6 +496,41 @@ export default function Documents({ onBack, user, initialProject }) {
     URL.revokeObjectURL(url);
   };
 
+  const exportAsMarkdown = () => {
+    let md = `---
+title: "${projectTitle}"
+author: "${user?.name || "Developer"}"
+date: "${new Date().toISOString().split("T")[0]}"
+---
+
+`;
+    docBlocks.forEach(block => {
+      if (block.type === "h1") md += `# ${block.content}\n\n`;
+      else if (block.type === "h2") md += `## ${block.content}\n\n`;
+      else if (block.type === "p") md += `${block.content}\n\n`;
+      else if (block.type === "quote") md += `> ${block.content}\n\n`;
+      else if (block.type === "callout") md += `> [!${block.calloutType === "warning" ? "WARNING" : "NOTE"}]\n> ${block.content}\n\n`;
+      else if (block.type === "code") md += `\`\`\`${block.language || "rust"}\n${block.content}\n\`\`\`\n\n`;
+      else if (block.type === "api_endpoint") md += `### \`${block.method} ${block.route}\`\n\n\`\`\`json\n${block.resBody}\n\`\`\`\n\n`;
+      else if (block.type === "table") {
+        md += `| ${block.headers.join(" | ")} |\n`;
+        md += `| ${block.headers.map(() => "---").join(" | ")} |\n`;
+        block.rows.forEach(r => {
+          md += `| ${r.join(" | ")} |\n`;
+        });
+        md += "\n";
+      }
+    });
+
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.download = `${projectTitle.toLowerCase().replace(/\s+/g, "_")}.md`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const triggerPrint = () => {
     window.print();
   };
@@ -518,7 +571,7 @@ export default function Documents({ onBack, user, initialProject }) {
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <button onClick={() => setShowLeaveModal(true)} className="tool-btn danger" style={{ padding: "6px 14px", fontSize: "11px" }}>Exit</button>
           <div style={{ width: "1px", height: "18px", background: "rgba(225,73,109,0.15)" }} />
-          <span style={{ fontFamily: "Syne", fontSize: "16px", fontWeight: 800 }}>DocumentStudio</span>
+          <span style={{ fontFamily: "Syne", fontSize: "16px", fontWeight: 800 }}>TechSpec Studio</span>
         </div>
 
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
@@ -526,12 +579,15 @@ export default function Documents({ onBack, user, initialProject }) {
             type="text" 
             value={projectTitle} 
             onChange={e => setProjectTitle(e.target.value)} 
-            style={{ background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#fff", padding: "6px 12px", fontSize: "12px", outline: "none", width: "220px" }}
+            style={{ background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#fff", padding: "6px 12px", fontSize: "12px", outline: "none", width: "320px" }}
             placeholder="Document Title"
           />
         </div>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          <button onClick={exportAsMarkdown} className="tool-btn" style={{ border: "1px solid rgba(56,189,248,0.3)", color: "#38bdf8", background: "rgba(56,189,248,0.08)", padding: "6px 14px", fontSize: "12px", fontWeight: 600 }}>
+            📝 Export Markdown (RFC.md)
+          </button>
           <button onClick={exportAsHTML} className="tool-btn" style={{ border: "1px solid rgba(225,73,109,0.25)", color: "#fff", background: "rgba(255,255,255,0.02)", padding: "6px 14px", fontSize: "12px" }}>
             Export HTML
           </button>
@@ -551,15 +607,40 @@ export default function Documents({ onBack, user, initialProject }) {
         <div style={{ width: "300px", minWidth: "300px", borderRight: "1px solid rgba(225,73,109,0.12)", background: "rgba(10,8,7,0.5)", display: "flex", flexDirection: "column", padding: "20px", gap: "20px" }}>
           
           <div>
-            <span style={{ fontSize: "10px", color: "#eba5b6", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>INSERT BLOCKS</span>
+            <span style={{ fontSize: "10px", color: "#eba5b6", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>INSERT TECH BLOCKS</span>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
               <button onClick={() => addBlock("h1")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>H1 Title</button>
-              <button onClick={() => addBlock("h2")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>H2 Subtitle</button>
+              <button onClick={() => addBlock("h2")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>H2 Section</button>
               <button onClick={() => addBlock("p")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>Paragraph</button>
-              <button onClick={() => addBlock("quote")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>Quote Block</button>
-              <button onClick={() => addBlock("table")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>Data Table</button>
-              <button onClick={() => addBlock("chart")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center" }}>SVG Chart</button>
-              <button onClick={() => addBlock("signature")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center", gridColumn: "span 2" }}>+ Signature Pad</button>
+              <button onClick={() => addBlock("callout")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center", color: "#38bdf8" }}>📘 Callout</button>
+              <button onClick={() => addBlock("code")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center", color: "#e1496d" }}>💻 Code Block</button>
+              <button onClick={() => addBlock("api_endpoint")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center", color: "#22c55e" }}>📡 API Route</button>
+              <button onClick={() => addBlock("table")} className="tool-btn" style={{ padding: "6px", fontSize: "11px", justifyContent: "center", gridColumn: "span 2" }}>📋 Env Config Table</button>
+            </div>
+          </div>
+
+          {/* Pre-built Templates */}
+          <div>
+            <span style={{ fontSize: "10px", color: "#eba5b6", fontWeight: 700, letterSpacing: "0.06em", display: "block", marginBottom: "8px" }}>TECH SPEC TEMPLATES</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              {[
+                { name: "📜 System Architecture RFC", title: "RFC-042: Distributed GPU Raytracing Architecture" },
+                { name: "📡 API Endpoint Spec", title: "API-Spec: Pipeline Batch Execution & Webhooks" },
+                { name: "🚨 Incident Post-Mortem", title: "Post-Mortem: 2026-08-12 Redis Shard Failover Incident" },
+                { name: "📦 Open Source README", title: "Creatify: Modern High-Performance Creative Engine" }
+              ].map((tpl, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    setProjectTitle(tpl.title);
+                    alert(`✓ Loaded template: ${tpl.name}`);
+                  }}
+                  className="tool-btn"
+                  style={{ fontSize: "11px", justifyContent: "flex-start", padding: "8px 10px" }}
+                >
+                  {tpl.name}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -585,61 +666,106 @@ export default function Documents({ onBack, user, initialProject }) {
                 </div>
               )}
 
+              {/* Code block editor */}
+              {activeBlock.type === "code" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div>
+                    <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Language</label>
+                    <select
+                      value={activeBlock.language || "rust"}
+                      onChange={e => updateBlockProp(activeBlock.id, "language", e.target.value)}
+                      style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
+                    >
+                      <option value="rust">Rust</option>
+                      <option value="typescript">TypeScript</option>
+                      <option value="python">Python</option>
+                      <option value="go">Go</option>
+                      <option value="sql">SQL</option>
+                      <option value="bash">Bash / Shell</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Source Code</label>
+                    <textarea
+                      rows={6}
+                      value={activeBlock.content}
+                      onChange={e => updateBlockContent(activeBlock.id, e.target.value)}
+                      style={{ width: "100%", background: "#0b040c", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#38bdf8", fontFamily: "'JetBrains Mono', monospace", padding: "8px 12px", fontSize: "11px", outline: "none" }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Callout editor */}
+              {activeBlock.type === "callout" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div>
+                    <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Callout Type</label>
+                    <select
+                      value={activeBlock.calloutType || "info"}
+                      onChange={e => updateBlockProp(activeBlock.id, "calloutType", e.target.value)}
+                      style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
+                    >
+                      <option value="info">📘 Note / Info</option>
+                      <option value="warning">⚠️ Warning</option>
+                      <option value="tip">⚡ Performance Tip</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Callout Message</label>
+                    <textarea
+                      rows={4}
+                      value={activeBlock.content}
+                      onChange={e => updateBlockContent(activeBlock.id, e.target.value)}
+                      style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#fff", padding: "8px 12px", fontSize: "11.5px", outline: "none" }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* API Endpoint editor */}
+              {activeBlock.type === "api_endpoint" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Method</label>
+                      <select
+                        value={activeBlock.method || "POST"}
+                        onChange={e => updateBlockProp(activeBlock.id, "method", e.target.value)}
+                        style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
+                      >
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="DELETE">DELETE</option>
+                      </select>
+                    </div>
+                    <div style={{ flex: 2 }}>
+                      <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Route</label>
+                      <input
+                        type="text"
+                        value={activeBlock.route || "/v1/api"}
+                        onChange={e => updateBlockProp(activeBlock.id, "route", e.target.value)}
+                        style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Response JSON Body</label>
+                    <textarea
+                      rows={5}
+                      value={activeBlock.resBody}
+                      onChange={e => updateBlockProp(activeBlock.id, "resBody", e.target.value)}
+                      style={{ width: "100%", background: "#080309", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "8px", color: "#38bdf8", fontFamily: "'JetBrains Mono', monospace", padding: "8px 12px", fontSize: "11px", outline: "none" }}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Table controls */}
               {activeBlock.type === "table" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <button onClick={() => addTableRow(activeBlock.id)} className="tool-btn" style={{ fontSize: "11px", justifyContent: "center", padding: "6px" }}>+ Add Data Row</button>
-                  <span style={{ fontSize: "9px", color: "#666" }}>Data in column 2 (index 1) drives the visual chart rendering automatically.</span>
-                </div>
-              )}
-
-              {/* Chart type controls */}
-              {activeBlock.type === "chart" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <div>
-                    <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Chart Title</label>
-                    <input
-                      type="text"
-                      value={activeBlock.title || ""}
-                      onChange={e => setDocBlocks(prev => prev.map(b => b.id === activeBlock.id ? { ...b, title: e.target.value } : b))}
-                      style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Chart Type</label>
-                    <select
-                      value={activeBlock.chartType || "bar"}
-                      onChange={e => setDocBlocks(prev => prev.map(b => b.id === activeBlock.id ? { ...b, chartType: e.target.value } : b))}
-                      style={{ width: "100%", background: "#1a0f14", color: "#fff", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", fontSize: "11px", padding: "6px" }}
-                    >
-                      <option value="bar">SVG Bar Chart</option>
-                      <option value="line">SVG Line Graph</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {/* Signature properties */}
-              {activeBlock.type === "signature" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  <div>
-                    <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Signee Name</label>
-                    <input
-                      type="text"
-                      value={activeBlock.name}
-                      onChange={e => setDocBlocks(prev => prev.map(b => b.id === activeBlock.id ? { ...b, name: e.target.value } : b))}
-                      style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: "10px", color: "#5c5650", display: "block", marginBottom: "4px" }}>Official Role</label>
-                    <input
-                      type="text"
-                      value={activeBlock.role}
-                      onChange={e => setDocBlocks(prev => prev.map(b => b.id === activeBlock.id ? { ...b, role: e.target.value } : b))}
-                      style={{ width: "100%", background: "#1a0f14", border: "1px solid rgba(225,73,109,0.15)", borderRadius: "6px", color: "#fff", padding: "6px", fontSize: "11px" }}
-                    />
-                  </div>
+                  <button onClick={() => addTableRow(activeBlock.id)} className="tool-btn" style={{ fontSize: "11px", justifyContent: "center", padding: "6px" }}>+ Add Config Row</button>
                 </div>
               )}
 
@@ -656,7 +782,7 @@ export default function Documents({ onBack, user, initialProject }) {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#0f070b", overflowY: "auto", padding: "40px 20px", alignItems: "center" }}>
           
           {/* Paper sheet */}
-          <div className="print-sheet" style={{ width: "100%", maxWidth: "600px", minHeight: "842px", background: "#ffffff", color: "#1a202c", padding: "50px", borderRadius: "12px", boxShadow: "0 10px 40px rgba(0,0,0,0.7)", display: "flex", flexDirection: "column", gap: "24px" }}>
+          <div className="print-sheet" style={{ width: "100%", maxWidth: "680px", minHeight: "842px", background: "#ffffff", color: "#1a202c", padding: "50px", borderRadius: "12px", boxShadow: "0 10px 40px rgba(0,0,0,0.7)", display: "flex", flexDirection: "column", gap: "20px" }}>
             
             {docBlocks.map(block => {
               const isSelected = block.id === activeBlockId;
@@ -668,7 +794,7 @@ export default function Documents({ onBack, user, initialProject }) {
                   style={{
                     position: "relative",
                     borderRadius: "6px",
-                    outline: isSelected ? "1.5px dashed #6366f1" : "none",
+                    outline: isSelected ? "1.5px dashed #e1496d" : "none",
                     cursor: "pointer",
                     padding: "4px 8px",
                     transition: "outline 0.2s"
@@ -677,28 +803,68 @@ export default function Documents({ onBack, user, initialProject }) {
                   
                   {/* Title block */}
                   {block.type === "h1" && (
-                    <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "28px", fontWeight: 800, margin: 0, color: "#111", letterSpacing: "-0.02em" }}>
+                    <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "26px", fontWeight: 800, margin: 0, color: "#0f172a", letterSpacing: "-0.02em" }}>
                       {block.content}
                     </h1>
                   )}
 
                   {/* Subtitle block */}
                   {block.type === "h2" && (
-                    <h2 style={{ fontSize: "18px", fontWeight: 600, margin: 0, color: "#2d3748", borderBottom: "1px solid #e2e8f0", paddingBottom: "6px" }}>
+                    <h2 style={{ fontSize: "17px", fontWeight: 700, margin: 0, color: "#1e293b", borderBottom: "1px solid #e2e8f0", paddingBottom: "6px" }}>
                       {block.content}
                     </h2>
                   )}
 
                   {/* Paragraph block */}
                   {block.type === "p" && (
-                    <p style={{ fontSize: "13.5px", lineHeight: 1.6, color: "#4a5568", margin: 0 }}>
+                    <p style={{ fontSize: "13px", lineHeight: 1.6, color: "#334155", margin: 0 }}>
                       {block.content}
                     </p>
                   )}
 
+                  {/* Callout block */}
+                  {block.type === "callout" && (
+                    <div style={{
+                      borderLeft: `4px solid ${block.calloutType === "warning" ? "#ef4444" : block.calloutType === "tip" ? "#22c55e" : "#0284c7"}`,
+                      background: block.calloutType === "warning" ? "#fef2f2" : block.calloutType === "tip" ? "#f0fdf4" : "#f0f9ff",
+                      padding: "10px 14px", borderRadius: "0 6px 6px 0", fontSize: "12px",
+                      color: block.calloutType === "warning" ? "#991b1b" : block.calloutType === "tip" ? "#166534" : "#075985",
+                      fontWeight: 500
+                    }}>
+                      {block.content}
+                    </div>
+                  )}
+
+                  {/* Code block */}
+                  {block.type === "code" && (
+                    <div style={{ background: "#0a030b", border: "1px solid rgba(225,73,109,0.3)", borderRadius: "8px", overflow: "hidden", fontFamily: "'JetBrains Mono', monospace" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.03)", borderBottom: "1px solid rgba(255,255,255,0.08)", padding: "6px 12px" }}>
+                        <span style={{ fontSize: "10px", color: "#e1496d", fontWeight: 700, textTransform: "uppercase" }}>{block.language || "rust"}</span>
+                        <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(block.content); alert("✓ Code snippet copied!"); }} style={{ background: "none", border: "none", color: "#38bdf8", fontSize: "10px", cursor: "pointer", fontWeight: 600 }}>Copy</button>
+                      </div>
+                      <pre style={{ margin: 0, padding: "12px", fontSize: "11px", color: "#38bdf8", lineHeight: 1.5, overflowX: "auto" }}>
+                        {block.content}
+                      </pre>
+                    </div>
+                  )}
+
+                  {/* API Endpoint block */}
+                  {block.type === "api_endpoint" && (
+                    <div style={{ background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: "8px", padding: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ background: "#22c55e", color: "#fff", padding: "2px 8px", borderRadius: "4px", fontSize: "10px", fontWeight: 800 }}>{block.method || "POST"}</span>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{block.route || "/v1/api"}</span>
+                        <span style={{ marginLeft: "auto", fontSize: "10px", background: "#e2e8f0", color: "#475569", padding: "2px 6px", borderRadius: "4px" }}>{block.resCode || "200 OK"}</span>
+                      </div>
+                      <pre style={{ margin: 0, background: "#080309", padding: "10px", borderRadius: "6px", color: "#38bdf8", fontFamily: "'JetBrains Mono', monospace", fontSize: "10.5px", overflowX: "auto" }}>
+                        {block.resBody}
+                      </pre>
+                    </div>
+                  )}
+
                   {/* Quote block */}
                   {block.type === "quote" && (
-                    <div style={{ borderLeft: "4px solid #6366f1", paddingLeft: "14px", fontStyle: "italic", fontSize: "13px", color: "#4a5568", background: "#f7fafc", padding: "10px 14px", borderRadius: "0 6px 6px 0" }}>
+                    <div style={{ borderLeft: "4px solid #e1496d", paddingLeft: "14px", fontStyle: "italic", fontSize: "13px", color: "#4a5568", background: "#fdf2f4", padding: "10px 14px", borderRadius: "0 6px 6px 0" }}>
                       {block.content}
                     </div>
                   )}
@@ -706,11 +872,11 @@ export default function Documents({ onBack, user, initialProject }) {
                   {/* Interactive Table block */}
                   {block.type === "table" && (
                     <div style={{ overflowX: "auto" }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", textAlign: "left" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11.5px", textAlign: "left" }}>
                         <thead>
-                          <tr style={{ background: "#edf2f7", borderBottom: "2px solid #cbd5e0" }}>
+                          <tr style={{ background: "#f1f5f9", borderBottom: "2px solid #cbd5e1" }}>
                             {block.headers.map((h, i) => (
-                              <th key={i} style={{ padding: "8px 10px", fontWeight: 600, color: "#2d3748" }}>{h}</th>
+                              <th key={i} style={{ padding: "8px 10px", fontWeight: 600, color: "#1e293b" }}>{h}</th>
                             ))}
                             {isSelected && <th style={{ width: "30px" }} />}
                           </tr>
@@ -724,7 +890,7 @@ export default function Documents({ onBack, user, initialProject }) {
                                     type="text"
                                     value={cell}
                                     onChange={e => updateTableCell(block.id, rowIdx, colIdx, e.target.value)}
-                                    style={{ width: "100%", border: "none", background: "none", fontSize: "12px", outline: "none", padding: "2px" }}
+                                    style={{ width: "100%", border: "none", background: "none", fontSize: "11.5px", outline: "none", padding: "2px" }}
                                   />
                                 </td>
                               ))}
@@ -737,20 +903,6 @@ export default function Documents({ onBack, user, initialProject }) {
                           ))}
                         </tbody>
                       </table>
-                    </div>
-                  )}
-
-                  {/* SVG Chart Block */}
-                  {block.type === "chart" && renderSVGChart(block)}
-
-                  {/* Signature block */}
-                  {block.type === "signature" && (
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", marginTop: "16px" }}>
-                      <div style={{ width: "160px", borderBottom: "1px solid #1a202c", paddingBottom: "4px", textAlign: "center" }}>
-                        {/* Script font style preview */}
-                        <span style={{ fontFamily: "cursive", fontSize: "16px", color: "#6366f1" }}>{block.name}</span>
-                      </div>
-                      <span style={{ fontSize: "10px", color: "#718096", marginTop: "4px", fontWeight: 500 }}>{block.role}</span>
                     </div>
                   )}
 

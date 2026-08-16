@@ -810,8 +810,44 @@ export default function PresentationPage({ onBack, user, initialPresentation }) 
     const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.download = `\${projectTitle.replace(/\\s+/g, "_")}.html`;
+    link.download = `${projectTitle.replace(/\s+/g, "_")}.html`;
     link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportMarkdownDeck = () => {
+    let md = `---
+theme: creatify-developer
+title: "${projectTitle}"
+author: "${user?.name || "Developer"}"
+---
+
+`;
+    slides.forEach((s, idx) => {
+      md += `<!-- Slide ${idx + 1} (${s.layout}) -->\n`;
+      if (s.title) md += `# ${s.title}\n`;
+      if (s.subtitle) md += `> ${s.subtitle}\n\n`;
+      if (s.layout === "code_split") {
+        md += `\`\`\`rust\n${s.codeSnippet || "pub async fn execute() -> Result<(), Error> {\n    Ok(())\n}"}\n\`\`\`\n\n`;
+      }
+      if (s.bulletPoints && s.bulletPoints.length > 0) {
+        s.bulletPoints.forEach(bp => {
+          md += `- ${bp}\n`;
+        });
+        md += "\n";
+      }
+      if (s.quote) {
+        md += `> "${s.quote}"\n> — *${s.author || "Anonymous"}*\n\n`;
+      }
+      md += "---\n\n";
+    });
+
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${projectTitle.toLowerCase().replace(/\s+/g, "_")}_slides.md`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -1541,11 +1577,14 @@ export default function PresentationSlide() {
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     <label style={{ fontSize: "9px", color: "#8c8780" }}>DOWNLOAD PRESENTATION</label>
+                    <button className="tool-btn primary" style={{ justifyContent: "center", width: "100%", marginBottom: "6px", background: "linear-gradient(135deg, #0ea5e9, #38bdf8)" }} onClick={exportMarkdownDeck}>
+                      📝 Export Markdown Deck (slides.md)
+                    </button>
                     <button className="tool-btn primary" style={{ justifyContent: "center", width: "100%", marginBottom: "6px" }} onClick={exportHTMLSlideshow}>
-                      Export Offline HTML Deck
+                      🌐 Export Offline HTML Deck
                     </button>
                     <button className="tool-btn" style={{ justifyContent: "center", width: "100%" }} onClick={triggerExport}>
-                      Compile PDF Deck
+                      📄 Compile PDF Deck
                     </button>
                   </div>
                 </div>
@@ -1582,6 +1621,10 @@ export default function PresentationSlide() {
                   <div style={{ fontSize: "9px", color: "#8c8780", padding: "4px 8px", fontWeight: 600 }}>SELECT LAYOUT</div>
                   {[
                     { id: "blank", label: "Blank Slide", icon: "🔳" },
+                    { id: "code_split", label: "Code & Architecture Split", icon: "💻" },
+                    { id: "architecture", label: "System Architecture Flow", icon: "🏗️" },
+                    { id: "benchmark", label: "Benchmark Comparison", icon: "⚡" },
+                    { id: "api_spec", label: "API Spec & Response", icon: "📡" },
                     { id: "title", label: "Title Slide", icon: "🏷️" },
                     { id: "content", label: "Bullet Points", icon: "📝" },
                     { id: "two-column", label: "Two Columns", icon: "📊" },
@@ -2101,6 +2144,155 @@ export default function PresentationSlide() {
                     >
                       {activeSlide.subtitle || "Optional section subtitle details..."}
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {/* 7. Code & Architecture Split Layout */}
+              {activeSlide.layout === "code_split" && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1.25fr", gap: "24px", alignItems: "center", flex: 1, zIndex: 2 }}>
+                  <div style={{ textAlign: "left" }}>
+                    <h3 
+                      onClick={(e) => { e.stopPropagation(); setSelectedFieldId("title"); setSelectedElementId(null); }}
+                      style={{ fontFamily: getThemeHeaderFont(theme.archetype), fontSize: "1.8rem", fontWeight: 800, color: theme.primary, marginBottom: "8px", border: selectedFieldId === "title" ? `1.5px dashed ${theme.primary}` : "1.5px dashed transparent", cursor: "pointer", padding: "2px", borderRadius: "6px" }}
+                    >
+                      {activeSlide.title || "Core Rust Engine"}
+                    </h3>
+                    <p 
+                      onClick={(e) => { e.stopPropagation(); setSelectedFieldId("subtitle"); setSelectedElementId(null); }}
+                      style={{ fontFamily: getThemeBodyFont(theme.archetype), fontSize: "0.95rem", opacity: 0.8, marginBottom: "16px", border: selectedFieldId === "subtitle" ? `1.5px dashed ${theme.primary}` : "1.5px dashed transparent", cursor: "pointer", padding: "2px", borderRadius: "6px" }}
+                    >
+                      {activeSlide.subtitle || "Zero-copy WebAssembly memory buffer & parallel worker dispatch."}
+                    </p>
+                    <ul style={{ display: "flex", flexDirection: "column", gap: "8px", paddingLeft: "18px", fontSize: "0.9rem", color: theme.text }}>
+                      {(activeSlide.bulletPoints?.length ? activeSlide.bulletPoints : ["SIMD vectorized texture baking", "Sub-10ms frame compilation", "Direct WebGL2 context binding"]).map((bp, i) => (
+                        <li key={i}>{bp}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div style={{ background: "#060208", border: `1px solid ${theme.primary}50`, borderRadius: "10px", padding: "14px", fontFamily: "'JetBrains Mono', monospace", boxShadow: "0 10px 30px rgba(0,0,0,0.6)", overflow: "hidden" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "10px", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "6px" }}>
+                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#ef4444" }} />
+                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#eab308" }} />
+                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e" }} />
+                      <span style={{ fontSize: "10px", color: "#8c8780", marginLeft: "6px" }}>engine.rs</span>
+                    </div>
+                    <pre style={{ margin: 0, fontSize: "11px", lineHeight: "1.45", color: "#38bdf8", overflowX: "auto" }}>
+                      {activeSlide.codeSnippet || `pub async fn compile_frame(
+    ctx: &mut RenderContext, 
+    mesh: &GeometryBuffer
+) -> Result<TextureHandle, EngineError> {
+    let pipeline = ctx.create_shader_pipeline(SHADERS)?;
+    pipeline.dispatch_compute(1920, 1080).await
+}`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* 8. Architecture Flow Layout */}
+              {activeSlide.layout === "architecture" && (
+                <div style={{ display: "flex", flexDirection: "column", flex: 1, zIndex: 2, textAlign: "left" }}>
+                  <h3 
+                    onClick={(e) => { e.stopPropagation(); setSelectedFieldId("title"); setSelectedElementId(null); }}
+                    style={{ fontFamily: getThemeHeaderFont(theme.archetype), fontSize: "1.8rem", fontWeight: 800, color: theme.primary, marginBottom: "4px", border: selectedFieldId === "title" ? `1.5px dashed ${theme.primary}` : "1.5px dashed transparent", cursor: "pointer", padding: "2px", borderRadius: "6px" }}
+                  >
+                    {activeSlide.title || "Distributed System Topology"}
+                  </h3>
+                  <p 
+                    onClick={(e) => { e.stopPropagation(); setSelectedFieldId("subtitle"); setSelectedElementId(null); }}
+                    style={{ fontFamily: getThemeBodyFont(theme.archetype), fontSize: "0.9rem", opacity: 0.75, marginBottom: "20px", border: selectedFieldId === "subtitle" ? `1.5px dashed ${theme.primary}` : "1.5px dashed transparent", cursor: "pointer", padding: "2px", borderRadius: "6px" }}
+                  >
+                    {activeSlide.subtitle || "High-concurrency event-driven pipeline architecture"}
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", flex: 1, alignItems: "center" }}>
+                    {[
+                      { title: "Edge Ingress", badge: "Envoy / HTTP3", desc: "TLS termination & JWT validation", color: "#38bdf8" },
+                      { title: "Queue Broker", badge: "Kafka / Redis", desc: "Deterministic sequence stream", color: "#e1496d" },
+                      { title: "WASM Workers", badge: "Rust / Rayon", desc: "Parallel AST render cluster", color: "#a855f7" },
+                      { title: "Object Storage", badge: "S3 / CDN", desc: "Global edge asset replication", color: "#22c55e" }
+                    ].map((node, i) => (
+                      <div key={i} style={{ background: "rgba(14, 5, 12, 0.85)", border: `1px solid ${node.color}50`, borderRadius: "10px", padding: "14px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <span style={{ fontSize: "9px", color: node.color, fontWeight: 700, textTransform: "uppercase" }}>{node.badge}</span>
+                        <span style={{ fontSize: "13px", fontWeight: 800, color: "#fff" }}>{node.title}</span>
+                        <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.6)" }}>{node.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 9. Benchmark Comparison Layout */}
+              {activeSlide.layout === "benchmark" && (
+                <div style={{ display: "flex", flexDirection: "column", flex: 1, zIndex: 2, textAlign: "left" }}>
+                  <h3 
+                    onClick={(e) => { e.stopPropagation(); setSelectedFieldId("title"); setSelectedElementId(null); }}
+                    style={{ fontFamily: getThemeHeaderFont(theme.archetype), fontSize: "1.8rem", fontWeight: 800, color: theme.primary, marginBottom: "4px", border: selectedFieldId === "title" ? `1.5px dashed ${theme.primary}` : "1.5px dashed transparent", cursor: "pointer", padding: "2px", borderRadius: "6px" }}
+                  >
+                    {activeSlide.title || "Performance Benchmark & Latency"}
+                  </h3>
+                  <p 
+                    onClick={(e) => { e.stopPropagation(); setSelectedFieldId("subtitle"); setSelectedElementId(null); }}
+                    style={{ fontFamily: getThemeBodyFont(theme.archetype), fontSize: "0.9rem", opacity: 0.75, marginBottom: "20px", border: selectedFieldId === "subtitle" ? `1.5px dashed ${theme.primary}` : "1.5px dashed transparent", cursor: "pointer", padding: "2px", borderRadius: "6px" }}
+                  >
+                    {activeSlide.subtitle || "Measured across 100,000 synthetic frame rendering batches"}
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "16px", justifyContent: "center", flex: 1 }}>
+                    {[
+                      { label: "Creatify Engine (WASM + SIMD)", value: "2.4ms", bar: "92%", color: "#22c55e", sub: "38x faster throughput" },
+                      { label: "Legacy Cloud Raytracer", value: "94.6ms", bar: "32%", color: "#eab308", sub: "Network roundtrip bottleneck" },
+                      { label: "Standard Canvas2D Fallback", value: "182.0ms", bar: "12%", color: "#ef4444", sub: "Main thread lockup" }
+                    ].map((b, i) => (
+                      <div key={i} style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", fontWeight: 700, color: "#fff" }}>
+                          <span>{b.label}</span>
+                          <span style={{ color: b.color, fontFamily: "'JetBrains Mono', monospace" }}>{b.value} · <small style={{ opacity: 0.8 }}>{b.sub}</small></span>
+                        </div>
+                        <div style={{ width: "100%", height: "10px", background: "rgba(255,255,255,0.08)", borderRadius: "6px", overflow: "hidden" }}>
+                          <div style={{ width: b.bar, height: "100%", background: b.color, borderRadius: "6px" }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 10. API Spec Layout */}
+              {activeSlide.layout === "api_spec" && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1.25fr", gap: "24px", alignItems: "center", flex: 1, zIndex: 2 }}>
+                  <div style={{ textAlign: "left" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                      <span style={{ background: "#22c55e20", color: "#22c55e", border: "1px solid #22c55e40", padding: "2px 8px", borderRadius: "4px", fontSize: "10px", fontWeight: 800 }}>POST</span>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "13px", color: "#fff" }}>/v1/render/batch</span>
+                    </div>
+                    <h3 
+                      onClick={(e) => { e.stopPropagation(); setSelectedFieldId("title"); setSelectedElementId(null); }}
+                      style={{ fontFamily: getThemeHeaderFont(theme.archetype), fontSize: "1.6rem", fontWeight: 800, color: theme.primary, marginBottom: "8px", border: selectedFieldId === "title" ? `1.5px dashed ${theme.primary}` : "1.5px dashed transparent", cursor: "pointer", padding: "2px", borderRadius: "6px" }}
+                    >
+                      {activeSlide.title || "Developer API Spec"}
+                    </h3>
+                    <p 
+                      onClick={(e) => { e.stopPropagation(); setSelectedFieldId("subtitle"); setSelectedElementId(null); }}
+                      style={{ fontFamily: getThemeBodyFont(theme.archetype), fontSize: "0.9rem", opacity: 0.8, marginBottom: "14px", border: selectedFieldId === "subtitle" ? `1.5px dashed ${theme.primary}` : "1.5px dashed transparent", cursor: "pointer", padding: "2px", borderRadius: "6px" }}
+                    >
+                      {activeSlide.subtitle || "Programmatic batch asset rendering via zero-dependency REST & Webhooks."}
+                    </p>
+                    <div style={{ fontSize: "10px", color: "#8c8780", display: "flex", gap: "10px" }}>
+                      <span>⚡ 10k req/sec limit</span>
+                      <span>🔒 mTLS Supported</span>
+                    </div>
+                  </div>
+                  <div style={{ background: "#050106", border: "1px solid rgba(56, 189, 248, 0.3)", borderRadius: "10px", padding: "14px", fontFamily: "'JetBrains Mono', monospace", color: "#38bdf8", fontSize: "11px", boxShadow: "0 10px 30px rgba(0,0,0,0.6)" }}>
+                    <div style={{ color: "#8c8780", fontSize: "10px", marginBottom: "6px" }}>// Response (200 OK)</div>
+                    <pre style={{ margin: 0, lineHeight: 1.45 }}>{`{
+  "status": "success",
+  "pipeline_id": "pip_984f1",
+  "latency_ms": 3.8,
+  "artifacts": [
+    { "type": "svg", "url": "https://cdn.creatify.io/out.svg" },
+    { "type": "react_tsx", "size_kb": 14.2 }
+  ]
+}`}</pre>
                   </div>
                 </div>
               )}

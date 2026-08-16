@@ -317,6 +317,7 @@ export default function App() {
         onBack={() => setCurrentPage("home")}
         onNavigate={navigate}
         user={user}
+        isDark={appTheme === "dark"}
       />
     );
   }
@@ -327,6 +328,7 @@ export default function App() {
         onBack={() => setCurrentPage("home")}
         onNavigate={navigate}
         user={user}
+        isDark={appTheme === "dark"}
       />
     );
   }

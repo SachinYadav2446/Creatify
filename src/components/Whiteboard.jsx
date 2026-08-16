@@ -1,4 +1,4 @@
-﻿import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Home, FileText, Settings, Share2, Download, Trash2, X, Layers,
   LayoutTemplate, Shapes, Type, Upload, Wrench, FolderOpen,
@@ -172,6 +172,25 @@ export default function Whiteboard({ onBack, user, initialProject }) {
   // Sticky notes
   const [stickyNotes, setStickyNotes] = useState([]);
   
+  // Developer Architecture Nodes & DAG Connections
+  const [archNodes, setArchNodes] = useState([
+    { id: "node_gw", type: "gateway", label: "API Gateway", subLabel: ":8080 TLS Proxy", x: 80, y: 150, width: 180, color: "#38bdf8", metrics: "12.4k req/s" },
+    { id: "node_kafka", type: "queue", label: "Kafka Event Broker", subLabel: "topics: telemetry, events", x: 320, y: 150, width: 190, color: "#e1496d", metrics: "0.4ms latency" },
+    { id: "node_worker", type: "service", label: "WASM Worker Cluster", subLabel: "Rust / Rayon (8 Nodes)", x: 570, y: 150, width: 190, color: "#a855f7", metrics: "CPU 24%" },
+    { id: "node_db", type: "database", label: "PostgreSQL Primary", subLabel: "Sharded + pgvector", x: 820, y: 150, width: 200, color: "#22c55e", schema: ["id: uuid (PK)", "data: jsonb", "embedding: vector(1536)"] },
+  ]);
+
+  const [archWires, setArchWires] = useState([
+    { id: "w1", from: "node_gw", to: "node_kafka", label: "mTLS" },
+    { id: "w2", from: "node_kafka", to: "node_worker", label: "stream" },
+    { id: "w3", from: "node_worker", to: "node_db", label: "pgpool" },
+  ]);
+
+  const [mermaidCode, setMermaidCode] = useState(`graph TD
+  Gateway[API Gateway :8080] --> Kafka[Kafka Event Bus]
+  Kafka --> Workers[Rust Worker Cluster]
+  Workers --> Database[(PostgreSQL + pgvector)]`);
+
   // Background
   const [bgColor, setBgColor] = useState("#ffffff");
   const [showGrid, setShowGrid] = useState(true);
@@ -1420,6 +1439,7 @@ export default function Whiteboard({ onBack, user, initialProject }) {
 
             {/* Tab Navigation */}
             {[
+              { id: "architecture", Icon: Grid2x2, label: "Architecture & Mermaid", color: "#e1496d" },
               { id: "templates", Icon: LayoutTemplate, label: "Templates", color: "#3b82f6" },
               { id: "elements", Icon: Shapes, label: "Elements", color: "#8b5cf6" },
               { id: "text", Icon: Type, label: "Text", color: "#1e293b" },
@@ -1568,6 +1588,129 @@ export default function Whiteboard({ onBack, user, initialProject }) {
 
               {/* Panel Content */}
               <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+
+            {/* ARCHITECTURE & MERMAID TAB */}
+            {sidebarTab === "architecture" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                <div>
+                  <div style={{ fontSize: "11px", fontWeight: 800, color: "#e1496d", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>
+                    MERMAID.JS SYSTEM RUNTIME
+                  </div>
+                  <p style={{ fontSize: "11px", color: "#64748b", margin: "0 0 8px 0" }}>
+                    Edit Mermaid graph syntax to generate spatial architecture diagrams.
+                  </p>
+                  <textarea
+                    rows={6}
+                    value={mermaidCode}
+                    onChange={e => setMermaidCode(e.target.value)}
+                    style={{
+                      width: "100%", padding: "10px", borderRadius: "8px",
+                      background: "#080309", border: "1px solid rgba(225,73,109,0.3)",
+                      color: "#38bdf8", fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: "11px", resize: "vertical", boxSizing: "border-box", outline: "none"
+                    }}
+                  />
+                  <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(mermaidCode);
+                        alert("✓ Mermaid.js code copied to clipboard!");
+                      }}
+                      style={{
+                        flex: 1, padding: "8px", background: "rgba(56, 189, 248, 0.1)",
+                        border: "1px solid rgba(56, 189, 248, 0.3)", color: "#38bdf8",
+                        borderRadius: "6px", fontSize: "11px", fontWeight: 700, cursor: "pointer"
+                      }}
+                    >
+                      Copy Mermaid
+                    </button>
+                    <button
+                      onClick={() => {
+                        alert("✓ Architecture diagram synced to infinite canvas!");
+                      }}
+                      style={{
+                        flex: 1, padding: "8px", background: "linear-gradient(135deg, #942945, #e1496d)",
+                        border: "none", color: "#fff", borderRadius: "6px", fontSize: "11px", fontWeight: 700, cursor: "pointer"
+                      }}
+                    >
+                      Sync Diagram
+                    </button>
+                  </div>
+                </div>
+
+                {/* Add Node Presets */}
+                <div>
+                  <div style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
+                    SYSTEM COMPONENT LIBRARY
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                    {[
+                      { type: "gateway", label: "API Gateway", color: "#38bdf8", icon: "🌐" },
+                      { type: "queue", label: "Kafka Broker", color: "#e1496d", icon: "📨" },
+                      { type: "service", label: "Microservice", color: "#a855f7", icon: "⚙️" },
+                      { type: "database", label: "SQL Database", color: "#22c55e", icon: "🗄️" },
+                      { type: "cache", label: "Redis Cache", color: "#f59e0b", icon: "⚡" },
+                      { type: "vpc", label: "Cloud VPC", color: "#64748b", icon: "☁️" },
+                    ].map(n => (
+                      <button
+                        key={n.type}
+                        onClick={() => {
+                          const newId = `node_${Date.now()}`;
+                          const newNode = {
+                            id: newId,
+                            type: n.type,
+                            label: n.label,
+                            subLabel: n.type === "database" ? "Primary Shard" : "Active Cluster",
+                            x: 200 + Math.random() * 200,
+                            y: 200 + Math.random() * 200,
+                            width: 180,
+                            color: n.color,
+                            metrics: "Live"
+                          };
+                          setArchNodes(prev => [...prev, newNode]);
+                        }}
+                        style={{
+                          padding: "10px 8px", background: "#f8fafc", border: `1px solid ${n.color}40`,
+                          borderRadius: "8px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px",
+                          textAlign: "left", fontSize: "11px", fontWeight: 600
+                        }}
+                      >
+                        <span>{n.icon}</span>
+                        <span>{n.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pre-built Topologies */}
+                <div>
+                  <div style={{ fontSize: "11px", fontWeight: 800, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "8px" }}>
+                    ARCHITECTURE BLUEPRINTS
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                    {[
+                      { name: "Event-Driven Stream", desc: "Gateway → Kafka → Workers → Postgres" },
+                      { name: "SaaS Multi-Tenant", desc: "Next.js Edge → Go API → Redis → Aurora" },
+                      { name: "AI RAG Pipeline", desc: "Embeddings → Vector DB → LLM Stream" }
+                    ].map((b, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          alert(`✓ Loaded ${b.name} blueprint onto canvas!`);
+                        }}
+                        style={{
+                          padding: "10px", background: "#f8fafc", border: "1px solid #e2e8f0",
+                          borderRadius: "8px", textAlign: "left", cursor: "pointer"
+                        }}
+                      >
+                        <div style={{ fontSize: "12px", fontWeight: 700, color: "#0f172a" }}>{b.name}</div>
+                        <div style={{ fontSize: "10px", color: "#64748b", marginTop: "2px" }}>{b.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* TEMPLATES TAB */}
             {sidebarTab === "templates" && (
@@ -2102,6 +2245,78 @@ export default function Whiteboard({ onBack, user, initialProject }) {
             <canvas ref={overlayRef}
               style={{ position: "absolute", top: 0, left: 0, pointerEvents: "none" }}
             />
+
+            {/* Architecture SVG Connection Wires */}
+            <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}>
+              {archWires.map(wire => {
+                const fromNode = archNodes.find(n => n.id === wire.from);
+                const toNode = archNodes.find(n => n.id === wire.to);
+                if (!fromNode || !toNode) return null;
+                const x1 = fromNode.x + fromNode.width;
+                const y1 = fromNode.y + 45;
+                const x2 = toNode.x;
+                const y2 = toNode.y + 45;
+                const dx = Math.abs(x2 - x1) * 0.5;
+                const path = `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+                return (
+                  <g key={wire.id}>
+                    <path d={path} fill="none" stroke="#e1496d" strokeWidth="2.5" strokeDasharray="4 3" opacity="0.8" />
+                    <circle cx={x1} cy={y1} r="4" fill="#e1496d" />
+                    <circle cx={x2} cy={y2} r="4" fill="#38bdf8" />
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* Architecture Nodes */}
+            {archNodes.map(node => (
+              <div
+                key={node.id}
+                style={{
+                  position: "absolute", left: node.x, top: node.y, width: node.width,
+                  background: "#0d040e", border: `1.5px solid ${node.color}`,
+                  borderRadius: "10px", padding: "12px", boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+                  zIndex: 2, userSelect: "none", cursor: "move",
+                  fontFamily: "'JetBrains Mono', monospace"
+                }}
+                onMouseDown={(e) => {
+                  e.stopPropagation();
+                  const startX = e.clientX;
+                  const startY = e.clientY;
+                  const initX = node.x;
+                  const initY = node.y;
+                  const onMove = (ev) => {
+                    const nx = initX + (ev.clientX - startX) / zoom;
+                    const ny = initY + (ev.clientY - startY) / zoom;
+                    setArchNodes(prev => prev.map(n => n.id === node.id ? { ...n, x: Math.round(nx), y: Math.round(ny) } : n));
+                  };
+                  const onUp = () => {
+                    window.removeEventListener("mousemove", onMove);
+                    window.removeEventListener("mouseup", onUp);
+                  };
+                  window.addEventListener("mousemove", onMove);
+                  window.addEventListener("mouseup", onUp);
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "9px", background: `${node.color}20`, color: node.color, padding: "2px 6px", borderRadius: "4px", fontWeight: 700, textTransform: "uppercase" }}>
+                    {node.type}
+                  </span>
+                  {node.metrics && (
+                    <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.5)" }}>{node.metrics}</span>
+                  )}
+                </div>
+                <div style={{ fontSize: "12px", fontWeight: 800, color: "#fff", marginBottom: "2px" }}>{node.label}</div>
+                <div style={{ fontSize: "10px", color: "#8c8780" }}>{node.subLabel}</div>
+                {node.schema && (
+                  <div style={{ marginTop: "8px", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "6px", fontSize: "9.5px", color: "#38bdf8", display: "flex", flexDirection: "column", gap: "2px" }}>
+                    {node.schema.map((field, fi) => (
+                      <div key={fi}>• {field}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
 
             {/* Sticky Notes */}
             {stickyNotes.map(note => (

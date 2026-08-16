@@ -26,6 +26,11 @@ import TemplatesMarketplace from "./TemplatesMarketplace";
 import WorkflowPipelines from "./WorkflowPipelines";
 import MockupStudio from "./MockupStudio";
 import CreativeCityscapeArt from "./CreativeCityscapeArt";
+import ExperienceCreatifySection from "./ExperienceCreatifySection";
+import ContactSection from "./ContactSection";
+import CommunityLandscapeBanner from "./CommunityLandscapeBanner";
+import VaultView from "./VaultView";
+import CorePowerTrioSection from "./CorePowerTrioSection";
 
 const TOOL_ACCENTS = {
   "Video Editor": "#ef4444",
@@ -40,590 +45,7 @@ const TOOL_ACCENTS = {
   "Infinite Studio": "#e1496d",
 };
 
-// ──¬ ADVANCED MIND MAP GRAPH COMPONENT ──────────────────────────────────────¬
-function MindMapGraph({ pastWorks, isDark, THEME, colors, onNavigate, user, onSwitchTab }) {
-  const canvasRef = useRef(null);
-  const containerRef = useRef(null);
-  const animRef = useRef(null);
-  const nodesRef = useRef([]);
-  const edgesRef = useRef([]);
-  const particlesRef = useRef([]);
-  const timeRef = useRef(0);
-  const hoveredNodeRef = useRef(null);
-  const mouseRef = useRef({ x: -999, y: -999 });
-  const isDraggingRef = useRef(false);
-  const dragNodeRef = useRef(null);
-  const tooltipRef = useRef(null);
-  const selectedNodeRef = useRef(null);
-  const [dimensions, setDimensions] = useState({ w: 900, h: 600 });
-  const [stats, setStats] = useState({ nodes: 0, edges: 0, active: 0 });
-
-  // Derive activity nodes ONLY from real project fields — zero hardcoded data
-  const getActivitiesForProject = (proj) => {
-    const acts = [];
-    // From tags (real data on the project)
-    if (proj.tags?.length > 0) {
-      proj.tags.slice(0, 2).forEach((tag, i) => {
-        const tagColors = ["#3b82f6","#10b981","#f59e0b","#ec4899","#8b5cf6","#06b6d4"];
-        acts.push({
-          label: tag,
-          color: tagColors[i % tagColors.length],
-        });
-      });
-    }
-    // From tool name
-    if (proj.tool && acts.length < 3) {
-      const toolColors = {
-        "Video Editor":"#ef4444","Presentations":"#3b82f6","Logo Maker":"#10b981",
-        "Whiteboard":"#a855f7","Image Editor":"#f59e0b","Documents":"#06b6d4",
-        "Social Studio":"#ec4899","AI Magic":"#8b5cf6","Slide Studio":"#3b82f6",
-      };
-      acts.push({
-        label: proj.tool,
-        color: toolColors[proj.tool] || proj.accent || "#94a3b8",
-      });
-    }
-    // From category
-    if (proj.category && acts.length < 3) {
-      acts.push({ label: proj.category, color: proj.accent || THEME.wine });
-    }
-    // From year
-    if (proj.year && acts.length < 3) {
-      acts.push({ label: proj.year, color: "#94a3b8" });
-    }
-    return acts.slice(0, 3);
-  };
-
-  // Build graph from real pastWorks
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const W = container.offsetWidth || 900;
-    const H = container.offsetHeight || 600;
-    setDimensions({ w: W, h: H });
-
-    const cx = W / 2, cy = H / 2;
-    const projects = (pastWorks || []).slice(0, 7);
-
-    const TOOL_COLORS = {
-      "Video Editor": "#ef4444", "Presentations": "#3b82f6",
-      "Logo Maker": "#10b981", "Whiteboard": "#a855f7",
-      "Image Editor": "#f59e0b", "Documents": "#06b6d4",
-      "Social Studio": "#ec4899", "AI Magic": "#8b5cf6",
-    };
-
-    // Hub node
-    const hubNode = {
-      id: "hub", label: "Studio", sublabel: user?.name?.split(" ")[0] || "Your",
-      x: cx, y: cy, r: 52,
-      color: THEME?.wine || "#e1496d", type: "hub",
-      pulse: 0, floatOffset: 0, isActive: true,
-      glowIntensity: 1,
-    };
-
-    if (projects.length === 0) {
-      nodesRef.current = [hubNode];
-      edgesRef.current = [];
-      setStats({ nodes: 1, edges: 0, active: 0 });
-      return;
-    }
-
-    // Project nodes —  golden spiral placement
-    const mainNodes = projects.map((proj, i) => {
-      const angle = (i / projects.length) * 2 * Math.PI - Math.PI / 2;
-      const orbitR = Math.min(W, H - 100) * 0.3 + (i % 2) * 20;
-      return {
-        id: proj.id || `proj_${i}`,
-        label: proj.title || "Untitled",
-        sublabel: proj.tool || proj.category || "Design",
-        x: cx + orbitR * Math.cos(angle),
-        y: Math.min(cy + orbitR * Math.sin(angle), H - 110),
-        r: 40, color: TOOL_COLORS[proj.tool] || proj.accent || THEME.wine,
-        type: "main", angle,
-        isActive: Math.random() > 0.4,
-        pulse: Math.random() * Math.PI * 2,
-        floatOffset: Math.random() * Math.PI * 2,
-        proj,
-        activities: getActivitiesForProject(proj),
-        glowIntensity: Math.random() * 0.5 + 0.5,
-        tags: proj.tags || [],
-      };
-    });
-
-    // Branch nodes — real data only, no fake timestamps
-    const branchNodes = [];
-    mainNodes.forEach(mn => {
-      mn.activities.forEach((act, b) => {
-        if (!act?.label) return;
-        const spreadAngle = mn.angle + (b - mn.activities.length / 2 + 0.5) * 0.55;
-        const br = 88 + b * 8;
-        const bx = Math.max(80, Math.min(W - 80, mn.x + br * Math.cos(spreadAngle)));
-        const by = Math.max(50, Math.min(H - 90, mn.y + br * Math.sin(spreadAngle)));
-        branchNodes.push({
-          id: `${mn.id}_b${b}`,
-          label: act.label,
-          sublabel: null,   // no fake timestamps ever
-          x: bx, y: by, r: 18,
-          color: act.color,
-          type: "branch", parentId: mn.id,
-          pulse: Math.random() * Math.PI * 2,
-          floatOffset: Math.random() * Math.PI * 2,
-          glowIntensity: 0.6,
-        });
-      });
-    });
-
-    // Edges
-    const edges = [];
-    // Hub ”™ main (with multiple animated pulses)
-    mainNodes.forEach(mn => {
-      edges.push({
-        from: "hub", to: mn.id, type: "main",
-        pulses: [
-          { t: Math.random(), speed: 0.3 + Math.random() * 0.2 },
-          { t: Math.random(), speed: 0.3 + Math.random() * 0.2 },
-        ],
-        active: mn.isActive, color: mn.color,
-      });
-    });
-    // Main ”™ branch
-    branchNodes.forEach(bn => {
-      const parent = mainNodes.find(m => m.id === bn.parentId);
-      edges.push({
-        from: bn.parentId, to: bn.id, type: "branch",
-        pulses: [{ t: Math.random(), speed: 0.15 + Math.random() * 0.1 }],
-        active: false, color: bn.color,
-      });
-    });
-
-    // Background ambient particles
-    const particles = Array.from({ length: 40 }, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      r: Math.random() * 2 + 0.5,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      opacity: Math.random() * 0.4 + 0.1,
-      color: [THEME.wine, "#3b82f6", "#8b5cf6", "#10b981"][Math.floor(Math.random() * 4)],
-    }));
-
-    nodesRef.current = [hubNode, ...mainNodes, ...branchNodes];
-    edgesRef.current = edges;
-    particlesRef.current = particles;
-    setStats({ nodes: 1 + mainNodes.length, edges: edges.length, active: mainNodes.filter(m => m.isActive).length });
-  }, [pastWorks]);
-
-  // Advanced canvas draw loop
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
-
-    const hexRgba = (hex, a) => {
-      if (!hex || hex.length < 7) return `rgba(148,41,69,${a})`;
-      const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b2 = parseInt(hex.slice(5,7),16);
-      return `rgba(${r},${g},${b2},${a})`;
-    };
-    const roundRect = (x, y, w, h, r) => {
-      ctx.beginPath();
-      ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-      ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-      ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-      ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y); ctx.closePath();
-    };
-    const bezierPt = (ax,ay,cpx,cpy,bx,by,t) => ({
-      x:(1-t)*(1-t)*ax+2*(1-t)*t*cpx+t*t*bx,
-      y:(1-t)*(1-t)*ay+2*(1-t)*t*cpy+t*t*by,
-    });
-
-    const draw = () => {
-      const { w, h } = dimensions;
-      // DPR-aware canvas sizing — this is the fix for blurriness
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      canvas.style.width = w + "px";
-      canvas.style.height = h + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, w, h);
-      timeRef.current += 0.014;
-      const t = timeRef.current;
-      const mx = mouseRef.current.x, my = mouseRef.current.y;
-      const nodeMap = {};
-      nodesRef.current.forEach(n => { nodeMap[n.id] = n; });
-
-      // 1. Ambient particles
-      particlesRef.current.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x<0) p.x=w; if (p.x>w) p.x=0;
-        if (p.y<0) p.y=h; if (p.y>h) p.y=0;
-        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-        ctx.fillStyle = hexRgba(p.color, p.opacity*0.5); ctx.fill();
-      });
-
-      // 2. Float animation
-      nodesRef.current.forEach(n => {
-        if (n.type==="branch") { n.x+=Math.sin(t*0.7+n.floatOffset)*0.22; n.y+=Math.cos(t*0.55+n.floatOffset)*0.18; }
-        else if (n.type==="main") { n.x+=Math.sin(t*0.35+n.floatOffset)*0.1; n.y+=Math.cos(t*0.3+n.floatOffset)*0.1; }
-        else if (n.type==="hub") { n.x+=Math.sin(t*0.2)*0.04; n.y+=Math.cos(t*0.18)*0.04; }
-      });
-
-      // 3. Draw edges with gradient + animated orbs
-      const edgeCurves = {};
-      edgesRef.current.forEach(edge => {
-        const a = nodeMap[edge.from], b = nodeMap[edge.to];
-        if (!a||!b) return;
-        const isMain = edge.type==="main";
-        const cpx = (a.x+b.x)/2+(b.y-a.y)*0.15, cpy = (a.y+b.y)/2-(b.x-a.x)*0.15;
-        edgeCurves[`${edge.from}-${edge.to}`] = {cpx,cpy};
-        // Gradient stroke
-        const lg = ctx.createLinearGradient(a.x,a.y,b.x,b.y);
-        lg.addColorStop(0, hexRgba(a.color, isMain?0.3:0.15));
-        lg.addColorStop(1, hexRgba(b.color, isMain?0.2:0.08));
-        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.quadraticCurveTo(cpx,cpy,b.x,b.y);
-        ctx.strokeStyle=lg; ctx.lineWidth=isMain?1.8:1; ctx.setLineDash(isMain?[]:[4,7]); ctx.stroke(); ctx.setLineDash([]);
-        // Pulse orbs
-        edge.pulses.forEach(pulse => {
-          pulse.t = (pulse.t + pulse.speed*0.012)%1;
-          const pt = bezierPt(a.x,a.y,cpx,cpy,b.x,b.y,pulse.t);
-          if (isMain) {
-            const orb = ctx.createRadialGradient(pt.x,pt.y,0,pt.x,pt.y,9);
-            orb.addColorStop(0,hexRgba(edge.color||a.color,0.95));
-            orb.addColorStop(0.4,hexRgba(edge.color||a.color,0.5));
-            orb.addColorStop(1,hexRgba(edge.color||a.color,0));
-            ctx.beginPath(); ctx.arc(pt.x,pt.y,9,0,Math.PI*2); ctx.fillStyle=orb; ctx.fill();
-            ctx.beginPath(); ctx.arc(pt.x,pt.y,2.5,0,Math.PI*2); ctx.fillStyle="#fff"; ctx.fill();
-          } else {
-            ctx.beginPath(); ctx.arc(pt.x,pt.y,3,0,Math.PI*2);
-            ctx.fillStyle=hexRgba(b.color,0.6); ctx.fill();
-          }
-        });
-      });
-
-      // 4. Draw nodes
-      nodesRef.current.forEach(n => {
-        const isHov = hoveredNodeRef.current===n.id;
-        const isSel = selectedNodeRef.current?.id===n.id;
-        const r = n.r*(isHov?1.12:isSel?1.08:1);
-        const prox = Math.max(0,1-Math.hypot(n.x-mx,n.y-my)/180);
-
-        if (n.type==="hub") {
-          // Atmosphere rings
-          for (let ring=3;ring>=1;ring--) {
-            const rr = r+20+ring*16+Math.sin(t*0.8+ring*1.2)*5;
-            ctx.beginPath(); ctx.arc(n.x,n.y,rr,0,Math.PI*2);
-            ctx.strokeStyle=hexRgba(n.color,0.06/ring); ctx.lineWidth=1.2; ctx.stroke();
-          }
-          // Glow
-          const gw = ctx.createRadialGradient(n.x,n.y,r*0.3,n.x,n.y,r+30+Math.sin(t)*5);
-          gw.addColorStop(0,hexRgba(n.color,0.4)); gw.addColorStop(1,hexRgba(n.color,0));
-          ctx.beginPath(); ctx.arc(n.x,n.y,r+35,0,Math.PI*2); ctx.fillStyle=gw; ctx.fill();
-          // Body
-          const bd = ctx.createRadialGradient(n.x-r*0.25,n.y-r*0.25,0,n.x,n.y,r);
-          bd.addColorStop(0,hexRgba(n.color,1)); bd.addColorStop(0.6,hexRgba(n.color,0.9)); bd.addColorStop(1,"rgba(10,0,5,0.92)");
-          ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
-          ctx.fillStyle=bd; ctx.shadowColor=n.color; ctx.shadowBlur=24+Math.sin(t*1.5)*6; ctx.fill(); ctx.shadowBlur=0;
-          ctx.strokeStyle="rgba(255,255,255,0.22)"; ctx.lineWidth=1.5; ctx.stroke();
-          ctx.beginPath(); ctx.arc(n.x-r*0.15,n.y-r*0.3,r*0.55,Math.PI*1.2,Math.PI*1.9);
-          ctx.strokeStyle="rgba(255,255,255,0.15)"; ctx.lineWidth=3; ctx.stroke();
-          ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
-          ctx.font=`bold 13px 'Poppins',sans-serif`; ctx.shadowColor="rgba(0,0,0,0.5)"; ctx.shadowBlur=4;
-          ctx.fillText(n.sublabel,n.x,n.y-8);
-          ctx.font=`500 9px 'Poppins',sans-serif`; ctx.fillStyle="rgba(255,255,255,0.65)";
-          ctx.fillText("Studio",n.x,n.y+8); ctx.shadowBlur=0;
-
-        } else if (n.type==="main") {
-          // Halo
-          const halo = ctx.createRadialGradient(n.x,n.y,r*0.5,n.x,n.y,r+22+prox*10);
-          halo.addColorStop(0,hexRgba(n.color,0.22+prox*0.08)); halo.addColorStop(1,hexRgba(n.color,0));
-          ctx.beginPath(); ctx.arc(n.x,n.y,r+25,0,Math.PI*2); ctx.fillStyle=halo; ctx.fill();
-          // Body
-          ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
-          ctx.fillStyle=isDark?"#1a0b12":"#ffffff";
-          ctx.shadowColor=n.color; ctx.shadowBlur=isHov?28:10+prox*12; ctx.fill(); ctx.shadowBlur=0;
-          // Ring
-          ctx.beginPath(); ctx.arc(n.x,n.y,r,0,Math.PI*2);
-          ctx.strokeStyle=isHov||isSel?n.color:hexRgba(n.color,0.6);
-          ctx.lineWidth=isHov?2.5:2; ctx.stroke();
-          // Top arc accent
-          ctx.beginPath(); ctx.arc(n.x,n.y,r-1,Math.PI*1.15,Math.PI*1.85);
-          ctx.strokeStyle=n.color; ctx.lineWidth=3; ctx.stroke();
-          // Active badge
-          if (n.isActive) {
-            const bp = 0.6+Math.sin(t*2.5+n.pulse)*0.4;
-            ctx.beginPath(); ctx.arc(n.x+r*0.68,n.y-r*0.68,7*bp,0,Math.PI*2);
-            ctx.fillStyle=hexRgba("#22c55e",0.2); ctx.fill();
-            ctx.beginPath(); ctx.arc(n.x+r*0.68,n.y-r*0.68,4.5,0,Math.PI*2);
-            ctx.fillStyle="#22c55e"; ctx.shadowColor="#22c55e"; ctx.shadowBlur=10; ctx.fill(); ctx.shadowBlur=0;
-          }
-          // Labels
-          const mw=r*1.55;
-          ctx.textAlign="center"; ctx.textBaseline="middle";
-          ctx.fillStyle=n.color; ctx.font=`700 9.5px 'Poppins',sans-serif`;
-          ctx.shadowColor=isDark?"rgba(0,0,0,0.8)":"rgba(255,255,255,0.8)"; ctx.shadowBlur=3;
-          let lbl=n.label; while(ctx.measureText(lbl).width>mw&&lbl.length>3)lbl=lbl.slice(0,-1); if(lbl!==n.label)lbl+="...";
-          ctx.fillText(lbl,n.x,n.y-7);
-          ctx.font=`400 8px 'Poppins',sans-serif`; ctx.fillStyle=isDark?"rgba(255,255,255,0.42)":"rgba(0,0,0,0.38)";
-          let sub=n.sublabel; while(ctx.measureText(sub).width>mw&&sub.length>3)sub=sub.slice(0,-1); if(sub!==n.sublabel)sub+="...";
-          ctx.fillText(sub,n.x,n.y+7); ctx.shadowBlur=0;
-
-        } else if (n.type==="branch") {
-          const pw=86,ph=n.sublabel?26:20,pr=10;
-          // Shadow
-          ctx.fillStyle=hexRgba("#000",0.1); ctx.filter="blur(3px)";
-          roundRect(n.x-pw/2,n.y-ph/2+3,pw,ph,pr); ctx.fill(); ctx.filter="none";
-          // Body
-          const pbg=ctx.createLinearGradient(n.x-pw/2,n.y,n.x+pw/2,n.y);
-          pbg.addColorStop(0,isDark?"#1a0b12":"#ffffff"); pbg.addColorStop(1,isDark?"#200d16":"#fdf8ff");
-          roundRect(n.x-pw/2,n.y-ph/2,pw,ph,pr); ctx.fillStyle=pbg; ctx.fill();
-          ctx.strokeStyle=hexRgba(n.color,isHov?0.85:0.4); ctx.lineWidth=isHov?1.5:1; ctx.stroke();
-          // Color dot
-          ctx.beginPath(); ctx.arc(n.x-pw/2+10,n.y,3.5,0,Math.PI*2);
-          ctx.fillStyle=n.color; ctx.shadowColor=n.color; ctx.shadowBlur=7; ctx.fill(); ctx.shadowBlur=0;
-          // Label only — no timestamps
-          ctx.textBaseline="middle"; ctx.textAlign="left";
-          ctx.fillStyle=isDark?"rgba(255,255,255,0.85)":"rgba(0,0,0,0.78)";
-          ctx.font=`600 8px 'Poppins',sans-serif`;
-          let bl=n.label;
-          while(ctx.measureText(bl).width>pw-24&&bl.length>3)bl=bl.slice(0,-1);
-          if(bl!==n.label)bl+="...";
-          ctx.fillText(bl,n.x-pw/2+20,n.y);
-        }
-      });
-
-      // 5. Mouse aura
-      if (mx>0&&my>0) {
-        const mg=ctx.createRadialGradient(mx,my,0,mx,my,55);
-        mg.addColorStop(0,hexRgba(THEME.wine,0.05)); mg.addColorStop(1,hexRgba(THEME.wine,0));
-        ctx.beginPath(); ctx.arc(mx,my,55,0,Math.PI*2); ctx.fillStyle=mg; ctx.fill();
-      }
-
-      animRef.current = requestAnimationFrame(draw);
-    };
-
-    animRef.current = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(animRef.current);
-  }, [dimensions, isDark]);
-
-  // Resize observer
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const ro = new ResizeObserver(entries => {
-      const { width, height } = entries[0].contentRect;
-      setDimensions({ w: width, h: height });
-    });
-    ro.observe(container);
-    return () => ro.disconnect();
-  }, []);
-
-  const handleMouseMove = (e) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    mouseRef.current = { x: mx, y: my };
-    let found = null;
-    for (const n of nodesRef.current) {
-      const hitR = n.type==="branch" ? 44 : n.r + 8;
-      if (Math.hypot(n.x-mx, n.y-my) < hitR) { found = n; break; }
-    }
-    hoveredNodeRef.current = found?.id || null;
-
-    // Update tooltip via direct DOM — no React re-render
-    const tip = tooltipRef.current;
-    if (!tip) return;
-    if (found && found.type !== "hub") {
-      const tipX = Math.min(found.x, dimensions.w - 200);
-      const tipY = Math.max(8, found.y - found.r - 60);
-      tip.style.left = tipX + "px";
-      tip.style.top = tipY + "px";
-      tip.style.borderColor = found.color + "50";
-      tip.style.boxShadow = `0 12px 40px ${found.color}30, 0 4px 12px rgba(0,0,0,0.15)`;
-      tip.style.opacity = "1";
-      tip.style.pointerEvents = "none";
-      tip.style.transform = "translate(-50%, -100%) scale(1)";
-      tip.querySelector(".tip-dot").style.background = found.color;
-      tip.querySelector(".tip-dot").style.boxShadow = `0 0 8px ${found.color}`;
-      tip.querySelector(".tip-title").textContent = found.label || "";
-      tip.querySelector(".tip-title").style.color = found.color;
-      tip.querySelector(".tip-sub").textContent = found.sublabel || found.type === "main" ? (found.sublabel || "") : "";
-      const hint = tip.querySelector(".tip-hint");
-      if (hint) hint.textContent = found.type === "main" ? "Click to select" : "";
-    } else {
-      tip.style.opacity = "0";
-      tip.style.transform = "translate(-50%, -100%) scale(0.95)";
-    }
-    // Update cursor
-    if (canvasRef.current) canvasRef.current.style.cursor = found ? "pointer" : "default";
-  };
-
-  const handleClick = () => {
-    const n = nodesRef.current.find(x => x.id === hoveredNodeRef.current);
-    if (!n) return;
-    if (n.type === "main") {
-      // Toggle selection via ref only — no state update
-      selectedNodeRef.current = selectedNodeRef.current?.id === n.id ? null : n;
-      // Update selected pill in stats bar via DOM
-      const pill = document.getElementById("mg-selected-pill");
-      if (pill) {
-        if (selectedNodeRef.current) {
-          pill.style.display = "flex";
-          pill.style.background = `linear-gradient(135deg, ${selectedNodeRef.current.color}, ${selectedNodeRef.current.color}cc)`;
-          pill.style.boxShadow = `0 4px 12px ${selectedNodeRef.current.color}40`;
-          const pillLabel = pill.querySelector(".pill-label");
-          if (pillLabel) pillLabel.textContent = selectedNodeRef.current.label;
-        } else {
-          pill.style.display = "none";
-        }
-      }
-    }
-  };
-
-  return (
-    <div ref={containerRef} style={{
-      position: "relative", width: "100%", height: "600px",
-      borderRadius: "0",
-      background: "transparent",
-      border: "none",
-      overflow: "hidden",
-      boxShadow: "none",
-      paddingBottom: "52px",  /* reserve space for stats bar */
-      boxSizing: "border-box",
-    }}>
-      {/* No background overlays — graph floats freely */}
-
-      <canvas
-        ref={canvasRef}
-        style={{ position: "absolute", inset: 0, cursor: "default" }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => {
-          hoveredNodeRef.current = null;
-          mouseRef.current = { x: -999, y: -999 };
-          const tip = tooltipRef.current;
-          if (tip) { tip.style.opacity = "0"; tip.style.transform = "translate(-50%,-100%) scale(0.95)"; }
-          if (canvasRef.current) canvasRef.current.style.cursor = "default";
-        }}
-        onClick={handleClick}
-      />
-
-      {/* Tooltip — updated via DOM ref, never causes React re-render */}
-      <div ref={tooltipRef} style={{
-        position: "absolute", opacity: 0, pointerEvents: "none",
-        transform: "translate(-50%, -100%) scale(0.95)",
-        transition: "opacity 0.15s ease, transform 0.15s ease",
-        background: isDark ? "linear-gradient(135deg,#1e0f16,#2a1020)" : "linear-gradient(135deg,#ffffff,#fdf4f8)",
-        border: "1px solid transparent",
-        borderRadius: "14px", padding: "12px 16px",
-        boxShadow: "none", zIndex: 20, minWidth: 140, maxWidth: 200,
-        backdropFilter: "blur(12px)",
-      }}>
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-          <div className="tip-dot" style={{ width:10, height:10, borderRadius:"50%", flexShrink:0, background:"#942945" }} />
-          <span className="tip-title" style={{ fontSize:12, fontWeight:700, fontFamily:"'Poppins',sans-serif", lineHeight:1.2 }} />
-        </div>
-        <div className="tip-sub" style={{ fontSize:10, color: isDark?"rgba(255,255,255,0.5)":"rgba(0,0,0,0.45)", fontFamily:"'Instrument Sans',sans-serif", marginBottom:4 }} />
-        <div className="tip-hint" style={{ fontSize:9, color: isDark?"rgba(255,255,255,0.3)":"rgba(0,0,0,0.28)", fontFamily:"'Poppins',sans-serif" }} />
-      </div>
-
-      {/* Top-left: Title badge */}
-      <div style={{
-        position:"absolute", top:20, left:20,
-        display:"flex", alignItems:"center", gap:10,
-      }}>
-        <div style={{
-          background: isDark?"rgba(15,8,12,0.8)":"rgba(255,255,255,0.85)",
-          border:`1px solid ${isDark?"rgba(148,41,69,0.2)":"rgba(148,41,69,0.12)"}`,
-          borderRadius:12, padding:"8px 14px",
-          backdropFilter:"blur(12px)",
-          display:"flex", alignItems:"center", gap:8,
-        }}>
-          <div style={{ width:8, height:8, borderRadius:"50%", background:THEME.wine, boxShadow:`0 0 10px ${THEME.wine}`, animation:"pulse 1.8s ease-in-out infinite" }} />
-          <span style={{ fontSize:11, fontWeight:700, color: isDark?"rgba(255,255,255,0.8)":THEME.wine, fontFamily:"'Poppins',sans-serif", letterSpacing:"0.04em" }}>
-            Activity Graph
-          </span>
-        </div>
-      </div>
-
-      {/* Top-right: Live + Stats */}
-      <div style={{ position:"absolute", top:20, right:20, display:"flex", gap:8 }}>
-        <div style={{
-          background:"rgba(34,197,94,0.1)", border:"1px solid rgba(34,197,94,0.25)",
-          borderRadius:99, padding:"5px 12px",
-          display:"flex", alignItems:"center", gap:6,
-          backdropFilter:"blur(8px)",
-        }}>
-          <div style={{ width:6, height:6, borderRadius:"50%", background:"#22c55e", animation:"pulse 1.4s ease-in-out infinite" }} />
-          <span style={{ fontSize:10, fontWeight:700, color:"#22c55e", fontFamily:"'Poppins',sans-serif" }}>Live</span>
-        </div>
-      </div>
-
-      {/* Bottom: Stats bar */}
-      <div style={{
-        position:"absolute", bottom:0, left:0, right:0,
-        background: "transparent",
-        borderTop: `1px solid ${isDark?"rgba(148,41,69,0.1)":"rgba(148,41,69,0.07)"}`,
-        padding:"10px 24px",
-        display:"flex", alignItems:"center", justifyContent:"space-between",
-      }}>
-        <div style={{ display:"flex", gap:28 }}>
-          {[
-            { label:"Projects", value: stats.nodes - 1, color: THEME.wine },
-            { label:"Active now", value: stats.active, color:"#22c55e" },
-            { label:"Connections", value: stats.edges, color:"#3b82f6" },
-          ].map(s => (
-            <div key={s.label} style={{ display:"flex", alignItems:"center", gap:8 }}>
-              <div style={{ width:6, height:6, borderRadius:"50%", background:s.color, boxShadow:`0 0 6px ${s.color}80` }} />
-              <span style={{ fontSize:11, fontWeight:700, color:s.color, fontFamily:"'Poppins',sans-serif" }}>{s.value}</span>
-              <span style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.4)":"rgba(0,0,0,0.4)", fontFamily:"'Instrument Sans',sans-serif" }}>{s.label}</span>
-            </div>
-          ))}
-        </div>
-        <div style={{ display:"flex", gap:16, alignItems:"center" }}>
-          {/* Selected project quick action — hidden by default, shown via DOM */}
-          <button
-            id="mg-selected-pill"
-            onClick={() => onSwitchTab && onSwitchTab("projects")}
-            style={{
-              display: "none", alignItems: "center", gap: 6,
-              border: "none", borderRadius: 99,
-              padding: "6px 14px", cursor: "pointer",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={e => e.currentTarget.style.transform = "scale(1.04)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-          >
-            <span className="pill-label" style={{ fontSize:10, fontWeight:700, color:"#fff", fontFamily:"'Poppins',sans-serif" }} />
-            <span style={{ fontSize:9, color:"rgba(255,255,255,0.75)", fontFamily:"'Poppins',sans-serif" }}>”™ View projects</span>
-          </button>
-          {[
-            { color:"#22c55e", label:"Active" },
-            { color: THEME.wine, label:"Project" },
-            { color:"#94a3b8", label:"Activity" },
-          ].map(l => (
-            <div key={l.label} style={{ display:"flex", alignItems:"center", gap:5 }}>
-              <div style={{ width:7, height:7, borderRadius:"50%", background:l.color, boxShadow:`0 0 5px ${l.color}60` }} />
-              <span style={{ fontSize:10, color:isDark?"rgba(255,255,255,0.45)":"rgba(0,0,0,0.45)", fontFamily:"'Poppins',sans-serif" }}>{l.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Empty state */}
-      {pastWorks.length === 0 && (
-        <div style={{
-          position:"absolute", inset:0, display:"flex", flexDirection:"column",
-          alignItems:"center", justifyContent:"center", gap:12, pointerEvents:"none",
-        }}>
-          <div style={{ fontSize:40, opacity:0.3 }}>¸─¢¸</div>
-          <div style={{ fontSize:14, fontWeight:600, color:isDark?"rgba(255,255,255,0.3)":"rgba(0,0,0,0.25)", fontFamily:"'Poppins',sans-serif" }}>
-            Create your first project to see the graph
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── SidebarIcon — defined at module scope so React never remounts it on re-render ──
+// ── SidebarIcon —  defined at module scope so React never remounts it on re-render ──
 function SidebarIcon({ active, icon: IconComponent, label, onClick, THEME, crownBadge, bottom = false, animationType = "scale" }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -888,214 +310,7 @@ function StudioPicker({ onClose, onSelect, isDark }) {
   );
 }
 
-// ─── Clean, Minimalist & Premium Contact Form ────────────────────────────────
-function ContactForm({ isDark, user }) {
-  const [feedbackType, setFeedbackType] = useState("feature"); // "feature" | "bug" | "feedback" | "general"
-  const [form, setForm] = useState({ name: user?.name || "", subject: "", message: "" });
-  const [status, setStatus] = useState(null); // null | "sending" | "sent" | "error"
-  const [errMsg, setErrMsg] = useState("");
 
-  const categories = [
-    { id: "feature", label: "Feature" },
-    { id: "feedback", label: "Feedback" },
-    { id: "bug", label: "Bug Report" },
-    { id: "general", label: "General" },
-  ];
-
-  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-
-  const handleSubmit = async e => {
-    e.preventDefault();
-    if (!form.name || !form.message) {
-      setErrMsg("Please fill in your name and message.");
-      return;
-    }
-    setStatus("sending");
-    setErrMsg("");
-    try {
-      const apiBase = (window.API_URL || "http://localhost:3001") + "/api";
-      const token = localStorage.getItem("creatify_token");
-      const fullPayload = {
-        ...form,
-        subject: `[${feedbackType.toUpperCase()}] ${form.subject || "Feedback Note"}`,
-      };
-      const res = await fetch(`${apiBase}/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify(fullPayload),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setErrMsg(data.error || "Failed to send message.");
-        setStatus("error");
-        return;
-      }
-      setStatus("sent");
-      setForm({ name: user?.name || "", subject: "", message: "" });
-    } catch (err) {
-      setErrMsg("Connection error. Please try again.");
-      setStatus("error");
-    }
-  };
-
-  const inp = {
-    background: "rgba(255, 255, 255, 0.03)",
-    border: "1px solid rgba(225, 73, 109, 0.18)",
-    borderRadius: 8,
-    padding: "9px 12px",
-    fontSize: 12.5,
-    color: "#fff",
-    fontFamily: "'Instrument Sans', sans-serif",
-    width: "100%",
-    boxSizing: "border-box",
-    outline: "none",
-    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
-  };
-
-  if (status === "sent") {
-    return (
-      <div style={{
-        background: "rgba(34, 197, 94, 0.06)",
-        border: "1px solid rgba(34, 197, 94, 0.25)",
-        borderRadius: 14,
-        padding: "28px 24px",
-        textAlign: "center",
-      }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: "50%",
-          background: "linear-gradient(135deg, #22c55e, #16a34a)",
-          color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-          margin: "0 auto 12px",
-        }}>
-          <CheckCheck size={20} />
-        </div>
-        <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16, color: "#fff", margin: "0 0 6px" }}>
-          Message sent!
-        </h3>
-        <p style={{ fontSize: 12.5, color: "rgba(255, 255, 255, 0.55)", fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 16px" }}>
-          We'll reply to <strong style={{ color: "#38bdf8" }}>{user?.email}</strong> within 24 hours.
-        </p>
-        <button
-          onClick={() => setStatus(null)}
-          style={{
-            background: "none", border: "1px solid rgba(255, 255, 255, 0.18)",
-            color: "rgba(255, 255, 255, 0.7)", borderRadius: 99, padding: "6px 16px",
-            fontSize: 11.5, fontFamily: "'Poppins', sans-serif", cursor: "pointer",
-          }}
-        >
-          Send another
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={handleSubmit} style={{
-      display: "flex", flexDirection: "column", gap: 10,
-      background: "rgba(20, 8, 16, 0.65)",
-      border: "1px solid rgba(225, 73, 109, 0.16)",
-      borderRadius: 16,
-      padding: "18px 20px",
-      backdropFilter: "blur(16px)",
-    }}>
-
-      {/* Clean Category Segment */}
-      <div style={{
-        display: "flex", background: "rgba(0, 0, 0, 0.35)",
-        borderRadius: 8, padding: 2, border: "1px solid rgba(255, 255, 255, 0.06)",
-      }}>
-        {categories.map((c) => (
-          <button
-            key={c.id}
-            type="button"
-            onClick={() => setFeedbackType(c.id)}
-            style={{
-              flex: 1, padding: "5px 0", borderRadius: 6,
-              background: feedbackType === c.id ? "linear-gradient(135deg, #e1496d, #942945)" : "transparent",
-              border: "none",
-              color: feedbackType === c.id ? "#fff" : "rgba(255, 255, 255, 0.5)",
-              fontSize: 11, fontWeight: 600, fontFamily: "'Poppins', sans-serif",
-              cursor: "pointer", transition: "all 0.15s ease",
-            }}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Name & Subject Inputs */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Your name *"
-          style={inp}
-          onFocus={e => { e.target.style.borderColor = "#e1496d"; }}
-          onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; }}
-        />
-        <input
-          name="subject"
-          value={form.subject}
-          onChange={handleChange}
-          placeholder="Topic / Subject"
-          style={inp}
-          onFocus={e => { e.target.style.borderColor = "#e1496d"; }}
-          onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; }}
-        />
-      </div>
-
-      {/* Message Textarea */}
-      <textarea
-        name="message"
-        value={form.message}
-        onChange={handleChange}
-        placeholder="Write your note or feature request here... *"
-        rows={3}
-        style={{ ...inp, resize: "none", lineHeight: 1.5 }}
-        onFocus={e => { e.target.style.borderColor = "#e1496d"; }}
-        onBlur={e => { e.target.style.borderColor = "rgba(225, 73, 109, 0.18)"; }}
-      />
-
-      {errMsg && (
-        <div style={{ fontSize: 11.5, color: "#f87171", fontFamily: "'Poppins', sans-serif" }}>
-          {errMsg}
-        </div>
-      )}
-
-      {/* Bottom Action Row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 4 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "rgba(255,255,255,0.4)", fontFamily: "'Instrument Sans', sans-serif" }}>
-          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e" }} />
-          <span>Reply sent to <strong style={{ color: "rgba(255,255,255,0.7)" }}>{user?.email}</strong></span>
-        </div>
-
-        <button
-          type="submit"
-          disabled={status === "sending"}
-          style={{
-            background: "linear-gradient(135deg, #e1496d 0%, #942945 100%)",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            padding: "8px 18px",
-            fontSize: 12.5,
-            fontWeight: 700,
-            fontFamily: "Syne, sans-serif",
-            cursor: status === "sending" ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            boxShadow: "0 4px 14px rgba(225, 73, 109, 0.3)",
-          }}
-        >
-          <Send size={12} />
-          {status === "sending" ? "Sending…" : "Send message →"}
-        </button>
-      </div>
-    </form>
-  );
-}
 
 
 export default function HomePage({ onNavigate, user, onSignOut, theme = "light", initialNav = "home" }) {
@@ -1122,9 +337,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
     {
       num: "01",
       title: "Spatial Infinite Node Graph",
-      tag: "Interactive Blueprints",
-      desc: "Infinite 2D spatial canvas with freeform pan & zoom. Draw dynamic bezier logic connections between component ports to craft interactive user journeys across artboards.",
-      capabilities: ["Infinite Pan & Zoom (10% to 500%)", "Dynamic Bezier Spline Cables", "Multi-Port Real-Time Data Sync"],
+      tag: "Infinite Viewport & Splines",
+      desc: "Infinite 2D spatial canvas with freeform pan & multi-scale zoom (5% to 800%). Draw dynamic bezier logic connections between component ports to orchestrate data flows across visual artboards.",
+      capabilities: ["Infinite Pan & Multi-Scale Zoom (5% to 800%)", "Dynamic Bezier Spline Cables with Snap Points", "Multi-Port Real-Time Data Synchronization"],
       Icon: Share2,
       iconColor: "#ff8da7",
       gradient: "linear-gradient(135deg, rgba(225,73,109,0.25), rgba(148,41,69,0.1))",
@@ -1132,10 +347,10 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
     },
     {
       num: "02",
-      title: "Code-to-Canvas Bounding",
-      tag: "Live React & JSX DOM",
-      desc: "Elements on canvas aren't static images—they are executable live DOM components. Inspect, modify live JSX/CSS properties, and export clean production code instantly.",
-      capabilities: ["Live React 18 & JSX Compilation", "Dev Mode Spacing & CSS Rulers", "Instant Tailwind & Clean Code Export"],
+      title: "Code-to-Canvas React & JSX DOM",
+      tag: "Executable Live DOM",
+      desc: "Elements on canvas aren't static vector drawings—they compile to live, interactive React & Tailwind DOM nodes with bidirectional real-time state synchronization and live inspection.",
+      capabilities: ["Live React 18 & JSX Compilation", "Dev Mode Spacing & Computed CSS Box Rulers", "Instant Tailwind & Clean Component Code Export"],
       Icon: Code,
       iconColor: "#38bdf8",
       gradient: "linear-gradient(135deg, rgba(56,189,248,0.25), rgba(14,165,233,0.1))",
@@ -1143,14 +358,36 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
     },
     {
       num: "03",
-      title: "AI Prompt-to-DOM Engine",
-      tag: "Neural Auto-Layout",
-      desc: "Describe any layout in plain English and AI outputs structured, fully-editable canvas nodes with auto-layout constraints, responsive breakpoints, and text boxes.",
-      capabilities: ["Natural Language Prompt Parsing", "Auto-Layout Flexbox Hierarchy", "Instant Component Synthesis"],
+      title: "Neural Prompt-to-Layout Synthesis",
+      tag: "AI Blueprint Engine",
+      desc: "Describe any UI layout, flowchart, or marketing asset in natural language. AI synthesizes full structured canvas nodes with auto-layout constraints, accessible palettes, and responsive breakpoints.",
+      capabilities: ["Multi-Modal Natural Language Parsing", "Auto-Layout Flexbox & CSS Grid Hierarchy", "Instant Component Hierarchy Synthesis"],
       Icon: Sparkles,
-      iconColor: "#a855f7",
+      iconColor: "#c084fc",
       gradient: "linear-gradient(135deg, rgba(168,85,247,0.25), rgba(126,34,206,0.1))",
       demoType: "ai",
+    },
+    {
+      num: "04",
+      title: "Real-Time Multi-Player CRDT Sync",
+      tag: "Sub-10ms Spatial Presence",
+      desc: "Collaborate simultaneously on the same infinite canvas with sub-10ms peer-to-peer spatial sync. Enjoy live multiplayer cursors, non-destructive layer locking, and version history branches.",
+      capabilities: ["Sub-10ms Conflict-Free Replicated Data (CRDT)", "Live Multi-Cursor Presence with User Avatars", "Granular Element Locking & Version Timelines"],
+      Icon: Users,
+      iconColor: "#10b981",
+      gradient: "linear-gradient(135deg, rgba(16,185,129,0.25), rgba(5,150,105,0.1))",
+      demoType: "collab",
+    },
+    {
+      num: "05",
+      title: "Universal Multi-Format Export Engine",
+      tag: "Production Delivery",
+      desc: "Export any frame, graph branch, or nested artboard directly into production-ready SVG, 4K WebM alpha video, 3D WebGL GLTF scenes, or clean Tailwind React component bundles.",
+      capabilities: ["Clean SVG & Vector Shader Code Export", "4K 60FPS Video Alpha Channel Render", "Optimized WebGL GLTF & Three.js Packages"],
+      Icon: Zap,
+      iconColor: "#f59e0b",
+      gradient: "linear-gradient(135deg, rgba(245,158,11,0.25), rgba(217,119,6,0.1))",
+      demoType: "export",
     },
   ];
 
@@ -2133,506 +1370,18 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
 
         {/* Conditional rendering based on activeNav */}
         {(activeNav === "projects" || activeNav === "vault") ? (
-          /* ── LUXURY CELESTIAL CREATIVE VAULT VIEW ── */
-          <div style={{ padding: "40px 48px 80px", minHeight: "100vh", maxWidth: "1440px", margin: "0 auto" }}>
-            
-            {/* Ambient Background Illumination */}
-            <div style={{
-              position: "absolute", top: 0, left: "20%", width: "60%", height: 350,
-              background: "radial-gradient(circle, rgba(225, 73, 109, 0.08) 0%, transparent 70%)",
-              pointerEvents: "none", filter: "blur(60px)", zIndex: 0,
-            }} />
-
-            {/* Top Vault Header */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 28, flexWrap: "wrap", gap: 20, position: "relative", zIndex: 1 }}>
-              <div>
-                <div style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "5px 14px", borderRadius: 99,
-                  background: isDark ? "rgba(225, 73, 109, 0.14)" : "rgba(255, 255, 255, 0.9)",
-                  border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.35)" : "rgba(148, 41, 69, 0.2)"}`,
-                  marginBottom: 12,
-                }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }} />
-                  <span style={{
-                    fontFamily: "'Poppins', sans-serif", fontSize: 10.5, fontWeight: 700,
-                    letterSpacing: "0.08em", textTransform: "uppercase", color: isDark ? "#ff8da7" : "#831843",
-                  }}>
-                    ENCRYPTED CREATIVE VAULT • LOCAL-FIRST
-                  </span>
-                </div>
-
-                <h1 style={{
-                  fontFamily: "Syne, sans-serif", fontSize: "clamp(30px, 4vw, 44px)",
-                  fontWeight: 800, letterSpacing: "-0.04em", margin: "0 0 8px",
-                  color: colors.text,
-                }}>
-                  Creative <span style={{
-                    background: "linear-gradient(135deg, #e1496d 0%, #ff8da7 100%)",
-                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                  }}>Vault</span><span style={{ color: "#e1496d" }}>.</span>
-                </h1>
-                <p style={{ margin: 0, fontSize: 14.5, color: colors.textMuted, fontFamily: "'Instrument Sans', sans-serif", maxWidth: 620, lineHeight: 1.5 }}>
-                  Your centralized high-fidelity creative archive. Inspect connected project topologies, manage project assets, and instantly resume work with zero latency.
-                </p>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <button
-                  onClick={() => setShowStudioPicker(true)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    background: "linear-gradient(135deg, #e1496d, #942945)",
-                    border: "none", borderRadius: 10, padding: "10px 20px", cursor: "pointer",
-                    color: "#fff", fontSize: 13, fontWeight: 700,
-                    fontFamily: "Syne, sans-serif", boxShadow: "0 6px 20px rgba(225,73,109,0.35)",
-                  }}
-                >
-                  <Plus size={15} /> + New Creation
-                </button>
-              </div>
-            </div>
-
-            {/* Unified Luxury Telemetry Bar */}
-            <div style={{
-              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 12, marginBottom: 28, position: "relative", zIndex: 1,
-            }}>
-              {[
-                { label: "Vault Holdings", val: `${pastWorks.length} Projects Saved`, color: "#ff8da7" },
-                { label: "Living Nodes", val: `${pastWorks.length + 8} Neural Links`, color: "#38bdf8" },
-                { label: "Storage Engine", val: "IndexedDB / Local-First", color: "#22d3a8" },
-                { label: "Privacy Shield", val: "Zero Server Leak", color: "#c084fc" },
-              ].map((stat, sIdx) => (
-                <div key={sIdx} style={{
-                  padding: "14px 18px", borderRadius: 14,
-                  background: isDark ? "rgba(22, 8, 18, 0.65)" : "rgba(255, 255, 255, 0.85)",
-                  border: `1px solid ${isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)"}`,
-                  backdropFilter: "blur(12px)",
-                }}>
-                  <div style={{ fontSize: 10.5, fontWeight: 600, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>
-                    {stat.label}
-                  </div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: stat.color, fontFamily: "Syne, sans-serif" }}>
-                    {stat.val}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Tool Category Pill Bar */}
-            <div style={{
-              display: "flex", alignItems: "center", gap: 8, overflowX: "auto",
-              paddingBottom: 8, marginBottom: 20, position: "relative", zIndex: 1,
-            }}>
-              {[
-                { id: "all", label: "All Projects" },
-                { id: "video", label: "🎬 Video" },
-                { id: "image", label: "🎨 Image" },
-                { id: "presentation", label: "📊 Slides" },
-                { id: "pipelines", label: "⚡ Pipelines" },
-                { id: "mockup", label: "📦 3D Mockup" },
-                { id: "logo", label: "💎 Logos" },
-                { id: "document", label: "📄 Docs" },
-                { id: "whiteboard", label: "🧠 Whiteboard" },
-              ].map((cat) => {
-                const isSel = vaultCategory === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => setVaultCategory(cat.id)}
-                    style={{
-                      padding: "6px 14px", borderRadius: 99,
-                      background: isSel ? "linear-gradient(135deg, #e1496d, #942945)" : isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)",
-                      border: `1px solid ${isSel ? "#e1496d" : isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`,
-                      color: isSel ? "#fff" : colors.textMuted,
-                      fontSize: 11.5, fontWeight: 600, fontFamily: "'Poppins', sans-serif",
-                      cursor: "pointer", whiteSpace: "nowrap", transition: "all 0.15s ease",
-                    }}
-                  >
-                    {cat.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Search & Viewport Toggle Bar */}
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              flexWrap: "wrap", gap: 14, marginBottom: 28,
-              padding: "12px 18px", borderRadius: 14,
-              background: isDark ? "rgba(20, 8, 16, 0.65)" : "rgba(255, 255, 255, 0.9)",
-              border: `1px solid ${isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)"}`,
-              position: "relative", zIndex: 1,
-            }}>
-              {/* Search Bar */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 220, maxWidth: 360 }}>
-                <Search size={15} color={isDark ? "#ff8da7" : "#942945"} />
-                <input
-                  type="text"
-                  placeholder="Search projects..."
-                  value={vaultSearch}
-                  onChange={(e) => setVaultSearch(e.target.value)}
-                  style={{
-                    width: "100%", background: "transparent", border: "none", outline: "none",
-                    color: colors.text, fontSize: 12.5, fontFamily: "'Instrument Sans', sans-serif",
-                  }}
-                />
-                {vaultSearch && (
-                  <button onClick={() => setVaultSearch("")} style={{ background: "none", border: "none", color: colors.textMuted, cursor: "pointer", fontSize: 12 }}>✕</button>
-                )}
-              </div>
-
-              {/* View Mode Toggle */}
-              <div style={{ display: "flex", gap: 4, background: isDark ? "rgba(0,0,0,0.3)" : "rgba(148,41,69,0.06)", padding: 3, borderRadius: 10 }}>
-                {[
-                  { id: "both", label: "❖ Split View" },
-                  { id: "graph", label: "✦ Ecosystem Graph" },
-                  { id: "grid", label: "▤ Archive Grid" },
-                ].map((mode) => (
-                  <button
-                    key={mode.id}
-                    onClick={() => setVaultView(mode.id)}
-                    style={{
-                      padding: "5px 12px", borderRadius: 7,
-                      background: vaultView === mode.id ? "linear-gradient(135deg, #e1496d, #942945)" : "transparent",
-                      border: "none", color: vaultView === mode.id ? "#fff" : colors.textMuted,
-                      fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 600,
-                      cursor: "pointer", transition: "all 0.15s ease",
-                    }}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* ═══════════════ SECTION 1: LIVING ECOSYSTEM GRAPH ═══════════════ */}
-            {(vaultView === "both" || vaultView === "graph") && (
-              <div style={{ marginBottom: 40, position: "relative", zIndex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <div>
-                    <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 19, fontWeight: 800, color: colors.text, margin: "0 0 2px" }}>
-                      Living Creative Topology Graph
-                    </h2>
-                    <p style={{ fontSize: 12.5, color: colors.textMuted, margin: 0, fontFamily: "'Instrument Sans', sans-serif" }}>
-                      Inspect interactive node connectivity and data pathways.
-                    </p>
-                  </div>
-                </div>
-
-                <div style={{
-                  borderRadius: 20, overflow: "hidden",
-                  border: `1px solid ${isDark ? "rgba(225,73,109,0.22)" : "rgba(148,41,69,0.16)"}`,
-                  boxShadow: isDark ? "0 16px 40px rgba(0,0,0,0.5)" : "0 12px 32px rgba(148,41,69,0.08)",
-                  background: isDark ? "#10050d" : "#fdf6f9",
-                }}>
-                  <MindMapGraph pastWorks={pastWorks} isDark={isDark} THEME={THEME} colors={colors} onNavigate={onNavigate} user={user} onSwitchTab={setActiveNav} />
-                </div>
-              </div>
-            )}
-
-            {/* ═══════════════ SECTION 2: LIVING PROJECTS ARCHIVE (3 PER SCREEN HORIZONTAL SLIDER) ═══════════════ */}
-            {(vaultView === "both" || vaultView === "grid") && (
-              <div style={{ position: "relative", zIndex: 1 }}>
-                {/* Section Header with Left/Right Controls */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 12 }}>
-                  <div>
-                    <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 19, fontWeight: 800, color: colors.text, margin: "0 0 2px" }}>
-                      Project Holdings Archive
-                    </h2>
-                    <p style={{ fontSize: 12.5, color: colors.textMuted, margin: 0, fontFamily: "'Instrument Sans', sans-serif" }}>
-                      Showing recent 3 projects on screen. Scroll or use controls to browse next.
-                    </p>
-                  </div>
-
-                  {/* Slider Navigation Buttons */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 11.5, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", marginRight: 4 }}>
-                      {pastWorks.length} {pastWorks.length === 1 ? "project" : "projects"}
-                    </span>
-                    <button
-                      onClick={() => {
-                        if (pastWorkScrollRef.current) {
-                          pastWorkScrollRef.current.scrollBy({ left: -pastWorkScrollRef.current.clientWidth, behavior: "smooth" });
-                        }
-                      }}
-                      title="Previous 3 Projects"
-                      style={{
-                        width: 34, height: 34, borderRadius: 10,
-                        background: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
-                        border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.25)" : "rgba(148, 41, 69, 0.15)"}`,
-                        color: colors.text, display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer", transition: "all 0.15s ease",
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.1)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)"; }}
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (pastWorkScrollRef.current) {
-                          pastWorkScrollRef.current.scrollBy({ left: pastWorkScrollRef.current.clientWidth, behavior: "smooth" });
-                        }
-                      }}
-                      title="Next 3 Projects"
-                      style={{
-                        width: 34, height: 34, borderRadius: 10,
-                        background: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
-                        border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.25)" : "rgba(148, 41, 69, 0.15)"}`,
-                        color: colors.text, display: "flex", alignItems: "center", justifyContent: "center",
-                        cursor: "pointer", transition: "all 0.15s ease",
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.1)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)"; }}
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Filtered Projects */}
-                {(() => {
-                  const filtered = pastWorks.filter(p => {
-                    const matchSearch = vaultSearch === "" ||
-                      p.title?.toLowerCase().includes(vaultSearch.toLowerCase()) ||
-                      p.category?.toLowerCase().includes(vaultSearch.toLowerCase()) ||
-                      p.tool?.toLowerCase().includes(vaultSearch.toLowerCase());
-
-                    const matchCategory = vaultCategory === "all" ||
-                      (vaultCategory === "video" && (p.tool?.toLowerCase().includes("video") || p.category?.toLowerCase().includes("video"))) ||
-                      (vaultCategory === "image" && (p.tool?.toLowerCase().includes("image") || p.category?.toLowerCase().includes("image"))) ||
-                      (vaultCategory === "presentation" && (p.tool?.toLowerCase().includes("presentation") || p.category?.toLowerCase().includes("presentation"))) ||
-                      (vaultCategory === "pipelines" && (p.tool?.toLowerCase().includes("pipeline") || p.category?.toLowerCase().includes("pipeline"))) ||
-                      (vaultCategory === "mockup" && (p.tool?.toLowerCase().includes("mockup") || p.category?.toLowerCase().includes("mockup"))) ||
-                      (vaultCategory === "logo" && (p.tool?.toLowerCase().includes("logo") || p.category?.toLowerCase().includes("logo"))) ||
-                      (vaultCategory === "document" && (p.tool?.toLowerCase().includes("doc") || p.category?.toLowerCase().includes("doc"))) ||
-                      (vaultCategory === "whiteboard" && (p.tool?.toLowerCase().includes("whiteboard") || p.category?.toLowerCase().includes("whiteboard")));
-
-                    return matchSearch && matchCategory;
-                  });
-
-                  if (filtered.length === 0) {
-                    return (
-                      <div style={{
-                        padding: "54px 32px", borderRadius: 20, textAlign: "center",
-                        background: isDark ? "rgba(20, 8, 16, 0.45)" : "rgba(255, 255, 255, 0.7)",
-                        border: `1.5px dashed ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.15)"}`,
-                      }}>
-                        <div style={{
-                          width: 54, height: 54, borderRadius: "50%",
-                          background: "linear-gradient(135deg, rgba(225,73,109,0.2), rgba(148,41,69,0.3))",
-                          color: "#ff8da7", display: "flex", alignItems: "center", justifyContent: "center",
-                          margin: "0 auto 16px", border: "1px solid rgba(225,73,109,0.3)",
-                        }}>
-                          <Sparkles size={24} />
-                        </div>
-                        <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 700, color: colors.text, marginBottom: 6 }}>
-                          {vaultSearch || vaultCategory !== "all" ? "No matching projects in this view" : "Your Creative Vault is Pristine"}
-                        </h3>
-                        <p style={{ color: colors.textMuted, fontSize: 13, maxWidth: 400, margin: "0 auto 20px", fontFamily: "'Instrument Sans', sans-serif" }}>
-                          {vaultSearch || vaultCategory !== "all" ? "Try clearing your filters to see all projects." : "Choose any studio tool below to start creating your first masterpiece."}
-                        </p>
-                        
-                        <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
-                          <button
-                            onClick={() => onNavigate("editor")}
-                            style={{
-                              padding: "8px 18px", borderRadius: 10,
-                              background: "linear-gradient(135deg, #e1496d, #942945)",
-                              border: "none", color: "#fff", fontSize: 12.5, fontWeight: 700,
-                              fontFamily: "Syne, sans-serif", cursor: "pointer",
-                            }}
-                          >
-                            🎬 Video Editor
-                          </button>
-                          <button
-                            onClick={() => onNavigate("image_editor")}
-                            style={{
-                              padding: "8px 18px", borderRadius: 10,
-                              background: "rgba(255,255,255,0.06)",
-                              border: "1px solid rgba(255,255,255,0.15)", color: "#fff", fontSize: 12.5, fontWeight: 700,
-                              fontFamily: "Syne, sans-serif", cursor: "pointer",
-                            }}
-                          >
-                            🎨 Image Studio
-                          </button>
-                          <button
-                            onClick={() => onNavigate("pipelines")}
-                            style={{
-                              padding: "8px 18px", borderRadius: 10,
-                              background: "rgba(255,255,255,0.06)",
-                              border: "1px solid rgba(255,255,255,0.15)", color: "#fff", fontSize: 12.5, fontWeight: 700,
-                              fontFamily: "Syne, sans-serif", cursor: "pointer",
-                            }}
-                          >
-                            ⚡ Pipelines
-                          </button>
-                          <button
-                            onClick={() => onNavigate("mockup_studio")}
-                            style={{
-                              padding: "8px 18px", borderRadius: 10,
-                              background: "rgba(255,255,255,0.06)",
-                              border: "1px solid rgba(255,255,255,0.15)", color: "#fff", fontSize: 12.5, fontWeight: 700,
-                              fontFamily: "Syne, sans-serif", cursor: "pointer",
-                            }}
-                          >
-                            📦 3D Mockups
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <div
-                      ref={pastWorkScrollRef}
-                      style={{
-                        display: "flex",
-                        gap: 20,
-                        overflowX: "auto",
-                        scrollSnapType: "x mandatory",
-                        scrollBehavior: "smooth",
-                        paddingBottom: 16,
-                        scrollbarWidth: "thin",
-                        scrollbarColor: "rgba(225, 73, 109, 0.3) transparent",
-                      }}
-                    >
-                      {filtered.map((proj) => {
-                        const accentColor = TOOL_ACCENTS[proj.tool] || "#e1496d";
-                        return (
-                          <div
-                            key={proj.id}
-                            onClick={() => handlePastWorkClick(proj)}
-                            style={{
-                              flex: "0 0 calc((100% - 40px) / 3)",
-                              minWidth: "calc((100% - 40px) / 3)",
-                              maxWidth: "calc((100% - 40px) / 3)",
-                              scrollSnapAlign: "start",
-                              borderRadius: 18,
-                              overflow: "hidden",
-                              background: isDark ? "rgba(20, 8, 16, 0.8)" : "rgba(255, 255, 255, 0.95)",
-                              border: `1px solid ${isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)"}`,
-                              boxShadow: isDark ? "0 10px 28px rgba(0,0,0,0.35)" : "0 6px 20px rgba(148,41,69,0.06)",
-                              transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-                              cursor: "pointer",
-                              display: "flex",
-                              flexDirection: "column",
-                              justifyContent: "space-between",
-                            }}
-                            onMouseEnter={e => {
-                              e.currentTarget.style.transform = "translateY(-4px)";
-                              e.currentTarget.style.borderColor = accentColor;
-                              e.currentTarget.style.boxShadow = `0 14px 36px ${accentColor}30`;
-                            }}
-                            onMouseLeave={e => {
-                              e.currentTarget.style.transform = "translateY(0)";
-                              e.currentTarget.style.borderColor = isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)";
-                              e.currentTarget.style.boxShadow = isDark ? "0 10px 28px rgba(0,0,0,0.35)" : "0 6px 20px rgba(148,41,69,0.06)";
-                            }}
-                          >
-                            {/* Thumbnail Top Area */}
-                            <div style={{
-                              height: 145, position: "relative", overflow: "hidden",
-                              background: proj.gradient || `linear-gradient(135deg, ${accentColor}25, ${accentColor}08)`,
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                            }}>
-                              {proj.image && typeof proj.image === "string" && proj.image.startsWith("data:") ? (
-                                <img src={proj.image} alt={proj.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                              ) : proj.image && !proj.image.startsWith("data:") ? (
-                                <img src={proj.image} alt={proj.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                              ) : (
-                                <div style={{
-                                  width: 52, height: 52, borderRadius: 14,
-                                  background: `linear-gradient(135deg, ${accentColor}, ${accentColor}99)`,
-                                  display: "flex", alignItems: "center", justifyContent: "center",
-                                  color: "#fff", fontWeight: 800, fontSize: 20, fontFamily: "Syne, sans-serif",
-                                  boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
-                                }}>
-                                  {proj.tool?.charAt(0) || "✦"}
-                                </div>
-                              )}
-
-                              {/* Tool Badge */}
-                              <div style={{
-                                position: "absolute", top: 10, left: 10, zIndex: 3,
-                                display: "flex", alignItems: "center", gap: 5,
-                                padding: "3px 10px", borderRadius: 99,
-                                background: isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.85)",
-                                backdropFilter: "blur(10px)", border: `1px solid ${accentColor}40`,
-                              }}>
-                                <span style={{ width: 5, height: 5, borderRadius: "50%", background: accentColor }} />
-                                <span style={{ fontSize: 10, fontWeight: 700, color: isDark ? "#fff" : "#1f2937", fontFamily: "'Poppins', sans-serif" }}>
-                                  {proj.tool || proj.category || "Studio"}
-                                </span>
-                              </div>
-
-                              {/* Delete Button */}
-                              <button
-                                onClick={(e) => handleDeleteProject(proj.id, e)}
-                                title="Delete Project"
-                                style={{
-                                  position: "absolute", top: 10, right: 10, zIndex: 3,
-                                  width: 26, height: 26, borderRadius: "50%",
-                                  background: isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.85)",
-                                  border: "1px solid rgba(239, 68, 68, 0.3)",
-                                  color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center",
-                                  cursor: "pointer", outline: "none", transition: "all 0.15s",
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = "#ef4444"}
-                                onMouseLeave={e => e.currentTarget.style.background = isDark ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.85)"}
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-
-                            {/* Card Content Info */}
-                            <div style={{ padding: "14px 16px 16px" }}>
-                              <h3 style={{
-                                margin: "0 0 4px", fontSize: 15, fontWeight: 800,
-                                color: colors.text, fontFamily: "Syne, sans-serif",
-                                overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                              }}>
-                                {proj.title || "Untitled Project"}
-                              </h3>
-
-                              <p style={{
-                                margin: "0 0 12px", fontSize: 11.5, color: colors.textMuted,
-                                fontFamily: "'Instrument Sans', sans-serif", display: "flex", alignItems: "center", gap: 6,
-                              }}>
-                                <span>{proj.category || proj.tool}</span>
-                                <span style={{ opacity: 0.4 }}>•</span>
-                                <span>{proj.date || "Saved"}</span>
-                              </p>
-
-                              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 8, borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.08)"}` }}>
-                                <span style={{
-                                  fontSize: 10, padding: "2px 8px", borderRadius: 99,
-                                  background: `${accentColor}18`, color: accentColor, fontWeight: 700,
-                                  fontFamily: "'Poppins', sans-serif", border: `1px solid ${accentColor}30`,
-                                }}>
-                                  {proj.data?.layers ? `${proj.data.layers.length} Layers` : "Ready"}
-                                </span>
-
-                                <span style={{
-                                  fontSize: 11.5, color: accentColor, fontWeight: 700,
-                                  fontFamily: "Syne, sans-serif", display: "flex", alignItems: "center", gap: 4,
-                                }}>
-                                  Resume →
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })()}
-              </div>
-            )}
-
-          </div>
+          <VaultView
+            pastWorks={pastWorks}
+            onNavigate={onNavigate}
+            onOpenWork={handlePastWorkClick}
+            onDeleteWork={handleDeleteProject}
+            user={user}
+            isDark={isDark}
+            THEME={THEME}
+            colors={colors}
+            setShowStudioPicker={setShowStudioPicker}
+            setActiveNav={setActiveNav}
+          />
         ) : activeNav === "templates" ? (
           /* ── TEMPLATES MARKETPLACE INLINE VIEW — Keeps sidebar visible ── */
           <div style={{ minHeight: "100vh" }}>
@@ -2641,6 +1390,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
               onNavigate={onNavigate}
               user={user}
               isEmbedded={true}
+              isDark={isDark}
+              THEME={THEME}
+              colors={colors}
             />
           </div>
         ) : activeNav === "brand_kit" ? (
@@ -3065,16 +1817,16 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         background: isDark ? "#0e060b" : "#f7f6fb",
       }} />
 
-      {/* ── INFINITE STUDIO DEDICATED STICKY 3-STEP SCROLL MEGA SECTION ── */}
+      {/* ── INFINITE STUDIO DEDICATED STICKY 5-STEP SCROLL MEGA SECTION ── */}
       <div
         ref={infiniteStudioSectionRef}
         id="infinite-studio-section"
         style={{
           position: "relative",
-          height: "280vh", // Tall track for 3 scroll stages
+          height: "450vh", // Tall track for 5 scroll stages
           background: isDark
-            ? "linear-gradient(180deg, #0e060b 0%, #1a0814 35%, #150610 70%, #0e060b 100%)"
-            : "linear-gradient(180deg, #f7f6fb 0%, #fdf2f4 35%, #fae8ee 70%, #f7f6fb 100%)",
+            ? "linear-gradient(180deg, #0e060b 0%, #1a0814 25%, #150610 50%, #1a0814 75%, #0e060b 100%)"
+            : "linear-gradient(180deg, #f7f6fb 0%, #fdf2f4 25%, #fae8ee 50%, #fdf2f4 75%, #f7f6fb 100%)",
         }}
       >
         {/* Sticky 100vh Viewport Stage */}
@@ -3109,7 +1861,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
 
           <div
             style={{
-              maxWidth: "860px",
+              maxWidth: "960px",
               width: "100%",
               margin: "0 auto",
               position: "relative",
@@ -3119,16 +1871,16 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
           >
             
             {/* Header */}
-            <div style={{ marginBottom: "28px" }}>
+            <div style={{ marginBottom: "24px" }}>
               <h2
                 style={{
                   fontFamily: "Syne, sans-serif",
-                  fontSize: "clamp(32px, 4.5vw, 56px)",
+                  fontSize: "clamp(32px, 4.5vw, 54px)",
                   fontWeight: 800,
                   letterSpacing: "-0.04em",
                   lineHeight: 1.05,
                   color: colors.text,
-                  margin: "0 0 10px",
+                  margin: "0 0 8px",
                 }}
               >
                 Meet <span style={{
@@ -3140,15 +1892,15 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
 
               <p
                 style={{
-                  fontSize: "15px",
+                  fontSize: "14.5px",
                   color: colors.textMuted,
-                  maxWidth: "580px",
+                  maxWidth: "640px",
                   margin: "0 auto",
                   lineHeight: 1.5,
                   fontFamily: "'Instrument Sans', sans-serif",
                 }}
               >
-                The executable infinite graph canvas. Scroll down to discover all 3 core capabilities.
+                The executable infinite graph canvas. Scroll down or select any feature below to discover all 5 core capabilities.
               </p>
             </div>
 
@@ -3159,12 +1911,12 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                 width: "100%",
                 maxWidth: "960px",
                 height: "420px",
-                margin: "0 auto 24px",
+                margin: "0 auto 20px",
               }}
             >
               {infiniteStudioCards.map((f, i) => {
                 const IconComp = f.Icon;
-                const activeIndex = studioScrollProgress < 0.33 ? 0 : studioScrollProgress < 0.66 ? 1 : 2;
+                const activeIndex = Math.min(4, Math.max(0, Math.floor(studioScrollProgress * 5)));
                 const isActive = i === activeIndex;
                 const isPast = i < activeIndex;
 
@@ -3203,11 +1955,11 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                     {/* LEFT COLUMN: Feature Info & Detailed Capabilities */}
                     <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
                       <div>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
                           <div
                             style={{
-                              width: "48px",
-                              height: "48px",
+                              width: "46px",
+                              height: "46px",
                               borderRadius: "14px",
                               background: f.gradient,
                               border: "1px solid rgba(225,73,109,0.35)",
@@ -3224,7 +1976,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                               fontWeight: 700,
                               color: "#ff8da7",
                               background: "rgba(225,73,109,0.15)",
-                              padding: "5px 12px",
+                              padding: "4px 12px",
                               borderRadius: 99,
                               letterSpacing: "0.03em",
                               border: "1px solid rgba(225,73,109,0.28)",
@@ -3234,22 +1986,22 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                           </span>
                         </div>
 
-                        <div style={{ fontSize: "11px", fontWeight: 800, color: "#e1496d", letterSpacing: "0.08em", marginBottom: "6px", textTransform: "uppercase" }}>
-                          Feature {f.num} of 03
+                        <div style={{ fontSize: "11px", fontWeight: 800, color: "#e1496d", letterSpacing: "0.08em", marginBottom: "4px", textTransform: "uppercase" }}>
+                          Feature {f.num} of 05
                         </div>
 
-                        <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "24px", fontWeight: 800, color: colors.text, marginBottom: "10px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+                        <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "23px", fontWeight: 800, color: colors.text, marginBottom: "8px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
                           {f.title}
                         </h3>
 
-                        <p style={{ fontSize: "13.5px", color: colors.textMuted, lineHeight: 1.55, fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 16px" }}>
+                        <p style={{ fontSize: "13px", color: colors.textMuted, lineHeight: 1.5, fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 14px" }}>
                           {f.desc}
                         </p>
 
                         {/* Capabilities List */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
                           {f.capabilities.map((cap, capIdx) => (
-                            <div key={capIdx} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "12px", color: isDark ? "rgba(255,255,255,0.85)" : "#374151" }}>
+                            <div key={capIdx} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "11.5px", color: isDark ? "rgba(255,255,255,0.85)" : "#374151" }}>
                               <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#e1496d" }} />
                               <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}>{cap}</span>
                             </div>
@@ -3264,7 +2016,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                         }}
                         style={{
                           alignSelf: "flex-start",
-                          marginTop: 16,
+                          marginTop: 14,
                           padding: "9px 20px",
                           borderRadius: "12px",
                           background: "linear-gradient(135deg, #e1496d, #942945)",
@@ -3361,6 +2113,77 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                           </div>
                         </div>
                       )}
+
+                      {f.demoType === "collab" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          {/* Live Canvas Mock with Presence Cursors */}
+                          <div style={{
+                            padding: "12px", borderRadius: 12,
+                            background: isDark ? "#180612" : "#fff",
+                            border: "1px solid rgba(16, 185, 129, 0.35)",
+                            position: "relative", minHeight: 120,
+                            display: "flex", flexDirection: "column", justifyContent: "space-between"
+                          }}>
+                            {/* Cursor 1: Alex */}
+                            <div style={{ position: "absolute", top: 18, left: 24, display: "flex", alignItems: "center", gap: 4 }}>
+                              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981" }} />
+                              <span style={{ fontSize: 9.5, padding: "2px 6px", borderRadius: 4, background: "#10b981", color: "#fff", fontWeight: 700 }}>
+                                Alex (Lead)
+                              </span>
+                            </div>
+
+                            {/* Cursor 2: Sam */}
+                            <div style={{ position: "absolute", bottom: 22, right: 30, display: "flex", alignItems: "center", gap: 4 }}>
+                              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#38bdf8", boxShadow: "0 0 8px #38bdf8" }} />
+                              <span style={{ fontSize: 9.5, padding: "2px 6px", borderRadius: 4, background: "#38bdf8", color: "#000", fontWeight: 700 }}>
+                                Sam (Dev)
+                              </span>
+                            </div>
+
+                            <div style={{ textAlign: "center", padding: "16px 0" }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: "#10b981" }}>CRDT Spatial Session #4821</div>
+                              <div style={{ fontSize: 9.5, color: colors.textMuted, marginTop: 2 }}>Sub-10ms Latency • 0 Conflicts</div>
+                            </div>
+                          </div>
+
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#10b981", fontWeight: 600 }}>
+                            <span>● Live Peer Sync</span>
+                            <span>Granular Object Locking Active</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {f.demoType === "export" && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#f59e0b", textTransform: "uppercase" }}>
+                            Universal Export Console
+                          </div>
+                          
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+                            <div style={{ padding: "6px 10px", borderRadius: 8, background: isDark ? "rgba(245,158,11,0.12)" : "#fff", border: "1px solid rgba(245,158,11,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: 10.5, fontWeight: 700, color: colors.text }}>SVG Vector</span>
+                              <span style={{ fontSize: 9, color: "#10b981", fontWeight: 700 }}>✓ READY</span>
+                            </div>
+                            <div style={{ padding: "6px 10px", borderRadius: 8, background: isDark ? "rgba(245,158,11,0.12)" : "#fff", border: "1px solid rgba(245,158,11,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: 10.5, fontWeight: 700, color: colors.text }}>4K Alpha Video</span>
+                              <span style={{ fontSize: 9, color: "#10b981", fontWeight: 700 }}>✓ 60FPS</span>
+                            </div>
+                            <div style={{ padding: "6px 10px", borderRadius: 8, background: isDark ? "rgba(245,158,11,0.12)" : "#fff", border: "1px solid rgba(245,158,11,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: 10.5, fontWeight: 700, color: colors.text }}>React JSX</span>
+                              <span style={{ fontSize: 9, color: "#38bdf8", fontWeight: 700 }}>✓ TAILWIND</span>
+                            </div>
+                            <div style={{ padding: "6px 10px", borderRadius: 8, background: isDark ? "rgba(245,158,11,0.12)" : "#fff", border: "1px solid rgba(245,158,11,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: 10.5, fontWeight: 700, color: colors.text }}>3D GLTF</span>
+                              <span style={{ fontSize: 9, color: "#c084fc", fontWeight: 700 }}>✓ PBR</span>
+                            </div>
+                          </div>
+
+                          <div style={{ padding: "8px 10px", borderRadius: 8, background: isDark ? "#1b0a14" : "#fff", border: "1px solid rgba(245,158,11,0.2)", display: "flex", justifyContent: "space-between", fontSize: 10, color: colors.textMuted }}>
+                            <span>Resolution: 3840 × 2160</span>
+                            <span style={{ color: "#f59e0b", fontWeight: 700 }}>Lossless 99.8%</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -3368,38 +2191,44 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
             </div>
 
             {/* Step Progress Indicators & Jump Controls */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", marginBottom: "20px" }}>
-              {[0, 1, 2].map((stepIdx) => {
-                const activeIndex = studioScrollProgress < 0.33 ? 0 : studioScrollProgress < 0.66 ? 1 : 2;
-                const isStepActive = stepIdx === activeIndex;
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+              {[
+                { label: "01 Nodes", idx: 0 },
+                { label: "02 Live DOM", idx: 1 },
+                { label: "03 AI Engine", idx: 2 },
+                { label: "04 Real-Time Sync", idx: 3 },
+                { label: "05 Universal Export", idx: 4 },
+              ].map((step) => {
+                const activeIndex = Math.min(4, Math.max(0, Math.floor(studioScrollProgress * 5)));
+                const isStepActive = step.idx === activeIndex;
 
                 return (
                   <button
-                    key={stepIdx}
+                    key={step.idx}
                     onClick={() => {
                       const el = infiniteStudioSectionRef.current;
                       if (!el) return;
-                      const targetY = el.offsetTop + (el.offsetHeight - window.innerHeight) * (stepIdx / 2.5);
+                      const targetY = el.offsetTop + (el.offsetHeight - window.innerHeight) * (step.idx / 4.5);
                       window.scrollTo({ top: targetY, behavior: "smooth" });
                     }}
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: 6,
-                      padding: "7px 18px",
+                      gap: 5,
+                      padding: "6px 14px",
                       borderRadius: 99,
                       background: isStepActive ? "linear-gradient(135deg, #e1496d, #942945)" : isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.08)",
                       border: `1px solid ${isStepActive ? "transparent" : isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.15)"}`,
                       color: isStepActive ? "#fff" : isDark ? "rgba(255,255,255,0.6)" : "rgba(148,41,69,0.6)",
                       fontFamily: "'Poppins', sans-serif",
-                      fontSize: "12px",
+                      fontSize: "11.5px",
                       fontWeight: 700,
                       cursor: "pointer",
                       transition: "all 0.3s ease",
                       outline: "none",
                     }}
                   >
-                    <span>Feature 0{stepIdx + 1}</span>
+                    <span>{step.label}</span>
                   </button>
                 );
               })}
@@ -3411,14 +2240,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8,
-                fontSize: "12px",
+                fontSize: "11.5px",
                 fontFamily: "'Poppins', sans-serif",
                 color: isDark ? "rgba(255,255,255,0.45)" : "rgba(148,41,69,0.5)",
                 fontWeight: 500,
               }}
             >
               <span>
-                {studioScrollProgress >= 0.85 ? "Keep scrolling to explore Tools ↓" : "Scroll down to advance feature ↓"}
+                {studioScrollProgress >= 0.88 ? "Keep scrolling to explore Tools ↓" : "Scroll down to advance feature ↓"}
               </span>
             </div>
 
@@ -3592,45 +2421,111 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         </div>
       </div>
 
+      {/* ── 3D MOCKUPS, TEMPLATES & PIPELINE CORE POWER TRIO SHOWCASE ── */}
+      <CorePowerTrioSection onNavigate={onNavigate} isDark={isDark} THEME={THEME} />
+
       {/* ── DELIGHTFUL PANORAMIC VECTOR CITYSCAPE ART BANNER ── */}
       <CreativeCityscapeArt onNavigate={onNavigate} isDark={isDark} THEME={THEME} />
 
-      {/* ── CELESTIAL CREATIVE PULSE LIVE STRIP (JUST ABOVE FEEDBACK) ── */}
+      {/* ── JOLLY CURVY RIVER LIVE CREATIVE STRIP (UNINTERRUPTED CONTINUOUS FLOW) ── */}
       <div style={{
-        borderTop: "1px solid rgba(225, 73, 109, 0.16)",
-        borderBottom: "1px solid rgba(225, 73, 109, 0.16)",
-        background: isDark
-          ? "linear-gradient(90deg, #090307 0%, #150510 50%, #090307 100%)"
-          : "linear-gradient(90deg, #fdf8fa 0%, #faeef3 50%, #fdf8fa 100%)",
-        overflow: "hidden",
         position: "relative",
-        padding: "16px 0",
+        overflow: "hidden",
+        padding: "32px 0 36px",
+        background: isDark
+          ? "linear-gradient(180deg, #0e040b 0%, #1c0817 35%, #160613 70%, #0d0309 100%)"
+          : "linear-gradient(180deg, #fdf8fa 0%, #fdeff4 35%, #fae6ed 70%, #fdf8fa 100%)",
       }}>
-        {/* Deep Left Mirror Fade */}
+        {/* Top Curvy River Wave SVG Border */}
+        <div style={{ position: "absolute", top: 0, left: 0, width: "100%", lineHeight: 0, overflow: "hidden", pointerEvents: "none", zIndex: 4 }}>
+          <svg viewBox="0 0 1440 36" fill="none" preserveAspectRatio="none" style={{ width: "100%", height: "30px", display: "block" }}>
+            <path
+              d="M0,0 C240,32 480,-6 720,20 C960,38 1200,2 1440,18 L1440,0 L0,0 Z"
+              fill={isDark ? "#090307" : "#faf5f8"}
+            />
+            <path
+              d="M0,6 C240,36 480,0 720,26 C960,42 1200,8 1440,24"
+              stroke="rgba(225, 73, 109, 0.35)"
+              strokeWidth="2.5"
+              fill="none"
+            />
+          </svg>
+        </div>
+
+        {/* Dynamic Animated Liquid River Current Streams in Background */}
         <div style={{
-          position: "absolute", left: 0, top: 0, bottom: 0, width: 140,
-          background: `linear-gradient(90deg, ${isDark ? "#090307" : "#fdf8fa"}, transparent)`,
-          zIndex: 3, pointerEvents: "none",
+          position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 2, opacity: isDark ? 0.35 : 0.45
+        }}>
+          <svg viewBox="0 0 2880 120" style={{ width: "200%", height: "100%", animation: "riverStreamSlide 22s linear infinite" }}>
+            <path
+              d="M0,60 C360,100 720,20 1080,60 C1440,100 1800,20 2160,60 C2520,100 2880,20 3240,60"
+              stroke="url(#riverStreamGrad1)"
+              strokeWidth="4"
+              fill="none"
+            />
+            <path
+              d="M0,35 C400,0 800,80 1200,35 C1600,0 2000,80 2400,35 C2800,0 3200,80 3600,35"
+              stroke="url(#riverStreamGrad2)"
+              strokeWidth="2.5"
+              strokeDasharray="12 16"
+              fill="none"
+            />
+            <path
+              d="M0,85 C320,110 640,55 960,85 C1280,110 1600,55 1920,85 C2240,110 2560,55 2880,85"
+              stroke="url(#riverStreamGrad1)"
+              strokeWidth="2"
+              strokeDasharray="8 12"
+              fill="none"
+            />
+            <defs>
+              <linearGradient id="riverStreamGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#e1496d" stopOpacity="0.8" />
+                <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#e1496d" stopOpacity="0.8" />
+              </linearGradient>
+              <linearGradient id="riverStreamGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#ff8da7" stopOpacity="0.7" />
+                <stop offset="50%" stopColor="#c084fc" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="#ff8da7" stopOpacity="0.7" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+
+        {/* Ambient Curvy Water Mist Glow */}
+        <div style={{
+          position: "absolute", top: "50%", left: "50%",
+          transform: "translate(-50%, -50%)", width: "85%", height: "100%",
+          background: "radial-gradient(ellipse at center, rgba(225, 73, 109, 0.22) 0%, rgba(56, 189, 248, 0.1) 50%, transparent 80%)",
+          filter: "blur(50px)", pointerEvents: "none", zIndex: 1,
         }} />
 
-        {/* Deep Right Mirror Fade */}
+        {/* Deep Left Mirror River Fade */}
         <div style={{
-          position: "absolute", right: 0, top: 0, bottom: 0, width: 140,
-          background: `linear-gradient(270deg, ${isDark ? "#090307" : "#fdf8fa"}, transparent)`,
-          zIndex: 3, pointerEvents: "none",
+          position: "absolute", left: 0, top: 0, bottom: 0, width: 170,
+          background: `linear-gradient(90deg, ${isDark ? "#0e040b" : "#fdf8fa"} 35%, transparent)`,
+          zIndex: 6, pointerEvents: "none",
         }} />
 
-        <div style={{ display: "flex", overflow: "hidden", width: "100%", padding: "4px 0" }}>
+        {/* Deep Right Mirror River Fade */}
+        <div style={{
+          position: "absolute", right: 0, top: 0, bottom: 0, width: 170,
+          background: `linear-gradient(270deg, ${isDark ? "#0e040b" : "#fdf8fa"} 35%, transparent)`,
+          zIndex: 6, pointerEvents: "none",
+        }} />
+
+        {/* Flowing River Badge Train (NEVER STOPS ON HOVER) */}
+        <div style={{ display: "flex", overflow: "hidden", width: "100%", position: "relative", zIndex: 5, padding: "16px 0" }}>
           <div
             className="creative-live-ticker"
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 16,
+              gap: 22,
               whiteSpace: "nowrap",
-              animation: "marquee 42s linear infinite",
+              animation: "marquee 36s linear infinite",
               willChange: "transform",
-              padding: "4px 0",
+              padding: "12px 0",
             }}
           >
             {[...Array(2)].flatMap((_, gi) =>
@@ -3647,9 +2542,12 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                 { toolId: "vault", label: "Encrypted Creative Vault", tag: "ZERO LEAK", icon: FolderOpen, color: "#4ade80", live: true },
               ].map((item, idx) => {
                 const Icon = item.icon;
+                const waveClass = idx % 4 === 0 ? "river-badge-wave1" : idx % 4 === 1 ? "river-badge-wave2" : idx % 4 === 2 ? "river-badge-wave3" : "river-badge-wave4";
+                
                 return (
                   <div
                     key={`${gi}-${idx}`}
+                    className={waveClass}
                     onClick={() => {
                       if (item.toolId === "vault") setActiveNav("vault");
                       else onNavigate(item.toolId);
@@ -3658,41 +2556,51 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 10,
-                      padding: "6px 14px 6px 10px",
+                      padding: "9px 18px 9px 12px",
                       borderRadius: 99,
-                      background: isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(255, 255, 255, 0.8)",
-                      border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.18)" : "rgba(148, 41, 69, 0.12)"}`,
+                      background: isDark ? "rgba(30, 10, 23, 0.9)" : "rgba(255, 255, 255, 0.96)",
+                      border: `1.5px solid ${isDark ? "rgba(225, 73, 109, 0.32)" : "rgba(225, 73, 109, 0.22)"}`,
                       cursor: "pointer",
-                      transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                      boxShadow: isDark ? "0 4px 14px rgba(0,0,0,0.25)" : "0 2px 8px rgba(148,41,69,0.04)",
+                      backdropFilter: "blur(20px)",
+                      transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease",
+                      boxShadow: isDark
+                        ? "0 8px 24px rgba(0,0,0,0.4), 0 0 16px rgba(225, 73, 109, 0.15)"
+                        : "0 6px 20px rgba(148,41,69,0.09), 0 0 12px rgba(225, 73, 109, 0.1)",
+                      animationDelay: `${(idx % 8) * 0.3}s`,
                     }}
                     onMouseEnter={e => {
-                      e.currentTarget.style.background = isDark ? "rgba(225, 73, 109, 0.15)" : "rgba(225, 73, 109, 0.1)";
+                      e.currentTarget.style.transform = "scale(1.16) translateY(-10px) rotate(3deg)";
+                      e.currentTarget.style.background = isDark ? "rgba(48, 14, 36, 0.98)" : "#ffffff";
                       e.currentTarget.style.borderColor = item.color;
-                      e.currentTarget.style.boxShadow = `0 6px 20px ${item.color}35`;
+                      e.currentTarget.style.boxShadow = `0 16px 36px ${item.color}50, 0 0 24px ${item.color}40`;
                     }}
                     onMouseLeave={e => {
-                      e.currentTarget.style.background = isDark ? "rgba(255, 255, 255, 0.03)" : "rgba(255, 255, 255, 0.8)";
-                      e.currentTarget.style.borderColor = isDark ? "rgba(225, 73, 109, 0.18)" : "rgba(148, 41, 69, 0.12)";
-                      e.currentTarget.style.boxShadow = isDark ? "0 4px 14px rgba(0,0,0,0.25)" : "0 2px 8px rgba(148,41,69,0.04)";
+                      e.currentTarget.style.transform = "none";
+                      e.currentTarget.style.background = isDark ? "rgba(30, 10, 23, 0.9)" : "rgba(255, 255, 255, 0.96)";
+                      e.currentTarget.style.borderColor = isDark ? "rgba(225, 73, 109, 0.32)" : "rgba(225, 73, 109, 0.22)";
+                      e.currentTarget.style.boxShadow = isDark
+                        ? "0 8px 24px rgba(0,0,0,0.4), 0 0 16px rgba(225, 73, 109, 0.15)"
+                        : "0 6px 20px rgba(148,41,69,0.09), 0 0 12px rgba(225, 73, 109, 0.1)";
                     }}
                   >
-                    {/* Glowing Icon Pip */}
+                    {/* Glowing Icon Pip with Playful Hover Spin */}
                     <div style={{
-                      width: 22, height: 22, borderRadius: "50%",
-                      background: `linear-gradient(135deg, ${item.color}30, ${item.color}15)`,
-                      border: `1px solid ${item.color}60`,
+                      width: 28, height: 28, borderRadius: "50%",
+                      background: `linear-gradient(135deg, ${item.color}40, ${item.color}15)`,
+                      border: `1.5px solid ${item.color}`,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       color: item.color, flexShrink: 0,
+                      boxShadow: `0 0 12px ${item.color}50`,
+                      transition: "transform 0.3s ease",
                     }}>
-                      <Icon size={12} />
+                      <Icon size={14} />
                     </div>
 
                     {/* Title */}
                     <span style={{
-                      fontSize: 12,
+                      fontSize: 13,
                       fontFamily: "Syne, sans-serif",
-                      fontWeight: 700,
+                      fontWeight: 800,
                       color: colors.text,
                       letterSpacing: "-0.01em",
                     }}>
@@ -3704,166 +2612,63 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                       fontSize: 9.5,
                       fontWeight: 800,
                       fontFamily: "'Poppins', sans-serif",
-                      padding: "2px 7px",
+                      padding: "2px 9px",
                       borderRadius: 6,
-                      background: `${item.color}18`,
+                      background: `${item.color}22`,
                       color: item.color,
                       letterSpacing: "0.06em",
-                      border: `1px solid ${item.color}30`,
+                      border: `1px solid ${item.color}45`,
                     }}>
                       {item.tag}
                     </span>
 
-                    {/* Live Green Pulsing Dot */}
+                    {/* Water Ripple Live Pulse Dot */}
                     <div style={{
-                      width: 5, height: 5, borderRadius: "50%",
-                      background: "#22c55e",
-                      boxShadow: "0 0 6px #22c55e",
-                      marginLeft: 2,
-                    }} />
+                      position: "relative", width: 9, height: 9, marginLeft: 2,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}>
+                      <div style={{
+                        position: "absolute", width: "100%", height: "100%", borderRadius: "50%",
+                        background: "#22c55e", opacity: 0.8,
+                        animation: "ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite",
+                      }} />
+                      <div style={{
+                        width: 5.5, height: 5.5, borderRadius: "50%",
+                        background: "#22c55e", boxShadow: "0 0 10px #22c55e",
+                      }} />
+                    </div>
                   </div>
                 );
               })
             )}
           </div>
         </div>
+
+        {/* Bottom Curvy River Wave SVG Border */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", lineHeight: 0, overflow: "hidden", pointerEvents: "none", zIndex: 4 }}>
+          <svg viewBox="0 0 1440 36" fill="none" preserveAspectRatio="none" style={{ width: "100%", height: "30px", display: "block" }}>
+            <path
+              d="M0,18 C240,0 480,38 720,14 C960,-8 1200,30 1440,10 L1440,36 L0,36 Z"
+              fill={isDark ? "#280a1c" : "#60122e"}
+            />
+            <path
+              d="M0,12 C240,-4 480,32 720,8 C960,-14 1200,24 1440,4"
+              stroke="rgba(225, 73, 109, 0.35)"
+              strokeWidth="2.5"
+              fill="none"
+            />
+          </svg>
+        </div>
       </div>
 
-      {/* ── CLEAN & PREMIUM CONTACT & FEEDBACK SECTION ── */}
-      <section id="contact-section" style={{
-        background: isDark ? "#090307" : "#0d040a",
-        borderTop: "1px solid rgba(225, 73, 109, 0.14)",
-        width: "100%",
-        padding: "54px 40px 36px",
-        boxSizing: "border-box",
-        position: "relative",
-      }}>
+      {/* ── IT'S TIME TO EXPERIENCE CREATIFY (CONVEX DOME ARCH WITH 3 VALUE CARDS & NATURE HORIZON) ── */}
+      <ExperienceCreatifySection onNavigate={onNavigate} user={user} isDark={isDark} THEME={THEME} />
 
-        <div style={{
-          maxWidth: 1040, margin: "0 auto",
-          display: "grid", gridTemplateColumns: "1fr 1.15fr",
-          gap: 48, alignItems: "center", position: "relative", zIndex: 1,
-        }}>
+      {/* ── UPGRADED LUXURY CONTACT & FEEDBACK FOOTER SECTION ── */}
+      <ContactSection user={user} onNavigate={onNavigate} isDark={isDark} THEME={THEME} />
 
-          {/* Left Column — Clean Copy */}
-          <div>
-            <div style={{
-              fontSize: 10.5, fontWeight: 700, color: "#e1496d",
-              letterSpacing: "0.08em", textTransform: "uppercase",
-              fontFamily: "'Poppins', sans-serif", marginBottom: 8,
-            }}>
-              GET IN TOUCH
-            </div>
-
-            <h2 style={{
-              fontFamily: "Syne, sans-serif", fontSize: "clamp(26px, 3.2vw, 36px)",
-              fontWeight: 800, letterSpacing: "-0.04em", color: "#fff",
-              margin: "0 0 12px", lineHeight: 1.15,
-            }}>
-              Have a question<br />or feedback?
-            </h2>
-
-            <p style={{
-              fontSize: 13.5, color: "rgba(255, 255, 255, 0.55)",
-              lineHeight: 1.6, fontFamily: "'Instrument Sans', sans-serif",
-              margin: "0 0 24px", maxWidth: 360,
-            }}>
-              We read every message. Whether it's a bug, feature request, or just a hello — reach out and our team will reply within 24 hours.
-            </p>
-
-            {/* Email snippet */}
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 10,
-              padding: "8px 14px", borderRadius: 10,
-              background: "rgba(255, 255, 255, 0.03)", border: "1px solid rgba(225, 73, 109, 0.16)",
-            }}>
-              <Mail size={14} color="#ff8da7" />
-              <span style={{ fontSize: 12.5, color: "#fff", fontFamily: "'Instrument Sans', sans-serif" }}>
-                demandsightsupport@gmail.com
-              </span>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText("demandsightsupport@gmail.com");
-                  alert("Copied email to clipboard!");
-                }}
-                title="Copy email"
-                style={{
-                  background: "none", border: "none", color: "rgba(255,255,255,0.4)",
-                  cursor: "pointer", display: "flex", alignItems: "center", padding: 2,
-                }}
-              >
-                <Copy size={12} />
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column — Compact Form or Sign-in */}
-          <div>
-            {user ? (
-              <ContactForm isDark={isDark} user={user} />
-            ) : (
-              <div style={{
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                padding: "32px 24px", background: "rgba(20, 8, 16, 0.65)",
-                border: "1px solid rgba(225, 73, 109, 0.18)", borderRadius: 16, textAlign: "center",
-              }}>
-                <MessageSquare size={24} color="#ff8da7" style={{ marginBottom: 12 }} />
-                <h3 style={{ fontFamily: "Syne, sans-serif", fontWeight: 700, fontSize: 16, color: "#fff", margin: "0 0 6px" }}>
-                  Sign in to send a message
-                </h3>
-                <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)", fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 18px", maxWidth: 280 }}>
-                  You need to be signed in so our engineering team can reply to your email.
-                </p>
-                <div style={{ display: "flex", gap: 10 }}>
-                  <button
-                    onClick={() => onNavigate("auth", "signin")}
-                    style={{
-                      background: "linear-gradient(135deg, #e1496d, #942945)", color: "#fff",
-                      border: "none", padding: "8px 20px", borderRadius: 8, fontSize: 12.5,
-                      fontFamily: "Syne, sans-serif", fontWeight: 700, cursor: "pointer",
-                    }}
-                  >
-                    Sign in
-                  </button>
-                  <button
-                    onClick={() => onNavigate("auth", "signup")}
-                    style={{
-                      background: "none", color: "rgba(255,255,255,0.7)",
-                      border: "1px solid rgba(255,255,255,0.18)", padding: "8px 18px",
-                      borderRadius: 8, fontSize: 12.5, fontFamily: "Syne, sans-serif", cursor: "pointer",
-                    }}
-                  >
-                    Create account
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-        </div>
-
-        {/* Bottom bar */}
-        <div style={{ maxWidth: 1040, margin: "32px auto 0", paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <div style={{ width:20, height:20, borderRadius:5, background:"linear-gradient(135deg,#942945,#e1496d)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <svg width="9" height="9" viewBox="0 0 16 16" fill="none"><path d="M3 8 L8 2 L13 8 L8 14 Z" fill="white" opacity="0.9"/><circle cx="8" cy="8" r="2" fill="white"/></svg>
-            </div>
-            <span style={{ fontFamily:"Syne,sans-serif", fontWeight:800, fontSize:13, color:"#fff", letterSpacing:"-0.03em" }}>Creat<span style={{ color:"#e1496d" }}>ify</span></span>
-            <span style={{ fontSize:11, color:"rgba(255,255,255,0.16)", fontFamily:"'Poppins',sans-serif", marginLeft:6 }}>
-              © {new Date().getFullYear()} Creatify. All rights reserved.
-            </span>
-          </div>
-          <div style={{ display:"flex", gap:20 }}>
-            {["Privacy","Terms","Security"].map(l => (
-              <span key={l} style={{ fontSize:11.5, color:"rgba(255,255,255,0.2)", fontFamily:"'Poppins',sans-serif", cursor:"pointer", transition:"color 0.15s" }}
-                onMouseEnter={e => e.currentTarget.style.color="rgba(255,255,255,0.6)"}
-                onMouseLeave={e => e.currentTarget.style.color="rgba(255,255,255,0.2)"}>
-                {l}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ── PANORAMIC DEVELOPER COMMUNITY LANDSCAPE ARTWORK (FREE LIKE A BIRD) ── */}
+      <CommunityLandscapeBanner onNavigate={onNavigate} isDark={isDark} />
 
           </>
         )}
@@ -3885,8 +2690,33 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         @keyframes fadeIn     { from { opacity:0; } to { opacity:1; } }
         @keyframes slideInFromRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes pulse      { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
+        @keyframes ping       { 75%, 100% { transform: scale(2.4); opacity: 0; } }
         @keyframes marquee    { from { transform:translateX(0); } to { transform:translateX(-50%); } }
-        .creative-live-ticker:hover { animation-play-state: paused !important; }
+        @keyframes riverStreamSlide { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+
+        /* Sinuous 4-tier Serpentine River Wave Animations */
+        @keyframes riverWave1 {
+          0%, 100% { transform: translateY(-9px) rotate(-2deg); }
+          50% { transform: translateY(9px) rotate(2deg); }
+        }
+        @keyframes riverWave2 {
+          0%, 100% { transform: translateY(8px) rotate(2deg); }
+          50% { transform: translateY(-8px) rotate(-2deg); }
+        }
+        @keyframes riverWave3 {
+          0%, 100% { transform: translateY(-6px) rotate(1.5deg); }
+          50% { transform: translateY(7px) rotate(-1.5deg); }
+        }
+        @keyframes riverWave4 {
+          0%, 100% { transform: translateY(7px) rotate(-1.5deg); }
+          50% { transform: translateY(-7px) rotate(1.5deg); }
+        }
+
+        .river-badge-wave1 { animation: riverWave1 3.4s ease-in-out infinite; }
+        .river-badge-wave2 { animation: riverWave2 3.8s ease-in-out infinite; }
+        .river-badge-wave3 { animation: riverWave3 4.2s ease-in-out infinite; }
+        .river-badge-wave4 { animation: riverWave4 3.6s ease-in-out infinite; }
+
         @keyframes scrollAnim { 0% { transform:scaleY(0); transform-origin:top; } 50% { transform:scaleY(1); transform-origin:top; } 51% { transform:scaleY(1); transform-origin:bottom; } 100% { transform:scaleY(0); transform-origin:bottom; } }
         @keyframes float1     { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-12px);} }
         @keyframes float2     { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }

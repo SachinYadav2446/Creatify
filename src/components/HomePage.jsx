@@ -1470,17 +1470,22 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
 
           <SidebarIcon
             THEME={THEME}
-            active={activeNav === "tools"}
-            label="Tools"
+            active={activeNav === "infinite_studio"}
+            label="Infinite Studio"
             onClick={() => {
-              setActiveNav("home");
-              setTimeout(() => {
-                const el = document.getElementById("tools-section");
+              if (activeNav !== "home") {
+                setActiveNav("home");
+                setTimeout(() => {
+                  const el = document.getElementById("infinite-studio-section");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 150);
+              } else {
+                const el = document.getElementById("infinite-studio-section");
                 if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-              }, 150);
+              }
             }}
-            icon={Wrench}
-            animationType="rotate"
+            icon={InfinityIcon}
+            animationType="scale"
           />
         </div>
       </aside>

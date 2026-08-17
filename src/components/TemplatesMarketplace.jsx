@@ -6,7 +6,7 @@ import {
   Presentation, Cpu, Box, FileText, Layout, Copy, Sliders, Globe, Bookmark, TrendingUp,
   FolderOpen, ThumbsUp, ShieldCheck, Zap, Users, BarChart2
 } from "lucide-react";
-
+import { awardXP } from "../utils/xpSystem";
 import videoPreviewImg from "../assets/images/video_preview.png";
 import logoPreviewImg from "../assets/images/logo_preview.png";
 import pptPreviewImg from "../assets/images/ppt_preview.png";
@@ -326,11 +326,17 @@ export default function TemplatesMarketplace({ onBack, onNavigate, user, isEmbed
       const saved = JSON.parse(localStorage.getItem("creatify_past_works") || "[]");
       saved.unshift(initialProjectData);
       localStorage.setItem("creatify_past_works", JSON.stringify(saved));
+      
+      // Award XP for creating project (+20 XP) and downloading template (+20 XP)
+      awardXP("CREATE_PROJECT", { detail: `Created project from remixed "${tmpl.title}"`, name: `${tmpl.title} (Remix)` });
+      if (tmpl.isUserPublished) {
+        awardXP("TEMPLATE_DOWNLOADED", { detail: `Community remixed & downloaded "${tmpl.title}"`, name: tmpl.title });
+      }
     } catch (e) {
       console.error(e);
     }
 
-    showToast(`🚀 Remixed "${tmpl.title}"! (+1 Download added for author)`);
+    showToast(`🚀 Remixed "${tmpl.title}"! (+20 XP Project Created)`);
 
     setTimeout(() => {
       if (tmpl.route === "mockup_studio") {
@@ -474,6 +480,12 @@ export default function TemplatesMarketplace({ onBack, onNavigate, user, isEmbed
     const storedPublished = JSON.parse(localStorage.getItem("creatify_published_templates") || "[]");
     localStorage.setItem("creatify_published_templates", JSON.stringify([publishedItem, ...storedPublished]));
 
+    // Award +100 XP for publishing a live template
+    awardXP("PUBLISH_TEMPLATE", {
+      detail: `Published "${publishedItem.title}" to Marketplace`,
+      name: publishedItem.title
+    });
+
     setIsPublishModalOpen(false);
     setNewTitle("");
     setNewDesc("");
@@ -481,7 +493,7 @@ export default function TemplatesMarketplace({ onBack, onNavigate, user, isEmbed
     setNewThumbnail("");
     setSelectedVaultWorkId("");
     setActiveTab("my_published");
-    showToast("🎉 Product published live to Community Marketplace!");
+    showToast("🎉 Product published live to Community Marketplace! (+100 XP)");
   };
 
   return (

@@ -1,12 +1,19 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { 
   ArrowLeft, Play, Plus, Trash2, Cpu, Zap, Sparkles, 
   Layers, Download, RefreshCw, ZoomIn, ZoomOut, Check, Terminal, Eye,
   Code, Copy, Shield, GitBranch, Cloud, Share2, Settings, Box,
-  CheckCircle2, AlertCircle, FileCode, Clock, ArrowRight, X, ChevronRight
+  CheckCircle2, AlertCircle, FileCode, Clock, ArrowRight, X, ChevronRight,
+  Maximize2, Database, Send, Radio, Compass, Sliders, PlayCircle, Search,
+  Filter, Grid, ArrowUpRight, CheckCheck, Bookmark
 } from "lucide-react";
 
-export default function WorkflowPipelines({ onBack, onNavigate, user }) {
+export default function WorkflowPipelines({ onBack, onNavigate, user, isEmbedded = false, isDark = false }) {
+  // Navigation mode: "hub" (Overview & Templates) or "studio" (DAG Canvas Engine)
+  const [viewMode, setViewMode] = useState("hub");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 60, y: 40 });
   const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
@@ -17,7 +24,7 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
   const [nodeOffset, setNodeOffset] = useState({ x: 0, y: 0 });
   
   // Wire creation state
-  const [connectingFrom, setConnectingFrom] = useState(null); // { nodeId, portId, x, y }
+  const [connectingFrom, setConnectingFrom] = useState(null);
   const [connectingMousePos, setConnectingMousePos] = useState({ x: 0, y: 0 });
 
   // Execution engine state
@@ -29,32 +36,38 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
   const [copiedCode, setCopiedCode] = useState(false);
   const [activeBlueprintPreset, setActiveBlueprintPreset] = useState("release_ci");
 
-  // ── Pre-Built Developer Blueprints ──
+  // ── Curated Developer Blueprints ──
   const BLUEPRINT_PRESETS = {
     release_ci: {
+      id: "release_ci",
       name: "Release Asset CI/CD Automation",
-      desc: "Git tag push -> 3D Terminal Bake -> Lossless 4K PNG -> README.md update",
+      category: "cicd",
+      categoryLabel: "CI/CD & Releases",
+      tag: "GitHub Actions",
+      trigger: "on: push tags (v*)",
+      desc: "Automatically bakes 4K Ray.so 3D terminal mockups from code changes and updates the GitHub repository README.md.",
+      steps: ["Release Webhook", "AST Syntax Styler", "3D Terminal Bake", "README Injector"],
       nodes: [
         {
           id: "node_1",
-          title: "GitHub Release Trigger",
+          title: "GitHub Release Webhook",
           category: "trigger",
           type: "Webhook Trigger",
           x: 60,
-          y: 120,
+          y: 100,
           inputs: [],
           outputs: [{ id: "out_tag", label: "Release Tag / Commit" }],
           params: { event: "release.published", branch: "main", repo: "creatify-engine/core" },
           status: "ready",
-          color: "#38bdf8",
+          color: "#0284c7",
         },
         {
           id: "node_2",
-          title: "AST Code Syntax Styler",
+          title: "AST Syntax Styler",
           category: "processor",
           type: "Code Tokenizer",
           x: 420,
-          y: 80,
+          y: 70,
           inputs: [{ id: "in_code", label: "Source Code" }],
           outputs: [{ id: "out_tokens", label: "Highlighted AST" }],
           params: { theme: "Synthwave 84", language: "TypeScript", font: "JetBrains Mono" },
@@ -64,7 +77,7 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
         {
           id: "node_3",
           title: "3D Terminal Raytracer Bake",
-          category: "processor",
+          category: "renderer",
           type: "WebGL PBR Renderer",
           x: 780,
           y: 60,
@@ -72,7 +85,7 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
           outputs: [{ id: "out_render", label: "4K Lossless PNG" }],
           params: { rig: "Terminal Window (CLI)", lighting: "Cyberpunk Neon", metalness: 0.8 },
           status: "ready",
-          color: "#c084fc",
+          color: "#9333ea",
         },
         {
           id: "node_4",
@@ -85,7 +98,7 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
           outputs: [{ id: "out_commit", label: "Commit SHA" }],
           params: { targetFile: "README.md", section: "<!-- Hero Mockup -->" },
           status: "ready",
-          color: "#22c55e",
+          color: "#16a34a",
         },
       ],
       wires: [
@@ -95,8 +108,14 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
       ],
     },
     social_hero: {
-      name: "Social Media Hero Banner Generator",
-      desc: "PR merged -> LLM summary -> 3D Perspective Card -> Twitter & Discord OG Image",
+      id: "social_hero",
+      name: "Social Media OpenGraph Hero Generator",
+      category: "social",
+      categoryLabel: "Social Media & OG",
+      tag: "OpenGraph 4K",
+      trigger: "on: pull_request.merged",
+      desc: "Extracts PR release highlights, formats them into a 3D perspective glass card, and uploads 1200x630 OG social banners to CDN.",
+      steps: ["PR Merge Webhook", "Changelog Summarizer", "3D Glass Rig", "Cloudflare CDN"],
       nodes: [
         {
           id: "node_10",
@@ -104,124 +123,181 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
           category: "trigger",
           type: "PR Webhook",
           x: 60,
-          y: 140,
+          y: 110,
           inputs: [],
           outputs: [{ id: "out_pr", label: "PR Metadata" }],
           params: { event: "pull_request.closed", filterMerged: true },
           status: "ready",
-          color: "#38bdf8",
+          color: "#0284c7",
         },
         {
           id: "node_11",
-          title: "AI Feature Summarizer",
+          title: "Changelog Summarizer",
           category: "processor",
-          type: "LLM Agent",
+          type: "AST Parser",
           x: 420,
-          y: 100,
-          inputs: [{ id: "in_meta", label: "Commit Logs" }],
-          outputs: [{ id: "out_summary", label: "Headline & Tags" }],
-          params: { model: "Gemini 2.5 Flash", maxTokens: 80 },
-          status: "ready",
-          color: "#ff8da7",
-        },
-        {
-          id: "node_12",
-          title: "Ray.so Glass Card Bake",
-          category: "processor",
-          type: "3D Shader Engine",
-          x: 780,
           y: 80,
-          inputs: [{ id: "in_headline", label: "Headline Text" }],
-          outputs: [{ id: "out_og", label: "1200x630 OG Image" }],
-          params: { rig: "Ray.so Glass Scribe Card", transmission: 0.85 },
+          inputs: [{ id: "in_pr", label: "PR Metadata" }],
+          outputs: [{ id: "out_summary", label: "Hero Title & Bullets" }],
+          params: { maxBullets: 3, tone: "Technical & Precise" },
           status: "ready",
           color: "#e1496d",
         },
         {
-          id: "node_13",
-          title: "Discord & Twitter Webhook",
-          category: "output",
-          type: "Social Publisher",
-          x: 1140,
-          y: 100,
-          inputs: [{ id: "in_og", label: "OG Image Buffer" }],
-          outputs: [{ id: "out_status", label: "HTTP 200 OK" }],
-          params: { channels: ["#announcements", "#changelog"] },
+          id: "node_12",
+          title: "3D Glass Perspective Rig",
+          category: "renderer",
+          type: "Three.js Renderer",
+          x: 780,
+          y: 60,
+          inputs: [{ id: "in_summary", label: "Card Layout" }],
+          outputs: [{ id: "out_og", label: "1200x630 OG Image" }],
+          params: { aspect: "1200x630 (OG Card)", glassBlur: "24px", bloom: 0.6 },
           status: "ready",
-          color: "#22c55e",
+          color: "#9333ea",
+        },
+        {
+          id: "node_13",
+          title: "Cloudflare R2 / S3 Bucket",
+          category: "output",
+          type: "CDN Pusher",
+          x: 1140,
+          y: 90,
+          inputs: [{ id: "in_og", label: "OG Image" }],
+          outputs: [{ id: "out_url", label: "Public CDN URL" }],
+          params: { bucket: "creatify-assets", pathPrefix: "releases/og/" },
+          status: "ready",
+          color: "#16a34a",
         },
       ],
       wires: [
-        { id: "w10", fromNode: "node_10", fromPort: "out_pr", toNode: "node_11", toPort: "in_meta" },
-        { id: "w11", fromNode: "node_11", fromPort: "out_summary", toNode: "node_12", toPort: "in_headline" },
+        { id: "w10", fromNode: "node_10", fromPort: "out_pr", toNode: "node_11", toPort: "in_pr" },
+        { id: "w11", fromNode: "node_11", fromPort: "out_summary", toNode: "node_12", toPort: "in_summary" },
         { id: "w12", fromNode: "node_12", fromPort: "out_og", toNode: "node_13", toPort: "in_og" },
       ],
     },
     brand_matrix: {
-      name: "Brand Favicon & Icon Matrix",
-      desc: "Master SVG -> Multi-resolution rasterizer -> React JSX component -> PWA Manifest",
+      id: "brand_matrix",
+      name: "SVG Brand Mark to Favicon Matrix",
+      category: "brand",
+      categoryLabel: "Brand & Tokens",
+      tag: "Multi-Platform Export",
+      trigger: "on: brand_update",
+      desc: "Takes vector brand SVGs, extracts Tailwind CSS tokens, and exports a production favicon bundle from 16px to 512px in a ZIP archive.",
+      steps: ["SVG Ingest", "Token Quantizer", "Multi-Size Rasterizer", "ZIP Packager"],
       nodes: [
         {
           id: "node_20",
-          title: "Master SVG Vector Input",
+          title: "SVG Brand Mark Input",
           category: "trigger",
-          type: "Vector Asset",
+          type: "Asset Ingest",
           x: 60,
-          y: 120,
+          y: 110,
           inputs: [],
-          outputs: [{ id: "out_svg", label: "Clean Vector SVG" }],
-          params: { viewBox: "0 0 512 512", optimizePaths: true },
+          outputs: [{ id: "out_svg", label: "Vector XML" }],
+          params: { source: "LogoMaker Studio", emblem: "Geometric Falcon" },
           status: "ready",
-          color: "#38bdf8",
+          color: "#0284c7",
         },
         {
           id: "node_21",
-          title: "Favicon Multi-Pack Rasterizer",
+          title: "Tailwind Token Quantizer",
           category: "processor",
-          type: "Image Resizer",
+          type: "Color Matrix",
           x: 420,
-          y: 60,
-          inputs: [{ id: "in_svg", label: "SVG Vector" }],
-          outputs: [{ id: "out_ico", label: "ICO + PNG Bundle" }],
-          params: { sizes: [16, 32, 64, 192, 512], format: "PNG / ICO" },
+          y: 80,
+          inputs: [{ id: "in_svg", label: "Vector XML" }],
+          outputs: [{ id: "out_tokens", label: "tailwind.config.js" }],
+          params: { format: "Tailwind v3/v4 & CSS Vars", shades: "50-950" },
           status: "ready",
-          color: "#f59e0b",
+          color: "#e1496d",
         },
         {
           id: "node_22",
-          title: "React / JSX Component Compiler",
-          category: "processor",
-          type: "AST Vector Compiler",
-          x: 420,
-          y: 280,
-          inputs: [{ id: "in_svg", label: "SVG Vector" }],
-          outputs: [{ id: "out_jsx", label: "React Component" }],
-          params: { typescript: true, forwardRef: true, propsInterface: "LucideProps" },
+          title: "Multi-Size Rasterizer",
+          category: "renderer",
+          type: "Raster Engine",
+          x: 780,
+          y: 60,
+          inputs: [{ id: "in_svg", label: "Vector XML" }],
+          outputs: [{ id: "out_icons", label: "PNGs (16, 32, 192, 512)" }],
+          params: { sizes: [16, 32, 64, 180, 192, 512], formats: ["ico", "png", "svg"] },
           status: "ready",
-          color: "#c084fc",
+          color: "#9333ea",
         },
         {
           id: "node_23",
-          title: "npm Package & PWA Publisher",
+          title: "ZIP Bundle Packager",
           category: "output",
-          type: "Package Publisher",
-          x: 840,
-          y: 160,
-          inputs: [
-            { id: "in_bundle", label: "Icon Bundle" },
-            { id: "in_components", label: "React Components" }
-          ],
-          outputs: [{ id: "out_npm", label: "npm v1.0.0" }],
-          params: { packageName: "@mybrand/icons", registry: "npm" },
+          type: "File Archiver",
+          x: 1140,
+          y: 90,
+          inputs: [{ id: "in_icons", label: "Asset Matrix" }],
+          outputs: [{ id: "out_zip", label: "brand-assets.zip" }],
+          params: { fileName: "brand-bundle.zip", includeWebManifest: true },
           status: "ready",
-          color: "#22c55e",
+          color: "#16a34a",
         },
       ],
       wires: [
         { id: "w20", fromNode: "node_20", fromPort: "out_svg", toNode: "node_21", toPort: "in_svg" },
         { id: "w21", fromNode: "node_20", fromPort: "out_svg", toNode: "node_22", toPort: "in_svg" },
-        { id: "w22", fromNode: "node_21", fromPort: "out_ico", toNode: "node_23", toPort: "in_bundle" },
-        { id: "w23", fromNode: "node_22", fromPort: "out_jsx", toNode: "node_23", toPort: "in_components" },
+        { id: "w22", fromNode: "node_22", fromPort: "out_icons", toNode: "node_23", toPort: "in_icons" },
+      ],
+    },
+    tech_spec: {
+      id: "tech_spec",
+      name: "API Spec to Interactive Tech Spec PDF",
+      category: "docs",
+      categoryLabel: "Documentation",
+      tag: "RFC & OpenAPI",
+      trigger: "on: rfc_published",
+      desc: "Parses OpenAPI YAML / Markdown documents and compiles an executive technical spec document with embedded diagrams.",
+      steps: ["OpenAPI Ingest", "Spec Compiler", "Mermaid Diagram Sync", "PDF Publisher"],
+      nodes: [
+        {
+          id: "node_30",
+          title: "OpenAPI Spec Ingest",
+          category: "trigger",
+          type: "Spec Trigger",
+          x: 60,
+          y: 100,
+          inputs: [],
+          outputs: [{ id: "out_spec", label: "OpenAPI JSON" }],
+          params: { specFile: "openapi.yaml", validateSchema: true },
+          status: "ready",
+          color: "#0284c7",
+        },
+        {
+          id: "node_31",
+          title: "Endpoint Visualizer",
+          category: "processor",
+          type: "Route Parser",
+          x: 420,
+          y: 70,
+          inputs: [{ id: "in_spec", label: "OpenAPI JSON" }],
+          outputs: [{ id: "out_routes", label: "Parsed Endpoints" }],
+          params: { generateExamples: true, authType: "Bearer JWT" },
+          status: "ready",
+          color: "#e1496d",
+        },
+        {
+          id: "node_32",
+          title: "PDF Blueprint Publisher",
+          category: "output",
+          type: "Document Engine",
+          x: 780,
+          y: 80,
+          inputs: [{ id: "in_routes", label: "Parsed Endpoints" }],
+          outputs: [{ id: "out_pdf", label: "Tech-Spec.pdf" }],
+          params: { layout: "Executive Whitepaper", theme: "Clean Light" },
+          status: "ready",
+          color: "#16a34a",
+        },
+      ],
+      wires: [
+        { id: "w30", fromNode: "node_30", fromPort: "out_spec", toNode: "node_31", toPort: "in_spec" },
+        { id: "w31", fromNode: "node_31", fromPort: "out_routes", toNode: "node_32", toPort: "in_routes" },
       ],
     },
   };
@@ -229,73 +305,181 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
   const [nodes, setNodes] = useState(BLUEPRINT_PRESETS.release_ci.nodes);
   const [wires, setWires] = useState(BLUEPRINT_PRESETS.release_ci.wires);
 
-  // Switch blueprint preset
-  const loadBlueprint = (presetKey) => {
-    setActiveBlueprintPreset(presetKey);
-    const p = BLUEPRINT_PRESETS[presetKey];
-    if (!p) return;
-    setNodes(p.nodes);
-    setWires(p.wires);
-    setSelectedNodeId(p.nodes[1]?.id || p.nodes[0]?.id);
-    setExecutionLogs([]);
-  };
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
 
-  // Node catalog for "+ Add Node" modal
-  const NODE_CATALOG = [
-    { title: "GitHub Webhook Trigger", category: "trigger", type: "Webhook", color: "#38bdf8", inputs: [], outputs: [{ id: "out_payload", label: "Payload" }], params: { event: "push" } },
-    { title: "Cron Schedule Trigger", category: "trigger", type: "Timer", color: "#38bdf8", inputs: [], outputs: [{ id: "out_tick", label: "Trigger Tick" }], params: { cron: "0 0 * * *" } },
-    { title: "AST Code Syntax Styler", category: "processor", type: "Code Tokenizer", color: "#e1496d", inputs: [{ id: "in_code", label: "Code" }], outputs: [{ id: "out_tokens", label: "AST Tokens" }], params: { theme: "Synthwave 84" } },
-    { title: "3D Terminal Raytracer Bake", category: "processor", type: "WebGL PBR", color: "#c084fc", inputs: [{ id: "in_tex", label: "Texture" }], outputs: [{ id: "out_png", label: "4K PNG" }], params: { rig: "Terminal Window (CLI)" } },
-    { title: "AI Screenplay & Summary LLM", category: "processor", type: "LLM Agent", color: "#ff8da7", inputs: [{ id: "in_prompt", label: "Prompt" }], outputs: [{ id: "out_text", label: "Generated Text" }], params: { model: "Gemini 2.5" } },
-    { title: "SVG Vectorizer & Cleaner", category: "processor", type: "Vector Tracing", color: "#f59e0b", inputs: [{ id: "in_raster", label: "Image" }], outputs: [{ id: "out_svg", label: "Clean SVG" }], params: { precision: 2 } },
-    { title: "AWS S3 / Cloudflare R2 Upload", category: "output", type: "Cloud Storage", color: "#22c55e", inputs: [{ id: "in_file", label: "Asset File" }], outputs: [{ id: "out_url", label: "CDN Public URL" }], params: { bucket: "creatify-assets" } },
-    { title: "GitHub Release Committer", category: "output", type: "Git Bot", color: "#22c55e", inputs: [{ id: "in_asset", label: "Build Artifact" }], outputs: [{ id: "out_sha", label: "Commit SHA" }], params: { repo: "org/repo" } },
+  // Available node library for adding new nodes
+  const NODE_LIBRARY = [
+    { title: "GitHub Release Webhook", category: "trigger", type: "Webhook", color: "#0284c7", inputs: [], outputs: [{ id: "out_payload", label: "Payload" }], params: { event: "release", branch: "main" } },
+    { title: "Cron Timer Schedule", category: "trigger", type: "Timer", color: "#0284c7", inputs: [], outputs: [{ id: "out_tick", label: "Cron Trigger" }], params: { cron: "0 0 * * *" } },
+    { title: "AST Syntax Styler", category: "processor", type: "Syntax Engine", color: "#e1496d", inputs: [{ id: "in_code", label: "Source" }], outputs: [{ id: "out_ast", label: "AST Texture" }], params: { theme: "Obsidian Cyber", lang: "Rust" } },
+    { title: "3D Ray.so Glass Rig", category: "renderer", type: "3D Shader", color: "#9333ea", inputs: [{ id: "in_tex", label: "Texture" }], outputs: [{ id: "out_img", label: "4K PNG" }], params: { rig: "Glass Card", metalness: 0.85 } },
+    { title: "GitHub README Injector", category: "output", type: "Git Bot", color: "#16a34a", inputs: [{ id: "in_asset", label: "Asset" }], outputs: [{ id: "out_sha", label: "Commit SHA" }], params: { file: "README.md" } },
+    { title: "Cloudflare R2 / S3 Bucket", category: "output", type: "CDN Pusher", color: "#16a34a", inputs: [{ id: "in_file", label: "File" }], outputs: [{ id: "out_url", label: "CDN URL" }], params: { bucket: "assets" } },
   ];
 
-  // ── Sequential Pipeline Execution Simulation ──
+  // Open a specific pipeline in the DAG Studio
+  const openBlueprintInStudio = (presetKey) => {
+    if (BLUEPRINT_PRESETS[presetKey]) {
+      setActiveBlueprintPreset(presetKey);
+      setNodes(BLUEPRINT_PRESETS[presetKey].nodes);
+      setWires(BLUEPRINT_PRESETS[presetKey].wires);
+      setSelectedNodeId(BLUEPRINT_PRESETS[presetKey].nodes[1]?.id || BLUEPRINT_PRESETS[presetKey].nodes[0]?.id);
+    } else {
+      // Blank custom pipeline
+      setActiveBlueprintPreset("custom");
+      setNodes([
+        {
+          id: "node_custom_1",
+          title: "Custom Input Trigger",
+          category: "trigger",
+          type: "Webhook Trigger",
+          x: 80,
+          y: 100,
+          inputs: [],
+          outputs: [{ id: "out_data", label: "Payload" }],
+          params: { event: "manual.trigger" },
+          status: "ready",
+          color: "#0284c7",
+        }
+      ]);
+      setWires([]);
+      setSelectedNodeId("node_custom_1");
+    }
+    setExecutionLogs([]);
+    setViewMode("studio");
+  };
+
+  // Node parameter change handler
+  const handleParamChange = (key, value) => {
+    setNodes(prev => prev.map(n => {
+      if (n.id !== selectedNodeId) return n;
+      return { ...n, params: { ...n.params, [key]: value } };
+    }));
+  };
+
+  // Delete active node
+  const handleDeleteNode = (nodeId) => {
+    setNodes(prev => prev.filter(n => n.id !== nodeId));
+    setWires(prev => prev.filter(w => w.fromNode !== nodeId && w.toNode !== nodeId));
+    if (selectedNodeId === nodeId) {
+      setSelectedNodeId(null);
+    }
+  };
+
+  // Add a new node from library
+  const handleAddNodeFromLib = (template) => {
+    const newId = `node_${Date.now().toString().slice(-4)}`;
+    const newNode = {
+      id: newId,
+      title: template.title,
+      category: template.category,
+      type: template.type,
+      x: 350 + Math.random() * 200,
+      y: 120 + Math.random() * 150,
+      inputs: template.inputs || [],
+      outputs: template.outputs || [],
+      params: { ...template.params },
+      status: "ready",
+      color: template.color || "#e1496d",
+    };
+    setNodes(prev => [...prev, newNode]);
+    setSelectedNodeId(newId);
+    setShowAddNodeModal(false);
+  };
+
+  // Run DAG Execution Simulation
   const runPipeline = () => {
     if (isRunning) return;
     setIsRunning(true);
-    setExecutionLogs(["[00:00.000] 🚀 Initializing Creatify Pipeline Runtime v2.4..."]);
     setOutputDrawerOpen(true);
+    setExecutionLogs([]);
 
-    // Reset statuses
-    setNodes(prev => prev.map(n => ({ ...n, status: "queued" })));
+    const addLog = (msg, type = "info") => {
+      setExecutionLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type }]);
+    };
 
-    let delay = 350;
-    nodes.forEach((n, idx) => {
-      // Step 1: Active
-      setTimeout(() => {
-        setNodes(prev => prev.map(item => item.id === n.id ? { ...item, status: "running" } : item));
-        setExecutionLogs(prev => [
-          ...prev,
-          `[00:0${(idx * 0.4).toFixed(3)}] ⚡ Executing [${n.title}] (${n.type})...`,
-        ]);
-      }, delay);
+    addLog("Initializing DAG execution graph...", "info");
+    addLog(`Executing pipeline: ${BLUEPRINT_PRESETS[activeBlueprintPreset]?.name || "Custom Pipeline"}`, "info");
 
-      // Step 2: Complete
-      delay += 800;
-      setTimeout(() => {
-        setNodes(prev => prev.map(item => item.id === n.id ? { ...item, status: "done" } : item));
-        setExecutionLogs(prev => [
-          ...prev,
-          `[00:0${((idx + 1) * 0.4).toFixed(3)}] ✓ [${n.title}] Completed in ${(Math.random() * 18 + 8).toFixed(1)}ms (HTTP 200 OK)`,
-        ]);
+    setNodes(prev => prev.map(n => ({ ...n, status: "ready" })));
 
-        if (idx === nodes.length - 1) {
-          setIsRunning(false);
-          setExecutionLogs(prev => [
-            ...prev,
-            `[00:0${((idx + 2) * 0.4).toFixed(3)}] 🏁 Pipeline DAG execution finished successfully with 0 errors!`,
-          ]);
-        }
-      }, delay);
-    });
+    let step = 0;
+    const interval = setInterval(() => {
+      if (step >= nodes.length) {
+        clearInterval(interval);
+        setIsRunning(false);
+        addLog("✨ Pipeline DAG execution completed successfully. All artifacts generated.", "success");
+        return;
+      }
+
+      const currentNode = nodes[step];
+      if (currentNode) {
+        setNodes(prev => prev.map((n, idx) => {
+          if (idx === step) return { ...n, status: "running" };
+          if (idx < step) return { ...n, status: "done" };
+          return n;
+        }));
+
+        addLog(`[${currentNode.title}] Running ${currentNode.type}...`, "running");
+        
+        setTimeout(() => {
+          setNodes(prev => prev.map((n, idx) => {
+            if (idx === step) return { ...n, status: "done" };
+            return n;
+          }));
+          addLog(`✓ [${currentNode.title}] Artifact emitted: OK (200)`, "success");
+        }, 500);
+      }
+
+      step++;
+    }, 850);
   };
 
-  // ── Canvas Dragging Handlers ──
+  // Generate GitHub Actions Workflow YAML
+  const generateGitHubActionsYaml = () => {
+    return `# 🚀 GitHub Actions Workflow generated by Creatify Pipelines Engine
+name: Automated Creative Assets Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js & Tooling
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Parse AST & Generate 3D Terminal Rigs
+        run: |
+          npx @creatify/ast-styler --input src/ --theme "${selectedNode?.params?.theme || "Synthwave"}"
+          npx @creatify/raytracer-bake --rig "${selectedNode?.params?.rig || "Terminal Window"}" --quality 4K
+
+      - name: Inject Generated Assets to README.md
+        run: |
+          npx @creatify/readme-injector --file README.md --asset dist/hero-mockup.png
+
+      - name: Commit and Push Updated Assets
+        run: |
+          git config --global user.name "creatify-bot[bot]"
+          git config --global user.email "bot@creatify.dev"
+          git add README.md dist/
+          git commit -m "chore(assets): auto-generate release mockups and diagrams [skip ci]" || exit 0
+          git push origin HEAD:\${{ github.ref }}
+`;
+  };
+
+  // Canvas Mouse Handlers
   const handleMouseDownCanvas = (e) => {
-    if (e.target.closest(".blueprint-node") || e.target.closest(".node-port")) return;
+    if (e.target.closest(".blueprint-node") || e.target.closest(".port-handle")) return;
     setIsDraggingCanvas(true);
     setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
   };
@@ -304,16 +488,9 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
     if (isDraggingCanvas) {
       setPan({ x: e.clientX - dragStart.x, y: e.clientY - dragStart.y });
     } else if (draggingNodeId) {
-      setNodes(prev => prev.map(n => {
-        if (n.id === draggingNodeId) {
-          return {
-            ...n,
-            x: (e.clientX - pan.x) / zoom - nodeOffset.x,
-            y: (e.clientY - pan.y) / zoom - nodeOffset.y,
-          };
-        }
-        return n;
-      }));
+      const newX = (e.clientX - pan.x) / zoom - nodeOffset.x;
+      const newY = (e.clientY - pan.y) / zoom - nodeOffset.y;
+      setNodes(prev => prev.map(n => n.id === draggingNodeId ? { ...n, x: Math.round(newX), y: Math.round(newY) } : n));
     } else if (connectingFrom) {
       setConnectingMousePos({
         x: (e.clientX - pan.x) / zoom,
@@ -328,7 +505,6 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
     setConnectingFrom(null);
   };
 
-  // Node Drag
   const handleNodeMouseDown = (e, nodeId, nodeX, nodeY) => {
     e.stopPropagation();
     setSelectedNodeId(nodeId);
@@ -339,285 +515,640 @@ export default function WorkflowPipelines({ onBack, onNavigate, user }) {
     });
   };
 
-  // Start wire connection
   const handlePortMouseDown = (e, nodeId, portId, isOutput, nodeX, nodeY) => {
     e.stopPropagation();
-    if (!isOutput) return; // Drag from output to input
-    setConnectingFrom({
-      nodeId,
-      portId,
-      startX: nodeX + 220,
-      startY: nodeY + 54,
-    });
-    setConnectingMousePos({
-      x: (e.clientX - pan.x) / zoom,
-      y: (e.clientY - pan.y) / zoom,
-    });
+    if (isOutput) {
+      setConnectingFrom({
+        nodeId,
+        portId,
+        startX: nodeX + 220,
+        startY: nodeY + 50,
+      });
+      setConnectingMousePos({
+        x: (e.clientX - pan.x) / zoom,
+        y: (e.clientY - pan.y) / zoom,
+      });
+    }
   };
 
-  // Finish wire connection on target port
-  const handlePortMouseUp = (e, toNodeId, toPortId, isInput) => {
+  const handlePortMouseUp = (e, targetNodeId, targetPortId, isInput) => {
     e.stopPropagation();
-    if (connectingFrom && isInput && connectingFrom.nodeId !== toNodeId) {
-      // Check if wire already exists
-      const exists = wires.some(w => w.fromNode === connectingFrom.nodeId && w.toNode === toNodeId);
-      if (!exists) {
-        setWires(prev => [
-          ...prev,
-          {
-            id: `w_${Date.now()}`,
-            fromNode: connectingFrom.nodeId,
-            fromPort: connectingFrom.portId,
-            toNode: toNodeId,
-            toPort: toPortId,
-          }
-        ]);
-      }
+    if (connectingFrom && isInput && connectingFrom.nodeId !== targetNodeId) {
+      const newWire = {
+        id: `wire_${Date.now()}`,
+        fromNode: connectingFrom.nodeId,
+        fromPort: connectingFrom.portId,
+        toNode: targetNodeId,
+        toPort: targetPortId,
+      };
+      setWires(prev => [...prev, newWire]);
     }
     setConnectingFrom(null);
   };
 
-  // Delete wire
-  const deleteWire = (wireId, e) => {
-    if (e) e.stopPropagation();
-    setWires(prev => prev.filter(w => w.id !== wireId));
-  };
+  // Filtered blueprints in Hub
+  const blueprintsList = Object.values(BLUEPRINT_PRESETS).filter(b => {
+    const matchesCategory = activeCategory === "all" || b.category === activeCategory;
+    const matchesSearch = !searchQuery || b.name.toLowerCase().includes(searchQuery.toLowerCase()) || b.desc.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-  // Add new node
-  const handleAddNode = (template) => {
-    const newNode = {
-      id: `node_${Date.now()}`,
-      title: template.title,
-      category: template.category,
-      type: template.type,
-      x: (-pan.x + 400) / zoom,
-      y: (-pan.y + 200) / zoom,
-      inputs: template.inputs,
-      outputs: template.outputs,
-      params: { ...template.params },
-      status: "ready",
-      color: template.color,
-    };
-    setNodes(prev => [...prev, newNode]);
-    setSelectedNodeId(newNode.id);
-    setShowAddNodeModal(false);
-  };
-
-  // Delete node
-  const handleDeleteNode = (nodeId, e) => {
-    if (e) e.stopPropagation();
-    setNodes(prev => prev.filter(n => n.id !== nodeId));
-    setWires(prev => prev.filter(w => w.fromNode !== nodeId && w.toNode !== nodeId));
-    if (selectedNodeId === nodeId) setSelectedNodeId(null);
-  };
-
-  // Selected Node Details
-  const selectedNode = nodes.find(n => n.id === selectedNodeId);
-
-  // Generate Executable Script / YAML for Export Modal
-  const generateExportCode = () => {
-    return `# 🚀 GitHub Actions Workflow generated by Creatify Pipelines
-name: Creatify Creative CI/CD
-on:
-  push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
-
-jobs:
-  bake-assets:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js & GPU Shaders
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Execute Creatify Pipeline DAG
-        run: |
-          npx @creatify/cli run-pipeline --blueprint ./creatify.pipeline.json --output ./assets/mockup.png
-
-      - name: Commit & Push High-Resolution Assets
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: auto-generate 4K 3D release mockup [skip ci]"
-          file_pattern: "assets/*.png README.md"`;
-  };
-
-  const copyExportSnippet = () => {
-    navigator.clipboard.writeText(generateExportCode());
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 2500);
-  };
-
-  return (
-    <div style={{
-      height: "100vh", width: "100vw", overflow: "hidden",
-      background: "#070208", color: "#f3f4f6",
-      fontFamily: "'Instrument Sans', sans-serif",
-      display: "flex", flexDirection: "column",
-      userSelect: "none",
-    }}
-    onMouseMove={handleMouseMoveCanvas}
-    onMouseUp={handleMouseUpCanvas}
-    >
-      
-      {/* ── Top Navigation Bar ── */}
-      <header style={{
-        height: 54, padding: "0 20px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        borderBottom: "1px solid rgba(225, 73, 109, 0.22)",
-        background: "rgba(12, 4, 10, 0.94)", backdropFilter: "blur(18px)",
-        zIndex: 50,
+  // ══════════════════════════════════════════════════════════════════════════════
+  // VIEW 1: PIPELINES OVERVIEW & TEMPLATES HUB (Pure Classy Light / Dark Theme)
+  // ══════════════════════════════════════════════════════════════════════════════
+  if (viewMode === "hub") {
+    return (
+      <div style={{
+        minHeight: "100vh",
+        background: isDark ? "#0c040a" : "#fdf8fa",
+        color: isDark ? "#ffffff" : "#1a040d",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        padding: "40px 48px 80px",
+        boxSizing: "border-box",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        {/* Top Hub Navigation Bar */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 36,
+          flexWrap: "wrap",
+          gap: 16,
+        }}>
+          <div>
+            <div style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "4px 12px",
+              borderRadius: 99,
+              background: isDark ? "rgba(225, 73, 109, 0.15)" : "rgba(225, 73, 109, 0.08)",
+              border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.3)" : "rgba(148, 41, 69, 0.15)"}`,
+              marginBottom: 10,
+            }}>
+              <Cpu size={13} color="#e1496d" />
+              <span style={{
+                fontSize: 11,
+                fontWeight: 800,
+                fontFamily: "Syne, sans-serif",
+                color: "#e1496d",
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+              }}>
+                Workflow Automation Hub
+              </span>
+            </div>
+
+            <h1 style={{
+              margin: "0 0 6px",
+              fontSize: "clamp(28px, 3.5vw, 42px)",
+              fontWeight: 900,
+              fontFamily: "Syne, sans-serif",
+              letterSpacing: "-0.03em",
+              color: isDark ? "#ffffff" : "#4a0e22",
+            }}>
+              Workflow Pipelines
+            </h1>
+            <p style={{
+              margin: 0,
+              fontSize: "14.5px",
+              color: isDark ? "rgba(255,255,255,0.7)" : "#6a2135",
+              maxWidth: 640,
+              lineHeight: 1.45,
+            }}>
+              Automate developer creative assets, 3D code bakes, and GitHub release media with visual node DAG graphs.
+            </p>
+          </div>
+
+          {/* Create Blank Pipeline Button */}
           <button
-            onClick={onBack}
+            onClick={() => openBlueprintInStudio("custom")}
             style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: "rgba(225, 73, 109, 0.14)", border: "1px solid rgba(225, 73, 109, 0.35)",
-              color: "#ff8da7", borderRadius: 8, padding: "6px 12px",
-              cursor: "pointer", fontSize: 12, fontWeight: 700,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "12px 24px",
+              borderRadius: 12,
+              background: "linear-gradient(135deg, #e1496d, #942945)",
+              border: "none",
+              color: "#ffffff",
+              fontSize: "13.5px",
+              fontWeight: 800,
+              fontFamily: "Syne, sans-serif",
+              cursor: "pointer",
+              boxShadow: "0 6px 20px rgba(225, 73, 109, 0.35)",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 10px 28px rgba(225, 73, 109, 0.5)";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 6px 20px rgba(225, 73, 109, 0.35)";
             }}
           >
-            <ArrowLeft size={14} /> Back
+            <Plus size={16} />
+            <span>Create Blank Pipeline</span>
           </button>
+        </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontFamily: "Syne, sans-serif", fontSize: 16, fontWeight: 800, color: "#fff" }}>
-              Creative CI/CD Workflow Pipelines
-            </span>
-            <span style={{
-              fontSize: 9, padding: "2px 8px", borderRadius: 99,
-              background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8",
-              border: "1px solid rgba(56, 189, 248, 0.4)", fontWeight: 800,
-              letterSpacing: "0.06em",
-            }}>
-              NODE BLUEPRINT RUNTIME
-            </span>
+        {/* Filter Chips & Search Bar */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 32,
+          flexWrap: "wrap",
+          gap: 16,
+        }}>
+          {/* Category Tabs */}
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: isDark ? "rgba(255,255,255,0.04)" : "rgba(148, 41, 69, 0.05)",
+            padding: "4px 8px",
+            borderRadius: 12,
+            border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(148, 41, 69, 0.1)"}`,
+          }}>
+            {[
+              { id: "all", label: "All Pipelines" },
+              { id: "cicd", label: "CI/CD & Releases" },
+              { id: "social", label: "Social Media & OG" },
+              { id: "brand", label: "Brand & Tokens" },
+              { id: "docs", label: "Documentation" },
+            ].map(cat => {
+              const active = activeCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  style={{
+                    padding: "7px 16px",
+                    borderRadius: 9,
+                    background: active 
+                      ? (isDark ? "linear-gradient(135deg, #e1496d, #942945)" : "#ffffff") 
+                      : "transparent",
+                    border: active && !isDark ? "1px solid rgba(148, 41, 69, 0.15)" : "none",
+                    color: active ? (isDark ? "#ffffff" : "#942945") : (isDark ? "rgba(255,255,255,0.7)" : "#6a2135"),
+                    fontSize: "12.5px",
+                    fontWeight: active ? 800 : 600,
+                    fontFamily: "Syne, sans-serif",
+                    cursor: "pointer",
+                    boxShadow: active && !isDark ? "0 2px 8px rgba(148,41,69,0.08)" : "none",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search Input */}
+          <div style={{
+            position: "relative",
+            minWidth: 260,
+          }}>
+            <Search size={15} style={{
+              position: "absolute",
+              left: 12,
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: isDark ? "rgba(255,255,255,0.4)" : "rgba(148,41,69,0.4)",
+            }} />
+            <input
+              type="text"
+              placeholder="Search pipelines..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px 14px 8px 36px",
+                borderRadius: 10,
+                background: isDark ? "rgba(255,255,255,0.05)" : "#ffffff",
+                border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(148, 41, 69, 0.18)"}`,
+                color: "inherit",
+                fontSize: "12.5px",
+                outline: "none",
+                boxSizing: "border-box",
+                boxShadow: !isDark ? "0 2px 6px rgba(148,41,69,0.04)" : "none",
+              }}
+            />
           </div>
         </div>
 
-        {/* Blueprint Presets Switcher */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.04)", padding: "3px 6px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.08)" }}>
-          {[
-            { id: "release_ci", label: "Release Asset CI/CD" },
-            { id: "social_hero", label: "Social Hero Banner" },
-            { id: "brand_matrix", label: "Favicon Matrix" },
-          ].map(p => (
-            <button
-              key={p.id}
-              onClick={() => loadBlueprint(p.id)}
+        {/* Blueprint Cards Grid */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
+          gap: 24,
+        }}>
+          {blueprintsList.map((bp) => (
+            <div
+              key={bp.id}
               style={{
-                padding: "4px 10px", borderRadius: 6,
-                background: activeBlueprintPreset === p.id ? "#e1496d" : "transparent",
-                border: "none", color: "#ffffff",
-                fontSize: 11, fontWeight: activeBlueprintPreset === p.id ? 700 : 500,
-                cursor: "pointer", transition: "all 0.2s ease",
+                borderRadius: 18,
+                background: isDark ? "rgba(18, 5, 14, 0.88)" : "#ffffff",
+                border: `1.5px solid ${isDark ? "rgba(225, 73, 109, 0.22)" : "rgba(148, 41, 69, 0.12)"}`,
+                boxShadow: isDark 
+                  ? "0 10px 30px rgba(0,0,0,0.5)" 
+                  : "0 8px 24px rgba(148, 41, 69, 0.06)",
+                padding: "24px",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                transition: "all 0.25s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-4px)";
+                e.currentTarget.style.borderColor = "#e1496d";
+                e.currentTarget.style.boxShadow = isDark 
+                  ? "0 16px 40px rgba(225, 73, 109, 0.25)" 
+                  : "0 14px 36px rgba(148, 41, 69, 0.12)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.borderColor = isDark ? "rgba(225, 73, 109, 0.22)" : "rgba(148, 41, 69, 0.12)";
+                e.currentTarget.style.boxShadow = isDark 
+                  ? "0 10px 30px rgba(0,0,0,0.5)" 
+                  : "0 8px 24px rgba(148, 41, 69, 0.06)";
               }}
             >
-              {p.label}
-            </button>
+              <div>
+                {/* Card Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <span style={{
+                    fontSize: "10.5px",
+                    fontWeight: 800,
+                    fontFamily: "Syne, sans-serif",
+                    padding: "3px 10px",
+                    borderRadius: 99,
+                    background: "rgba(225, 73, 109, 0.1)",
+                    color: "#e1496d",
+                    border: "1px solid rgba(225, 73, 109, 0.25)",
+                    textTransform: "uppercase",
+                  }}>
+                    {bp.tag}
+                  </span>
+                  
+                  <span style={{
+                    fontSize: "11px",
+                    fontFamily: "'JetBrains Mono', monospace",
+                    color: isDark ? "rgba(255,255,255,0.5)" : "#831843",
+                  }}>
+                    {bp.trigger}
+                  </span>
+                </div>
+
+                {/* Title & Description */}
+                <h3 style={{
+                  margin: "0 0 8px",
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  fontFamily: "Syne, sans-serif",
+                  color: isDark ? "#ffffff" : "#1a040d",
+                  lineHeight: 1.25,
+                }}>
+                  {bp.name}
+                </h3>
+
+                <p style={{
+                  margin: "0 0 20px",
+                  fontSize: "13px",
+                  color: isDark ? "rgba(255,255,255,0.7)" : "#5a1827",
+                  lineHeight: 1.45,
+                }}>
+                  {bp.desc}
+                </p>
+
+                {/* Visual Step Chain */}
+                <div style={{
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  background: isDark ? "rgba(255,255,255,0.03)" : "rgba(148, 41, 69, 0.03)",
+                  border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(148, 41, 69, 0.08)"}`,
+                  display: "flex",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "6px",
+                  marginBottom: 22,
+                }}>
+                  {bp.steps.map((st, i) => (
+                    <React.Fragment key={i}>
+                      <span style={{
+                        fontSize: "10.5px",
+                        fontWeight: 700,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        color: isDark ? "#ffffff" : "#4a0e22",
+                      }}>
+                        {st}
+                      </span>
+                      {i < bp.steps.length - 1 && (
+                        <ArrowRight size={11} color="#e1496d" />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+
+              {/* Launch in Studio Button */}
+              <button
+                onClick={() => openBlueprintInStudio(bp.id)}
+                style={{
+                  width: "100%",
+                  padding: "11px",
+                  borderRadius: 10,
+                  background: "linear-gradient(135deg, #e1496d, #942945)",
+                  border: "none",
+                  color: "#ffffff",
+                  fontSize: "13px",
+                  fontWeight: 800,
+                  fontFamily: "Syne, sans-serif",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  boxShadow: "0 4px 14px rgba(225, 73, 109, 0.25)",
+                }}
+              >
+                <span>Open in Blueprint Canvas</span>
+                <ArrowUpRight size={15} />
+              </button>
+            </div>
           ))}
         </div>
+      </div>
+    );
+  }
 
-        {/* Action Controls */}
+  // ══════════════════════════════════════════════════════════════════════════════
+  // VIEW 2: VISUAL DAG PIPELINE CANVAS STUDIO
+  // ══════════════════════════════════════════════════════════════════════════════
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: isEmbedded ? "calc(100vh - 72px)" : "100vh",
+        width: "100%",
+        background: isDark ? "#0c040a" : "#fdf8fa",
+        color: isDark ? "#ffffff" : "#1a040d",
+        fontFamily: "'Plus Jakarta Sans', sans-serif",
+        overflow: "hidden",
+        position: "relative",
+      }}
+      onMouseMove={handleMouseMoveCanvas}
+      onMouseUp={handleMouseUpCanvas}
+    >
+      {/* ── TOP STUDIO TOOLBAR ── */}
+      <header style={{
+        height: 56,
+        background: isDark ? "rgba(16, 5, 14, 0.96)" : "rgba(255, 255, 255, 0.98)",
+        borderBottom: `1px solid ${isDark ? "rgba(225, 73, 109, 0.2)" : "rgba(148, 41, 69, 0.12)"}`,
+        backdropFilter: "blur(16px)",
+        padding: "0 20px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        zIndex: 25,
+        gap: 12,
+        boxShadow: !isDark ? "0 2px 8px rgba(148,41,69,0.04)" : "none",
+      }}>
+        {/* Left: Back to Hub + Active Pipeline Title */}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <button
+            onClick={() => setViewMode("hub")}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 12px",
+              borderRadius: 8,
+              background: isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.06)",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(148,41,69,0.12)"}`,
+              color: isDark ? "#ffffff" : "#831843",
+              fontSize: "12px",
+              fontWeight: 700,
+              fontFamily: "Syne, sans-serif",
+              cursor: "pointer",
+            }}
+          >
+            <ArrowLeft size={14} />
+            <span>Pipelines Hub</span>
+          </button>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 8,
+              background: "linear-gradient(135deg, #a855f7, #e1496d)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#fff",
+            }}>
+              <Cpu size={15} />
+            </div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 13.5, fontWeight: 800, fontFamily: "Syne, sans-serif" }}>
+                  {BLUEPRINT_PRESETS[activeBlueprintPreset]?.name || "Custom DAG Pipeline"}
+                </span>
+                <span style={{
+                  fontSize: 9, padding: "2px 6px", borderRadius: 4,
+                  background: "rgba(168, 85, 247, 0.15)", color: "#a855f7",
+                  border: "1px solid rgba(168, 85, 247, 0.3)", fontWeight: 800,
+                }}>
+                  LIVE CANVAS
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Center Blueprint Presets Selector */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 4,
+          background: isDark ? "rgba(255,255,255,0.04)" : "rgba(148,41,69,0.05)",
+          padding: "3px 6px",
+          borderRadius: 10,
+          border: `1px solid ${isDark ? "rgba(225,73,109,0.15)" : "rgba(148,41,69,0.12)"}`,
+        }}>
+          {[
+            { id: "release_ci", label: "Release CI/CD" },
+            { id: "social_hero", label: "Social OG Card" },
+            { id: "brand_matrix", label: "Favicon Matrix" },
+            { id: "tech_spec", label: "Tech Spec PDF" },
+          ].map(p => {
+            const active = activeBlueprintPreset === p.id;
+            return (
+              <button
+                key={p.id}
+                onClick={() => openBlueprintInStudio(p.id)}
+                style={{
+                  padding: "5px 12px",
+                  borderRadius: 7,
+                  background: active 
+                    ? "linear-gradient(135deg, #e1496d, #942945)" 
+                    : "transparent",
+                  border: "none",
+                  color: active ? "#ffffff" : (isDark ? "rgba(255,255,255,0.7)" : "#4a0e22"),
+                  fontSize: 11.5,
+                  fontWeight: active ? 800 : 600,
+                  fontFamily: "Syne, sans-serif",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right Action Controls */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {/* Zoom controls */}
-          <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.06)", borderRadius: 8, padding: 2 }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            background: isDark ? "rgba(255,255,255,0.05)" : "rgba(148,41,69,0.06)",
+            borderRadius: 8,
+            padding: "2px 4px",
+            border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(148,41,69,0.1)"}`,
+          }}>
             <button
-              onClick={() => setZoom(z => Math.max(0.4, z - 0.1))}
-              style={{ background: "none", border: "none", color: "#fff", padding: "4px 7px", cursor: "pointer" }}
+              onClick={() => setZoom(z => Math.max(0.5, z - 0.1))}
+              style={{ background: "none", border: "none", color: "inherit", padding: "4px 6px", cursor: "pointer" }}
+              title="Zoom Out"
             >
               <ZoomOut size={13} />
             </button>
-            <span style={{ fontSize: 10.5, color: "rgba(255,255,255,0.7)", minWidth: 32, textAlign: "center" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, minWidth: 36, textAlign: "center" }}>
               {Math.round(zoom * 100)}%
             </span>
             <button
-              onClick={() => setZoom(z => Math.min(1.6, z + 0.1))}
-              style={{ background: "none", border: "none", color: "#fff", padding: "4px 7px", cursor: "pointer" }}
+              onClick={() => setZoom(z => Math.min(1.5, z + 0.1))}
+              style={{ background: "none", border: "none", color: "inherit", padding: "4px 6px", cursor: "pointer" }}
+              title="Zoom In"
             >
               <ZoomIn size={13} />
             </button>
           </div>
 
+          {/* Add Node Button */}
           <button
             onClick={() => setShowAddNodeModal(true)}
             style={{
-              display: "flex", alignItems: "center", gap: 5,
-              background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)",
-              color: "#e5e7eb", borderRadius: 8, padding: "6px 12px",
-              fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 13px",
+              borderRadius: 8,
+              background: isDark ? "rgba(255,255,255,0.06)" : "#ffffff",
+              border: `1px solid ${isDark ? "rgba(225,73,109,0.25)" : "rgba(148,41,69,0.2)"}`,
+              color: "inherit",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
             }}
           >
-            <Plus size={13} /> Add Node
+            <Plus size={14} color="#e1496d" />
+            <span>Add Node</span>
           </button>
 
+          {/* Export YAML */}
           <button
             onClick={() => setShowExportModal(true)}
             style={{
-              display: "flex", alignItems: "center", gap: 5,
-              background: "rgba(56, 189, 248, 0.15)", border: "1px solid rgba(56, 189, 248, 0.35)",
-              color: "#38bdf8", borderRadius: 8, padding: "6px 12px",
-              fontSize: 11.5, fontWeight: 700, cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 13px",
+              borderRadius: 8,
+              background: "rgba(2, 132, 199, 0.12)",
+              border: "1px solid rgba(2, 132, 199, 0.35)",
+              color: "#0284c7",
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: "pointer",
             }}
           >
-            <FileCode size={13} /> Export YAML / JSON
+            <FileCode size={14} color="#0284c7" />
+            <span>Export YAML</span>
           </button>
 
+          {/* Run DAG Pipeline Button */}
           <button
             onClick={runPipeline}
             disabled={isRunning}
             style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: isRunning ? "rgba(225,73,109,0.3)" : "linear-gradient(135deg, #e1496d, #942945)",
-              border: "none", color: "#fff", borderRadius: 8, padding: "6px 16px",
-              fontSize: 12, fontWeight: 700, fontFamily: "Syne, sans-serif",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "7px 18px",
+              borderRadius: 99,
+              background: isRunning 
+                ? "rgba(225, 73, 109, 0.35)" 
+                : "linear-gradient(135deg, #e1496d, #942945)",
+              border: "none",
+              color: "#ffffff",
+              fontSize: 12.5,
+              fontWeight: 800,
+              fontFamily: "Syne, sans-serif",
               cursor: isRunning ? "wait" : "pointer",
-              boxShadow: isRunning ? "none" : "0 4px 14px rgba(225,73,109,0.45)",
+              boxShadow: isRunning ? "none" : "0 6px 18px rgba(225, 73, 109, 0.4)",
+              transition: "all 0.2s ease",
             }}
           >
-            <Play size={12} fill="#fff" />
-            {isRunning ? "Running DAG..." : "Execute Pipeline"}
+            <Play size={13} fill="#ffffff" />
+            <span>{isRunning ? "Executing DAG..." : "Run Pipeline"}</span>
           </button>
         </div>
       </header>
 
-      {/* ── Main Canvas & Inspector Area ── */}
+      {/* ── MAIN WORKSPACE: CANVAS + NODE INSPECTOR ── */}
       <div style={{ flex: 1, display: "flex", overflow: "hidden", position: "relative" }}>
         
         {/* Spatial Node Graph Canvas */}
         <div
           style={{
-            flex: 1, position: "relative", overflow: "hidden",
+            flex: 1,
+            position: "relative",
+            overflow: "hidden",
             cursor: isDraggingCanvas ? "grabbing" : "grab",
-            background: `
-              radial-gradient(circle at 50% 50%, rgba(225, 73, 109, 0.04) 0%, transparent 80%),
-              linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-            `,
-            backgroundSize: "100% 100%, 32px 32px, 32px 32px",
+            background: isDark
+              ? `
+                radial-gradient(circle at 50% 50%, rgba(225, 73, 109, 0.05) 0%, transparent 80%),
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
+              `
+              : `
+                radial-gradient(circle at 50% 50%, rgba(148, 41, 69, 0.04) 0%, transparent 80%),
+                linear-gradient(rgba(148, 41, 69, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 41, 69, 0.04) 1px, transparent 1px)
+              `,
+            backgroundSize: "100% 100%, 28px 28px, 28px 28px",
           }}
           onMouseDown={handleMouseDownCanvas}
         >
           <div style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
             transformOrigin: "0 0",
-            position: "absolute", inset: 0,
+            position: "absolute",
+            inset: 0,
           }}>
             
-            {/* SVG Bezier Wires */}
+            {/* SVG Connecting Bezier Wires */}
             <svg style={{ position: "absolute", top: 0, left: 0, width: 5000, height: 5000, pointerEvents: "none", overflow: "visible" }}>
               <defs>
                 <linearGradient id="wireGradActive" x1="0%" y1="0%" x2="100%" y2="0%">
                   <stop offset="0%" stopColor="#e1496d" />
-                  <stop offset="100%" stopColor="#38bdf8" />
+                  <stop offset="100%" stopColor="#0284c7" />
                 </linearGradient>
-                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                <filter id="wireGlow" x="-20%" y="-20%" width="140%" height="140%">
                   <feGaussianBlur stdDeviation="3" result="glow" />
                   <feComposite in="SourceGraphic" in2="glow" operator="over" />
                 </filter>
@@ -641,27 +1172,27 @@ jobs:
 
                 return (
                   <g key={wire.id || `${wire.fromNode}-${wire.toNode}`}>
-                    {/* Shadow outline */}
+                    {/* Wire Base Shadow */}
                     <path
                       d={path}
                       fill="none"
-                      stroke="#000000"
-                      strokeWidth={6}
-                      opacity={0.6}
+                      stroke={isDark ? "#000000" : "rgba(148, 41, 69, 0.12)"}
+                      strokeWidth={5}
+                      opacity={0.5}
                     />
-                    {/* Main wire */}
+                    {/* Active Wire Path */}
                     <path
                       d={path}
                       fill="none"
-                      stroke={isWireActive ? "url(#wireGradActive)" : "rgba(225, 73, 109, 0.45)"}
+                      stroke={isWireActive ? "url(#wireGradActive)" : (isDark ? "rgba(225, 73, 109, 0.5)" : "rgba(148, 41, 69, 0.35)")}
                       strokeWidth={isWireActive ? 3.5 : 2}
                       strokeDasharray={isWireActive ? "6, 3" : "none"}
-                      filter={isWireActive ? "url(#glow)" : "none"}
+                      filter={isWireActive ? "url(#wireGlow)" : "none"}
                     />
                     
-                    {/* Laser bead pulse animation when running */}
+                    {/* Animated laser pulse when running */}
                     {isRunning && (
-                      <circle r={4} fill="#38bdf8" filter="url(#glow)">
+                      <circle r={4} fill="#0284c7" filter="url(#wireGlow)">
                         <animateMotion path={path} dur="1.2s" repeatCount="indefinite" />
                       </circle>
                     )}
@@ -674,14 +1205,14 @@ jobs:
                 <path
                   d={`M ${connectingFrom.startX} ${connectingFrom.startY} C ${connectingFrom.startX + 60} ${connectingFrom.startY}, ${connectingMousePos.x - 60} ${connectingMousePos.y}, ${connectingMousePos.x} ${connectingMousePos.y}`}
                   fill="none"
-                  stroke="#38bdf8"
+                  stroke="#0284c7"
                   strokeWidth={2.5}
                   strokeDasharray="4, 4"
                 />
               )}
             </svg>
 
-            {/* ── Render Blueprint Nodes ── */}
+            {/* ── Render Nodes on Canvas ── */}
             {nodes.map(node => {
               const isSelected = selectedNodeId === node.id;
               const isNodeRunning = node.status === "running";
@@ -697,108 +1228,125 @@ jobs:
                     left: node.x,
                     top: node.y,
                     width: 220,
-                    borderRadius: 10,
-                    background: "rgba(14, 5, 12, 0.94)",
-                    border: `1.5px solid ${isNodeRunning ? "#38bdf8" : (isSelected ? node.color : "rgba(255, 255, 255, 0.1)")}`,
-                    boxShadow: isNodeRunning 
-                      ? "0 0 20px rgba(56, 189, 248, 0.5)" 
-                      : (isSelected ? `0 0 16px ${node.color}40` : "0 8px 24px rgba(0,0,0,0.5)"),
-                    backdropFilter: "blur(14px)",
+                    borderRadius: 12,
+                    background: isDark 
+                      ? (isSelected ? "rgba(24, 7, 20, 0.95)" : "rgba(16, 5, 14, 0.92)") 
+                      : (isSelected ? "#ffffff" : "rgba(255, 255, 255, 0.94)"),
+                    border: `1.5px solid ${isSelected ? node.color : (isDark ? "rgba(225,73,109,0.25)" : "rgba(148,41,69,0.14)")}`,
+                    boxShadow: isSelected 
+                      ? `0 14px 36px rgba(0,0,0,0.25), 0 0 16px ${node.color}40` 
+                      : (isDark ? "0 8px 24px rgba(0,0,0,0.4)" : "0 6px 18px rgba(148,41,69,0.06)"),
+                    backdropFilter: "blur(16px)",
                     cursor: "move",
-                    zIndex: isSelected ? 30 : 10,
+                    zIndex: isSelected ? 20 : 10,
                     transition: "border 0.2s, box-shadow 0.2s",
                   }}
                 >
                   {/* Node Header */}
                   <div style={{
-                    padding: "8px 10px",
-                    borderTopLeftRadius: 8, borderTopRightRadius: 8,
-                    background: `linear-gradient(90deg, ${node.color}25, transparent)`,
-                    borderBottom: "1px solid rgba(255,255,255,0.06)",
-                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "9px 12px",
+                    borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.08)"}`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
                   }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                       <div style={{
                         width: 7, height: 7, borderRadius: "50%",
-                        background: isNodeRunning ? "#38bdf8" : (isNodeDone ? "#22c55e" : node.color),
-                        boxShadow: isNodeRunning ? "0 0 8px #38bdf8" : "none",
+                        background: node.color,
+                        boxShadow: `0 0 6px ${node.color}`,
                       }} />
-                      <span style={{ fontSize: 11, fontWeight: 800, color: "#ffffff" }}>
-                        {node.title}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={(e) => handleDeleteNode(node.id, e)}
-                      title="Delete Node"
-                      style={{
-                        background: "none", border: "none", color: "rgba(255,255,255,0.4)",
-                        cursor: "pointer", padding: 2, display: "flex",
-                      }}
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-
-                  {/* Node Body / Subtitle */}
-                  <div style={{ padding: "8px 10px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                      <span style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono', monospace" }}>
-                        {node.type}
-                      </span>
                       <span style={{
-                        fontSize: 8, padding: "1px 5px", borderRadius: 4,
-                        background: isNodeRunning ? "rgba(56, 189, 248, 0.2)" : (isNodeDone ? "rgba(34, 197, 94, 0.2)" : "rgba(255,255,255,0.06)"),
-                        color: isNodeRunning ? "#38bdf8" : (isNodeDone ? "#22c55e" : "rgba(255,255,255,0.6)"),
-                        fontWeight: 700,
+                        fontSize: 9.5, fontWeight: 800,
+                        fontFamily: "Syne, sans-serif",
+                        color: node.color,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
                       }}>
-                        {node.status.toUpperCase()}
+                        {node.category}
                       </span>
                     </div>
 
-                    {/* Node Ports (Inputs left, Outputs right) */}
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
-                      
-                      {/* Inputs Column */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                        {node.inputs.map(inp => (
-                          <div
-                            key={inp.id}
-                            className="node-port"
-                            onMouseUp={(e) => handlePortMouseUp(e, node.id, inp.id, true)}
-                            style={{ display: "flex", alignItems: "center", gap: 5, cursor: "crosshair" }}
-                          >
-                            <div style={{
-                              width: 9, height: 9, borderRadius: "50%",
-                              background: "#38bdf8", border: "1.5px solid #070208",
-                              boxShadow: "0 0 4px #38bdf8",
-                            }} />
-                            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.7)" }}>{inp.label}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Outputs Column */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-                        {node.outputs.map(out => (
-                          <div
-                            key={out.id}
-                            className="node-port"
-                            onMouseDown={(e) => handlePortMouseDown(e, node.id, out.id, true, node.x, node.y)}
-                            style={{ display: "flex", alignItems: "center", gap: 5, cursor: "crosshair" }}
-                          >
-                            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.7)" }}>{out.label}</span>
-                            <div style={{
-                              width: 9, height: 9, borderRadius: "50%",
-                              background: "#e1496d", border: "1.5px solid #070208",
-                              boxShadow: "0 0 4px #e1496d",
-                            }} />
-                          </div>
-                        ))}
-                      </div>
-
+                    {/* Status Pill */}
+                    <div style={{
+                      fontSize: 8.5, fontWeight: 700, padding: "1px 5px", borderRadius: 4,
+                      background: isNodeRunning 
+                        ? "rgba(2,132,199,0.18)" 
+                        : (isNodeDone ? "rgba(22,163,74,0.18)" : (isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)")),
+                      color: isNodeRunning 
+                        ? "#0284c7" 
+                        : (isNodeDone ? "#16a34a" : (isDark ? "rgba(255,255,255,0.6)" : "#6b7280")),
+                    }}>
+                      {isNodeRunning ? "RUNNING" : (isNodeDone ? "DONE" : "READY")}
                     </div>
                   </div>
+
+                  {/* Node Body */}
+                  <div style={{ padding: "10px 12px" }}>
+                    <div style={{
+                      fontSize: 12.5, fontWeight: 800,
+                      fontFamily: "Syne, sans-serif",
+                      color: isDark ? "#ffffff" : "#1a040d",
+                      marginBottom: 4,
+                    }}>
+                      {node.title}
+                    </div>
+                    <div style={{
+                      fontSize: 10.5,
+                      color: isDark ? "rgba(255,255,255,0.6)" : "rgba(26,4,13,0.6)",
+                      fontFamily: "'JetBrains Mono', monospace",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}>
+                      {node.type}
+                    </div>
+                  </div>
+
+                  {/* Input Port (Left) */}
+                  {node.inputs.map((inp) => (
+                    <div
+                      key={inp.id}
+                      className="port-handle"
+                      onMouseUp={(e) => handlePortMouseUp(e, node.id, inp.id, true)}
+                      style={{
+                        position: "absolute",
+                        left: -7,
+                        top: 48,
+                        width: 14,
+                        height: 14,
+                        borderRadius: "50%",
+                        background: isDark ? "#140510" : "#ffffff",
+                        border: `2.5px solid ${node.color}`,
+                        cursor: "crosshair",
+                        zIndex: 25,
+                      }}
+                      title={`Input: ${inp.label}`}
+                    />
+                  ))}
+
+                  {/* Output Port (Right) */}
+                  {node.outputs.map((outp) => (
+                    <div
+                      key={outp.id}
+                      className="port-handle"
+                      onMouseDown={(e) => handlePortMouseDown(e, node.id, outp.id, true, node.x, node.y)}
+                      style={{
+                        position: "absolute",
+                        right: -7,
+                        top: 48,
+                        width: 14,
+                        height: 14,
+                        borderRadius: "50%",
+                        background: node.color,
+                        border: "2px solid #ffffff",
+                        cursor: "crosshair",
+                        zIndex: 25,
+                        boxShadow: `0 0 8px ${node.color}`,
+                      }}
+                      title={`Output: ${outp.label}`}
+                    />
+                  ))}
                 </div>
               );
             })}
@@ -806,166 +1354,256 @@ jobs:
           </div>
         </div>
 
-        {/* ── Right Properties Inspector Drawer ── */}
-        <div style={{
-          width: 280, borderLeft: "1px solid rgba(225, 73, 109, 0.18)",
-          background: "rgba(14, 5, 12, 0.92)", backdropFilter: "blur(20px)",
-          display: "flex", flexDirection: "column", zIndex: 40,
+        {/* ── RIGHT NODE INSPECTOR PANEL ── */}
+        <aside style={{
+          width: 320,
+          background: isDark ? "rgba(14, 4, 12, 0.96)" : "rgba(255, 255, 255, 0.98)",
+          borderLeft: `1px solid ${isDark ? "rgba(225, 73, 109, 0.2)" : "rgba(148, 41, 69, 0.12)"}`,
+          padding: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+          overflowY: "auto",
+          zIndex: 20,
+          boxShadow: !isDark ? "-2px 0 10px rgba(148,41,69,0.04)" : "none",
         }}>
-          <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(225, 73, 109, 0.16)", display: "flex", alignItems: "center", gap: 6 }}>
-            <Settings size={13} color="#ff8da7" />
-            <span style={{ fontSize: 11.5, fontWeight: 800, color: "#fff", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              Node Parameter Inspector
-            </span>
-          </div>
-
-          <div style={{ flex: 1, overflowY: "auto", padding: 14 }}>
-            {selectedNode ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                
+          {selectedNode ? (
+            <>
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
                 <div>
-                  <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", textTransform: "uppercase" }}>Node Title</span>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", marginTop: 2 }}>{selectedNode.title}</div>
-                  <div style={{ fontSize: 10, color: selectedNode.color, fontFamily: "'JetBrains Mono', monospace", marginTop: 2 }}>{selectedNode.type}</div>
+                  <div style={{
+                    fontSize: 9.5, fontWeight: 800, color: selectedNode.color,
+                    fontFamily: "Syne, sans-serif", textTransform: "uppercase",
+                    letterSpacing: "0.06em", marginBottom: 3,
+                  }}>
+                    {selectedNode.category} NODE
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800, fontFamily: "Syne, sans-serif" }}>
+                    {selectedNode.title}
+                  </div>
                 </div>
 
-                <div style={{ height: 1, background: "rgba(255,255,255,0.08)" }} />
+                <button
+                  onClick={() => handleDeleteNode(selectedNode.id)}
+                  style={{
+                    background: "rgba(239, 68, 68, 0.12)",
+                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    color: "#ef4444",
+                    borderRadius: 6,
+                    padding: 6,
+                    cursor: "pointer",
+                  }}
+                  title="Delete Node"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
 
-                <span style={{ fontSize: 10, fontWeight: 800, color: "#ff8da7", textTransform: "uppercase" }}>
-                  Configurable Parameters
-                </span>
+              {/* Node Metadata */}
+              <div style={{
+                padding: "10px 12px", borderRadius: 10,
+                background: isDark ? "rgba(255,255,255,0.03)" : "rgba(148,41,69,0.04)",
+                border: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.08)"}`,
+                fontSize: 11,
+                fontFamily: "'JetBrains Mono', monospace",
+                display: "flex", flexDirection: "column", gap: 4,
+              }}>
+                <div>ID: <span style={{ color: selectedNode.color }}>{selectedNode.id}</span></div>
+                <div>TYPE: <span>{selectedNode.type}</span></div>
+                <div>STATUS: <span style={{ color: "#16a34a" }}>{selectedNode.status.toUpperCase()}</span></div>
+              </div>
 
-                {Object.entries(selectedNode.params || {}).map(([key, val]) => (
-                  <div key={key}>
-                    <label style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", display: "block", marginBottom: 3, textTransform: "capitalize" }}>
-                      {key.replace(/([A-Z])/g, " $1")}
-                    </label>
-                    <input
-                      type="text"
-                      value={String(val)}
-                      onChange={(e) => {
-                        const newVal = e.target.value;
-                        setNodes(prev => prev.map(n => n.id === selectedNode.id ? { ...n, params: { ...n.params, [key]: newVal } } : n));
-                      }}
-                      style={{
-                        width: "100%", padding: "6px 8px", borderRadius: 6,
-                        background: "rgba(0,0,0,0.4)", border: "1px solid rgba(225, 73, 109, 0.3)",
-                        color: "#38bdf8", fontSize: 11, fontFamily: "'JetBrains Mono', monospace",
-                        boxSizing: "border-box", outline: "none",
-                      }}
-                    />
-                  </div>
-                ))}
+              {/* Configurable Parameters */}
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, fontFamily: "Syne, sans-serif", marginBottom: 10 }}>
+                  NODE PARAMETERS
+                </div>
 
-                <div style={{ marginTop: 10 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", display: "block", marginBottom: 6 }}>
-                    Connected Wires ({wires.filter(w => w.fromNode === selectedNode.id || w.toNode === selectedNode.id).length})
-                  </span>
-                  {wires.filter(w => w.fromNode === selectedNode.id || w.toNode === selectedNode.id).map(w => (
-                    <div key={w.id || `${w.fromNode}-${w.toNode}`} style={{
-                      display: "flex", alignItems: "center", justifyContent: "space-between",
-                      padding: "5px 8px", borderRadius: 6, background: "rgba(255,255,255,0.04)",
-                      fontSize: 10, marginBottom: 4, fontFamily: "'JetBrains Mono', monospace",
-                    }}>
-                      <span style={{ color: "#38bdf8" }}>{w.fromNode} ➔ {w.toNode}</span>
-                      <button onClick={(e) => deleteWire(w.id, e)} style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer" }}>
-                        <X size={10} />
-                      </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {Object.entries(selectedNode.params || {}).map(([key, val]) => (
+                    <div key={key}>
+                      <label style={{
+                        display: "block", fontSize: 10.5, fontWeight: 600,
+                        color: isDark ? "rgba(255,255,255,0.6)" : "rgba(26,4,13,0.65)",
+                        marginBottom: 4, textTransform: "capitalize",
+                      }}>
+                        {key.replace(/([A-Z])/g, " $1")}
+                      </label>
+
+                      {typeof val === "boolean" ? (
+                        <button
+                          type="button"
+                          onClick={() => handleParamChange(key, !val)}
+                          style={{
+                            padding: "6px 12px", borderRadius: 6,
+                            background: val ? "#e1496d" : (isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"),
+                            border: "none", color: "#ffffff", fontSize: 11, fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {val ? "Enabled" : "Disabled"}
+                        </button>
+                      ) : (
+                        <input
+                          type="text"
+                          value={val}
+                          onChange={(e) => handleParamChange(key, e.target.value)}
+                          style={{
+                            width: "100%", padding: "7px 10px", borderRadius: 8,
+                            background: isDark ? "rgba(255,255,255,0.05)" : "#ffffff",
+                            border: `1px solid ${isDark ? "rgba(225,73,109,0.25)" : "rgba(148,41,69,0.18)"}`,
+                            color: "inherit", fontSize: 11.5,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            boxSizing: "border-box", outline: "none",
+                          }}
+                        />
+                      )}
                     </div>
                   ))}
                 </div>
+              </div>
 
+              {/* Quick Actions */}
+              <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 8 }}>
+                <button
+                  onClick={runPipeline}
+                  style={{
+                    padding: "9px", borderRadius: 8,
+                    background: "linear-gradient(135deg, #e1496d, #942945)",
+                    border: "none", color: "#ffffff",
+                    fontSize: 12, fontWeight: 800, fontFamily: "Syne, sans-serif",
+                    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  }}
+                >
+                  <Play size={12} fill="#fff" />
+                  <span>Execute Node Step</span>
+                </button>
               </div>
-            ) : (
-              <div style={{ textAlign: "center", color: "rgba(255,255,255,0.4)", fontSize: 11, marginTop: 40 }}>
-                Select a node on the canvas to inspect and edit its parameters.
+            </>
+          ) : (
+            <div style={{
+              display: "flex", flexDirection: "column", alignItems: "center",
+              justifyContent: "center", height: "100%", textAlign: "center",
+              color: isDark ? "rgba(255,255,255,0.4)" : "rgba(26,4,13,0.4)",
+              gap: 8,
+            }}>
+              <Compass size={28} />
+              <div style={{ fontSize: 12.5, fontWeight: 700, fontFamily: "Syne, sans-serif" }}>
+                Select a node on canvas
               </div>
-            )}
-          </div>
-        </div>
+              <div style={{ fontSize: 11 }}>
+                Click any pipeline node to inspect and edit its execution parameters.
+              </div>
+            </div>
+          )}
+        </aside>
 
       </div>
 
-      {/* ── Bottom Execution Terminal Console Drawer ── */}
+      {/* ── BOTTOM COLLAPSIBLE EXECUTION TERMINAL DRAWER ── */}
       {outputDrawerOpen && (
         <div style={{
-          height: 150, borderTop: "1px solid rgba(225, 73, 109, 0.25)",
-          background: "#080206", display: "flex", flexDirection: "column",
-          zIndex: 45,
+          height: 160,
+          background: isDark ? "#080206" : "#1a040d",
+          borderTop: "1px solid rgba(225, 73, 109, 0.3)",
+          display: "flex",
+          flexDirection: "column",
+          zIndex: 30,
         }}>
           <div style={{
-            height: 28, padding: "0 14px", background: "rgba(0,0,0,0.5)",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
-            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "6px 16px",
+            background: "rgba(225, 73, 109, 0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            fontSize: 11,
+            fontFamily: "'JetBrains Mono', monospace",
+            color: "#ff8da7",
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <Terminal size={12} color="#38bdf8" />
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: "#fff", fontFamily: "'JetBrains Mono', monospace" }}>
-                Pipeline Execution Runtime Logs
-              </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Terminal size={12} />
+              <span>DAG EXECUTION LOGS</span>
             </div>
-
             <button
               onClick={() => setOutputDrawerOpen(false)}
-              style={{ background: "none", border: "none", color: "rgba(255,255,255,0.5)", cursor: "pointer" }}
+              style={{ background: "none", border: "none", color: "#ff8da7", cursor: "pointer" }}
             >
-              <X size={12} />
+              <X size={13} />
             </button>
           </div>
 
-          <div style={{ flex: 1, padding: "8px 14px", overflowY: "auto", fontFamily: "'JetBrains Mono', monospace", fontSize: 10.5 }}>
+          <div style={{
+            flex: 1, padding: "10px 16px", overflowY: "auto",
+            fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+            display: "flex", flexDirection: "column", gap: 4,
+          }}>
             {executionLogs.map((log, i) => (
-              <div key={i} style={{ color: log.includes("✓") ? "#22c55e" : (log.includes("⚡") ? "#38bdf8" : "rgba(255,255,255,0.7)"), marginBottom: 3 }}>
-                {log}
+              <div key={i} style={{
+                color: log.type === "success" ? "#22c55e" : (log.type === "running" ? "#38bdf8" : "rgba(255,255,255,0.7)"),
+              }}>
+                <span style={{ opacity: 0.5, marginRight: 8 }}>[{log.time}]</span>
+                <span>{log.msg}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* ── Modal: Add Node Catalog ── */}
+      {/* ── MODAL: ADD NEW NODE ── */}
       {showAddNodeModal && (
         <div style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)",
-          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
-        }}
-        onClick={() => setShowAddNodeModal(false)}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              width: 540, maxHeight: "80vh", borderRadius: 14,
-              background: "#100612", border: "1px solid rgba(225, 73, 109, 0.35)",
-              boxShadow: "0 20px 50px rgba(0,0,0,0.8)", overflow: "hidden", display: "flex", flexDirection: "column",
-            }}
-          >
-            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(225, 73, 109, 0.2)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontFamily: "Syne, sans-serif", fontSize: 15, fontWeight: 800, color: "#fff" }}>
-                Add Automation Node to Pipeline
-              </span>
-              <button onClick={() => setShowAddNodeModal(false)} style={{ background: "none", border: "none", color: "#fff", cursor: "pointer" }}>
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)",
+          backdropFilter: "blur(8px)", display: "flex", alignItems: "center",
+          justifyContent: "center", zIndex: 100, padding: 20,
+        }}>
+          <div style={{
+            width: "100%", maxWidth: 540, borderRadius: 18,
+            background: isDark ? "#140511" : "#ffffff",
+            border: `1px solid ${isDark ? "rgba(225,73,109,0.3)" : "rgba(148,41,69,0.18)"}`,
+            padding: 24, boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ fontSize: 16, fontWeight: 800, fontFamily: "Syne, sans-serif" }}>
+                Add Pipeline Node
+              </div>
+              <button
+                onClick={() => setShowAddNodeModal(false)}
+                style={{ background: "none", border: "none", color: "inherit", cursor: "pointer" }}
+              >
                 <X size={16} />
               </button>
             </div>
 
-            <div style={{ padding: 16, overflowY: "auto", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
-              {NODE_CATALOG.map((tpl, i) => (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {NODE_LIBRARY.map((tmpl, idx) => (
                 <div
-                  key={i}
-                  onClick={() => handleAddNode(tpl)}
+                  key={idx}
+                  onClick={() => handleAddNodeFromLib(tmpl)}
                   style={{
-                    padding: "10px 12px", borderRadius: 10,
-                    background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
+                    padding: "12px", borderRadius: 12,
+                    background: isDark ? "rgba(255,255,255,0.04)" : "rgba(148,41,69,0.04)",
+                    border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(148,41,69,0.12)"}`,
                     cursor: "pointer", transition: "all 0.15s ease",
                   }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = tpl.color}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = tmpl.color;
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(148,41,69,0.12)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: tpl.color }} />
-                    <span style={{ fontSize: 11.5, fontWeight: 700, color: "#fff" }}>{tpl.title}</span>
+                  <div style={{ fontSize: 9, fontWeight: 800, color: tmpl.color, textTransform: "uppercase", marginBottom: 4 }}>
+                    {tmpl.category}
                   </div>
-                  <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.5)", fontFamily: "'JetBrains Mono', monospace" }}>{tpl.type}</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, fontFamily: "Syne, sans-serif", marginBottom: 2 }}>
+                    {tmpl.title}
+                  </div>
+                  <div style={{ fontSize: 10.5, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(26,4,13,0.5)" }}>
+                    {tmpl.type}
+                  </div>
                 </div>
               ))}
             </div>
@@ -973,63 +1611,68 @@ jobs:
         </div>
       )}
 
-      {/* ── Modal: Export YAML / JSON ── */}
+      {/* ── MODAL: EXPORT GITHUB ACTIONS YAML ── */}
       {showExportModal && (
         <div style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)",
-          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
-        }}
-        onClick={() => setShowExportModal(false)}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              width: 600, maxHeight: "85vh", borderRadius: 14,
-              background: "#0c040d", border: "1px solid rgba(225, 73, 109, 0.35)",
-              boxShadow: "0 20px 50px rgba(0,0,0,0.8)", overflow: "hidden", display: "flex", flexDirection: "column",
-            }}
-          >
-            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(225, 73, 109, 0.2)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontFamily: "Syne, sans-serif", fontSize: 15, fontWeight: 800, color: "#fff" }}>
-                Export GitHub Actions CI/CD Workflow
-              </span>
-              <button onClick={() => setShowExportModal(false)} style={{ background: "none", border: "none", color: "#fff", cursor: "pointer" }}>
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)",
+          backdropFilter: "blur(8px)", display: "flex", alignItems: "center",
+          justifyContent: "center", zIndex: 100, padding: 20,
+        }}>
+          <div style={{
+            width: "100%", maxWidth: 640, borderRadius: 18,
+            background: isDark ? "#140511" : "#ffffff",
+            border: `1px solid ${isDark ? "rgba(225,73,109,0.3)" : "rgba(148,41,69,0.18)"}`,
+            padding: 24, boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <FileCode size={16} color="#0284c7" />
+                <span style={{ fontSize: 16, fontWeight: 800, fontFamily: "Syne, sans-serif" }}>
+                  GitHub Actions CI/CD Workflow
+                </span>
+              </div>
+              <button
+                onClick={() => setShowExportModal(false)}
+                style={{ background: "none", border: "none", color: "inherit", cursor: "pointer" }}
+              >
                 <X size={16} />
               </button>
             </div>
 
-            <div style={{ padding: 18, flex: 1, overflowY: "auto" }}>
-              <textarea
-                readOnly
-                rows={14}
-                value={generateExportCode()}
-                style={{
-                  width: "100%", padding: 12, borderRadius: 8,
-                  background: "#050106", border: "1px solid rgba(56, 189, 248, 0.3)",
-                  color: "#38bdf8", fontSize: 10.5, fontFamily: "'JetBrains Mono', monospace",
-                  boxSizing: "border-box", resize: "none", outline: "none", lineHeight: 1.45,
-                }}
-              />
-            </div>
+            <pre style={{
+              padding: "14px", borderRadius: 10,
+              background: "#080206", color: "#38bdf8",
+              fontFamily: "'JetBrains Mono', monospace", fontSize: 11,
+              maxHeight: 280, overflowY: "auto",
+              border: "1px solid rgba(56, 189, 248, 0.2)",
+              margin: "0 0 16px",
+            }}>
+              {generateGitHubActionsYaml()}
+            </pre>
 
-            <div style={{ padding: "12px 18px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "flex-end", gap: 10 }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
               <button
-                onClick={copyExportSnippet}
+                onClick={() => {
+                  navigator.clipboard.writeText(generateGitHubActionsYaml());
+                  setCopiedCode(true);
+                  setTimeout(() => setCopiedCode(false), 2000);
+                }}
                 style={{
                   display: "flex", alignItems: "center", gap: 6,
-                  padding: "7px 16px", borderRadius: 8,
+                  padding: "8px 18px", borderRadius: 8,
                   background: "linear-gradient(135deg, #e1496d, #942945)",
-                  border: "none", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                  border: "none", color: "#ffffff",
+                  fontSize: 12, fontWeight: 800, fontFamily: "Syne, sans-serif",
+                  cursor: "pointer",
                 }}
               >
-                {copiedCode ? <Check size={13} /> : <Copy size={13} />}
-                <span>{copiedCode ? "Copied to Clipboard!" : "Copy YAML Workflow"}</span>
+                {copiedCode ? <Check size={14} /> : <Copy size={14} />}
+                <span>{copiedCode ? "Copied YAML!" : "Copy to Clipboard"}</span>
               </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

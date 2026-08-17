@@ -27,10 +27,13 @@ import WorkflowPipelines from "./WorkflowPipelines";
 import MockupStudio from "./MockupStudio";
 import CreativeCityscapeArt from "./CreativeCityscapeArt";
 import ExperienceCreatifySection from "./ExperienceCreatifySection";
+import EcosystemStrip from "./EcosystemStrip";
 import ContactSection from "./ContactSection";
 import CommunityLandscapeBanner from "./CommunityLandscapeBanner";
 import VaultView from "./VaultView";
 import CorePowerTrioSection from "./CorePowerTrioSection";
+import ProfilePage from "./ProfilePage";
+import { awardXP, getXpState, getLevelInfo } from "../utils/xpSystem";
 
 const TOOL_ACCENTS = {
   "Video Editor": "#ef4444",
@@ -320,6 +323,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showStudioPicker, setShowStudioPicker] = useState(false);
   const [activeNav, setActiveNav]             = useState(initialNav || "home");
+  const [sidebarXp, setSidebarXp]             = useState(() => getXpState());
+  const [sidebarAvatarHovered, setSidebarAvatarHovered] = useState(false);
+
+  useEffect(() => {
+    const handleXpUpdate = () => setSidebarXp(getXpState());
+    window.addEventListener("creatify_xp_updated", handleXpUpdate);
+    return () => window.removeEventListener("creatify_xp_updated", handleXpUpdate);
+  }, []);
 
   useEffect(() => {
     if (initialNav) {
@@ -391,16 +402,26 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
     },
   ];
 
-  // Scroll listener for sticky 3-step feature progression
+  // Scroll listener for sticky 5-step feature progression with requestAnimationFrame
   useEffect(() => {
+    let ticking = false;
+
     const handleStudioScroll = () => {
-      const el = infiniteStudioSectionRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const totalDist = el.offsetHeight - window.innerHeight;
-      if (totalDist <= 0) return;
-      const progress = Math.min(Math.max(-rect.top / totalDist, 0), 1);
-      setStudioScrollProgress(progress);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const el = infiniteStudioSectionRef.current;
+          if (el) {
+            const rect = el.getBoundingClientRect();
+            const totalDist = el.offsetHeight - window.innerHeight;
+            if (totalDist > 0) {
+              const progress = Math.min(Math.max(-rect.top / totalDist, 0), 1);
+              setStudioScrollProgress(progress);
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     window.addEventListener("scroll", handleStudioScroll, { passive: true });
@@ -1247,15 +1268,114 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         backdropFilter: "blur(28px) saturate(180%)",
         WebkitBackdropFilter: "blur(28px) saturate(180%)",
       }}>
-        {/* Avatar at top of sidebar */}
-        <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", margin: "6px 0 10px" }}>
+        {/* ── STUNNING ATTRACTIVE CREATOR AVATAR IN SIDEBAR ── */}
+        <div 
+          style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", margin: "4px 0 10px", position: "relative" }}
+          onMouseEnter={() => setSidebarAvatarHovered(true)}
+          onMouseLeave={() => setSidebarAvatarHovered(false)}
+        >
           {user ? (
-            <div style={{ position: "relative" }}>
-              <AvatarCircle size={40} onClick={() => onNavigate("profile")} showBorder />
+            <div style={{ position: "relative", cursor: "pointer" }} onClick={() => setActiveNav("profile")}>
+              {/* Outer Radiant Aura / Shimmer Ring */}
               <div style={{
-                position: "absolute", bottom: -1, right: -1, width: 12, height: 12,
-                borderRadius: "50%", background: "#22c55e", border: "2px solid #fff",
+                position: "absolute", inset: -3, borderRadius: "50%",
+                background: activeNav === "profile" || sidebarAvatarHovered
+                  ? "linear-gradient(135deg, #e1496d, #f59e0b, #38bdf8, #a855f7)"
+                  : "linear-gradient(135deg, rgba(225, 73, 109, 0.4), rgba(148, 41, 69, 0.2))",
+                opacity: activeNav === "profile" || sidebarAvatarHovered ? 0.9 : 0.4,
+                filter: "blur(2px)",
+                animation: activeNav === "profile" || sidebarAvatarHovered ? "spin 4s linear infinite" : "none",
+                transition: "all 0.3s ease",
               }} />
+
+              {/* Avatar Body */}
+              <div style={{
+                position: "relative", width: 42, height: 42, borderRadius: "50%",
+                background: activeNav === "profile"
+                  ? "linear-gradient(135deg, #e1496d 0%, #942945 100%)"
+                  : "linear-gradient(135deg, #942945 0%, #1e0817 100%)",
+                border: activeNav === "profile"
+                  ? "2px solid #fff"
+                  : "1.5px solid rgba(225, 73, 109, 0.5)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 14,
+                boxShadow: activeNav === "profile"
+                  ? "0 0 16px rgba(225, 73, 109, 0.6), 0 4px 12px rgba(0,0,0,0.4)"
+                  : "0 4px 12px rgba(0,0,0,0.3)",
+                transition: "transform 0.2s ease",
+                transform: sidebarAvatarHovered ? "scale(1.08)" : "scale(1)",
+              }}>
+                {user.name ? user.name.split(" ").filter(Boolean).map(n => n[0]).join("").substring(0, 2).toUpperCase() : (user.email?.[0]?.toUpperCase() || "CR")}
+              </div>
+
+              {/* Online Status Beacon */}
+              <div style={{
+                position: "absolute", top: -1, right: -1, width: 10, height: 10,
+                borderRadius: "50%", background: "#22c55e", border: "2px solid #fff",
+                boxShadow: "0 0 6px #22c55e",
+              }} />
+
+              {/* Level Badge Pill */}
+              <div style={{
+                position: "absolute", bottom: -5, left: "50%", transform: "translateX(-50%)",
+                background: "linear-gradient(135deg, #e1496d, #942945)",
+                color: "#fff", fontSize: 8.5, fontFamily: "'Poppins', sans-serif", fontWeight: 800,
+                padding: "1px 5px", borderRadius: 99, border: "1px solid rgba(255,255,255,0.9)",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.4)", whiteSpace: "nowrap",
+                letterSpacing: "-0.02em",
+              }}>
+                Lv.{sidebarXp.levelInfo?.level || 1}
+              </div>
+
+              {/* Interactive Hover Card Flyout on Sidebar Hover */}
+              {sidebarAvatarHovered && (
+                <div style={{
+                  position: "absolute", left: 56, top: -8, zIndex: 1000,
+                  width: 220, padding: 14, borderRadius: 16,
+                  background: isDark ? "rgba(22, 6, 17, 0.96)" : "rgba(255, 255, 255, 0.98)",
+                  border: `1.5px solid ${isDark ? "rgba(225, 73, 109, 0.4)" : "rgba(148, 41, 69, 0.25)"}`,
+                  boxShadow: "0 16px 36px rgba(0,0,0,0.4), 0 0 20px rgba(225, 73, 109, 0.15)",
+                  backdropFilter: "blur(16px)",
+                  display: "flex", flexDirection: "column", gap: 8,
+                  animation: "fadeIn 0.18s ease-out",
+                  pointerEvents: "none",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <div style={{ fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 13, color: isDark ? "#fff" : "#111" }}>
+                        {user.name || "Master Creator"}
+                      </div>
+                      <div style={{ fontFamily: "Poppins, sans-serif", fontSize: 10.5, color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)" }}>
+                        {sidebarXp.levelInfo?.rankTitle || "Creator"}
+                      </div>
+                    </div>
+                    <div style={{
+                      padding: "2px 7px", borderRadius: 99, background: "rgba(225, 73, 109, 0.15)",
+                      color: "#e1496d", fontSize: 9.5, fontFamily: "Poppins, sans-serif", fontWeight: 700,
+                    }}>
+                      Level {sidebarXp.levelInfo?.level || 1}
+                    </div>
+                  </div>
+
+                  {/* Mini XP Bar */}
+                  <div style={{ marginTop: 2 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9.5, fontFamily: "Poppins, sans-serif", color: isDark ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)", marginBottom: 3 }}>
+                      <span>{(sidebarXp.totalXp || 0).toLocaleString()} XP</span>
+                      <span>{sidebarXp.levelInfo?.progressPercent || 0}%</span>
+                    </div>
+                    <div style={{ height: 5, borderRadius: 99, background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%", width: `${sidebarXp.levelInfo?.progressPercent || 0}%`,
+                        background: "linear-gradient(90deg, #942945, #e1496d)", borderRadius: 99,
+                      }} />
+                    </div>
+                  </div>
+
+                  <div style={{ fontSize: 9.5, fontFamily: "Poppins, sans-serif", color: "#e1496d", fontWeight: 600, display: "flex", alignItems: "center", gap: 3, marginTop: 2 }}>
+                    Click to open Creator Identity Studio →
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <button
@@ -1406,402 +1526,40 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
             />
           </div>
         ) : activeNav === "pipelines" ? (
-          /* ── PIPELINES OVERVIEW & DETAIL PAGE — Keeps sidebar visible ── */
-          <div style={{ padding: "48px 48px 80px", minHeight: "100vh", maxWidth: "1440px", margin: "0 auto" }}>
-            
-            {/* Top Pipelines Header */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 20 }}>
-              <div>
-                <div style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "5px 14px", borderRadius: 99,
-                  background: isDark ? "rgba(168, 85, 247, 0.16)" : "rgba(255, 255, 255, 0.9)",
-                  border: `1px solid ${isDark ? "rgba(168, 85, 247, 0.35)" : "rgba(148, 41, 69, 0.2)"}`,
-                  marginBottom: 12,
-                }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#a855f7", boxShadow: "0 0 8px #a855f7" }} />
-                  <span style={{
-                    fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 700,
-                    letterSpacing: "0.08em", textTransform: "uppercase", color: isDark ? "#c084fc" : "#6b21a8",
-                  }}>
-                    AUTOMATION PIPELINES • BLUEPRINT ENGINE
-                  </span>
-                </div>
-
-                <h1 style={{
-                  fontFamily: "Syne, sans-serif", fontSize: "clamp(32px, 4.5vw, 48px)",
-                  fontWeight: 800, letterSpacing: "-0.04em", margin: "0 0 8px",
-                  color: colors.text,
-                }}>
-                  Visual Workflow <span style={{
-                    background: "linear-gradient(135deg, #a855f7 0%, #ff8da7 100%)",
-                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                  }}>Pipelines</span><span style={{ color: "#a855f7" }}>.</span>
-                </h1>
-                <p style={{ margin: 0, fontSize: 15, color: colors.textMuted, fontFamily: "'Instrument Sans', sans-serif", maxWidth: 680 }}>
-                  Design, test, and execute multi-agent creative pipelines. Connect text prompts to neural image diffusion, voice synthesis, and multi-track video timeline rendering.
-                </p>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <button
-                  onClick={() => onNavigate("pipelines")}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    background: "linear-gradient(135deg, #a855f7, #e1496d)",
-                    border: "none", borderRadius: 12, padding: "12px 24px", cursor: "pointer",
-                    color: "#fff", fontSize: 13.5, fontWeight: 700,
-                    fontFamily: "Syne, sans-serif", boxShadow: "0 8px 24px rgba(168,85,247,0.35)",
-                  }}
-                >
-                  <Zap size={16} /> Open Blueprint Canvas →
-                </button>
-              </div>
-            </div>
-
-            {/* Pipelines Stats */}
-            <div style={{
-              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: 16, marginBottom: 36,
-            }}>
-              {[
-                { label: "Active Pipelines", val: "4 Online", color: "#c084fc" },
-                { label: "Average Speed", val: "1.4s Run Time", color: "#38bdf8" },
-                { label: "Compute Engine", val: "WebGL / GPU Turbo", color: "#22d3a8" },
-                { label: "Execution Leak", val: "Zero (100% Client)", color: "#ff8da7" },
-              ].map((stat, sIdx) => (
-                <div key={sIdx} style={{
-                  padding: "16px 20px", borderRadius: 16,
-                  background: isDark ? "rgba(22, 9, 18, 0.65)" : "rgba(255, 255, 255, 0.85)",
-                  border: `1px solid ${isDark ? "rgba(168,85,247,0.2)" : "rgba(148,41,69,0.12)"}`,
-                }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
-                    {stat.label}
-                  </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: stat.color, fontFamily: "Syne, sans-serif" }}>
-                    {stat.val}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Production Blueprint Pipelines Grid */}
-            <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, fontWeight: 800, color: colors.text, margin: "0 0 20px" }}>
-              Production Blueprint Automations
-            </h2>
-
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-              gap: 24,
-            }}>
-              {[
-                {
-                  id: "pipe_1",
-                  title: "Prompt ➔ Viral TikTok / Reel Auto-Generator",
-                  tag: "Video · Audio · Diffusion",
-                  color: "#a855f7",
-                  desc: "Generates a 3-scene narrative screenplay from a prompt, synthesizes 4K diffusion keyframes, clones neural voiceover, and renders a ready-to-post MP4 video.",
-                  steps: ["Prompt Tokenizer", "Neural LLM Script", "Diffusion 4K", "Voice Synthesizer", "Video Stitcher"],
-                },
-                {
-                  id: "pipe_2",
-                  title: "E-Commerce 3D Product Mockup Suite",
-                  tag: "Packaging · 3D PBR · Batch",
-                  color: "#38bdf8",
-                  desc: "Batch-processes raw product photos, strips backgrounds with AI rembg, applies PBR surface reflections, and exports 4K multi-angle packaging renders.",
-                  steps: ["Asset Ingest", "Rembg AI", "3D Texture Map", "PBR Shaders", "4K Render"],
-                },
-                {
-                  id: "pipe_3",
-                  title: "Vector Brand Identity & Logomark Suite",
-                  tag: "Design System · Vector · SVG",
-                  color: "#e1496d",
-                  desc: "Converts brand keywords and company taglines into scalable SVG emblems, extracts harmonic color palettes, and generates complete brand styleguides.",
-                  steps: ["Brand Prompt", "Vector Logo AI", "Palette Extractor", "Styleguide Spec"],
-                },
-                {
-                  id: "pipe_4",
-                  title: "AI Podcast to Multi-Clip Video Snippets",
-                  tag: "Audio · Waveforms · Captions",
-                  color: "#22d3a8",
-                  desc: "Extracts key highlights from long-form audio tracks, adds real-time dynamic reactive waveforms, auto-generates captions, and outputs formatted video snippets.",
-                  steps: ["Audio File", "Waveform Generator", "Whisper Subtitles", "MP4 Exporter"],
-                },
-              ].map((pipe) => (
-                <div
-                  key={pipe.id}
-                  style={{
-                    borderRadius: 22, overflow: "hidden",
-                    background: isDark ? "rgba(22, 9, 18, 0.85)" : "rgba(255, 255, 255, 0.95)",
-                    border: `1.5px solid ${isDark ? "rgba(168,85,247,0.22)" : "rgba(148,41,69,0.12)"}`,
-                    boxShadow: isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)",
-                    padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between",
-                    transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = "translateY(-6px)";
-                    e.currentTarget.style.borderColor = pipe.color;
-                    e.currentTarget.style.boxShadow = `0 18px 40px ${pipe.color}35`;
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.borderColor = isDark ? "rgba(168,85,247,0.22)" : "rgba(148,41,69,0.12)";
-                    e.currentTarget.style.boxShadow = isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)";
-                  }}
-                >
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                      <span style={{
-                        fontSize: 10, padding: "3px 10px", borderRadius: 99,
-                        background: `${pipe.color}18`, color: pipe.color, fontWeight: 700,
-                        border: `1px solid ${pipe.color}35`, fontFamily: "'Poppins', sans-serif",
-                      }}>
-                        {pipe.tag}
-                      </span>
-                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: pipe.color }} />
-                    </div>
-
-                    <h3 style={{ margin: "0 0 8px", fontSize: 17, fontWeight: 800, color: colors.text, fontFamily: "Syne, sans-serif" }}>
-                      {pipe.title}
-                    </h3>
-
-                    <p style={{ margin: "0 0 18px", fontSize: 13, color: colors.textMuted, lineHeight: 1.5, fontFamily: "'Instrument Sans', sans-serif" }}>
-                      {pipe.desc}
-                    </p>
-
-                    {/* Step pills flow */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
-                      {pipe.steps.map((step, idx) => (
-                        <span key={idx} style={{
-                          fontSize: 10.5, padding: "3px 8px", borderRadius: 6,
-                          background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
-                          color: isDark ? "rgba(255,255,255,0.7)" : "#374151",
-                          fontFamily: "monospace",
-                        }}>
-                          {idx + 1}. {step}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => onNavigate("pipelines")}
-                    style={{
-                      width: "100%", padding: "10px 0", borderRadius: 12,
-                      background: `linear-gradient(135deg, ${pipe.color}, #942945)`,
-                      border: "none", color: "#fff", fontSize: 12.5, fontWeight: 700,
-                      fontFamily: "Syne, sans-serif", cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                    }}
-                  >
-                    <Zap size={14} /> Launch in Blueprint Canvas →
-                  </button>
-                </div>
-              ))}
-            </div>
-
+          /* ── EMBEDDED REAL PIPELINES STUDIO ── */
+          <div style={{ minHeight: "100vh" }}>
+            <WorkflowPipelines
+              onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onNavigate={onNavigate}
+              user={user}
+              isEmbedded={true}
+              isDark={isDark}
+            />
           </div>
         ) : activeNav === "mockup_studio" ? (
-          /* ── 3D MOCKUPS OVERVIEW & DETAIL PAGE — Keeps sidebar visible ── */
-          <div style={{ padding: "48px 48px 80px", minHeight: "100vh", maxWidth: "1440px", margin: "0 auto" }}>
-            
-            {/* Top 3D Mockups Header */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 20 }}>
-              <div>
-                <div style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "5px 14px", borderRadius: 99,
-                  background: isDark ? "rgba(56, 189, 248, 0.16)" : "rgba(255, 255, 255, 0.9)",
-                  border: `1px solid ${isDark ? "rgba(56, 189, 248, 0.35)" : "rgba(148, 41, 69, 0.2)"}`,
-                  marginBottom: 12,
-                }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#38bdf8", boxShadow: "0 0 8px #38bdf8" }} />
-                  <span style={{
-                    fontFamily: "'Poppins', sans-serif", fontSize: 11, fontWeight: 700,
-                    letterSpacing: "0.08em", textTransform: "uppercase", color: isDark ? "#7dd3fc" : "#0369a1",
-                  }}>
-                    WEBGL 3D VIEWPORT • THREE.JS STAGES
-                  </span>
-                </div>
-
-                <h1 style={{
-                  fontFamily: "Syne, sans-serif", fontSize: "clamp(32px, 4.5vw, 48px)",
-                  fontWeight: 800, letterSpacing: "-0.04em", margin: "0 0 8px",
-                  color: colors.text,
-                }}>
-                  3D Device & Packaging <span style={{
-                    background: "linear-gradient(135deg, #38bdf8 0%, #ff8da7 100%)",
-                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                  }}>Mockup Studio</span><span style={{ color: "#38bdf8" }}>.</span>
-                </h1>
-                <p style={{ margin: 0, fontSize: 15, color: colors.textMuted, fontFamily: "'Instrument Sans', sans-serif", maxWidth: 680 }}>
-                  Showcase your digital artwork, UI designs, and brand identities mapped in real-time onto photorealistic 3D hardware, apparel, and packaging.
-                </p>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <button
-                  onClick={() => onNavigate("mockup_studio")}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    background: "linear-gradient(135deg, #38bdf8, #942945)",
-                    border: "none", borderRadius: 12, padding: "12px 24px", cursor: "pointer",
-                    color: "#fff", fontSize: 13.5, fontWeight: 700,
-                    fontFamily: "Syne, sans-serif", boxShadow: "0 8px 24px rgba(56,189,248,0.35)",
-                  }}
-                >
-                  <Box size={16} /> Launch 3D WebGL Studio Viewport →
-                </button>
-              </div>
-            </div>
-
-            {/* 3D Stats */}
-            <div style={{
-              display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: 16, marginBottom: 36,
-            }}>
-              {[
-                { label: "Render Engine", val: "Three.js WebGL", color: "#38bdf8" },
-                { label: "Lighting Models", val: "PBR & Softbox HDR", color: "#e1496d" },
-                { label: "Export Quality", val: "4K PNG + 360° Spin", color: "#22d3a8" },
-                { label: "Texture Resolution", val: "Up to 4096px", color: "#ff8da7" },
-              ].map((stat, sIdx) => (
-                <div key={sIdx} style={{
-                  padding: "16px 20px", borderRadius: 16,
-                  background: isDark ? "rgba(22, 9, 18, 0.65)" : "rgba(255, 255, 255, 0.85)",
-                  border: `1px solid ${isDark ? "rgba(56,189,248,0.2)" : "rgba(148,41,69,0.12)"}`,
-                }}>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: colors.textMuted, fontFamily: "'Poppins', sans-serif", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
-                    {stat.label}
-                  </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: stat.color, fontFamily: "Syne, sans-serif" }}>
-                    {stat.val}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* 3D Stages Showcase Grid */}
-            <h2 style={{ fontFamily: "Syne, sans-serif", fontSize: 22, fontWeight: 800, color: colors.text, margin: "0 0 20px" }}>
-              Available 3D Stage Environments
-            </h2>
-
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-              gap: 24,
-            }}>
-              {[
-                {
-                  id: "stg_iphone",
-                  title: "iPhone 16 Pro Stage",
-                  category: "Hardware",
-                  tag: "Natural Titanium",
-                  color: "#e1496d",
-                  desc: "Curved aerospace titanium chassis with realistic Dynamic Island, screen texture mapping, and orbital softbox reflections.",
-                  specs: ["1080 × 2340 Screen", "PBR Titanium", "Curved Bevels"],
-                },
-                {
-                  id: "stg_macbook",
-                  title: "MacBook Pro M3 Stage",
-                  category: "Hardware",
-                  tag: "Space Black",
-                  color: "#38bdf8",
-                  desc: "Anodized aluminum unibody with Liquid Retina XDR display, glass specular highlights, and angled hinge rotation.",
-                  specs: ["16:10 Liquid Retina", "Space Black", "PBR Aluminum"],
-                },
-                {
-                  id: "stg_can",
-                  title: "Aluminum Beverage Can Packaging",
-                  category: "Packaging",
-                  tag: "PBR Metallic",
-                  color: "#ff8da7",
-                  desc: "Continuous cylindrical UV texture mapping with metallic reflections, customizable roughness, and rim lighting.",
-                  specs: ["Metallic Shaders", "360° Wrap", "Studio Rim Light"],
-                },
-                {
-                  id: "stg_glass",
-                  title: "Floating Frosted Glass Slab",
-                  category: "Showcase",
-                  tag: "Translucent Glass",
-                  color: "#22d3a8",
-                  desc: "High-refractive physical glass shader with translucent transmission, rainbow dispersion highlights, and floating badge elevation.",
-                  specs: ["Transmission Glass", "Refraction 1.5", "Beveled Edges"],
-                },
-              ].map((stage) => (
-                <div
-                  key={stage.id}
-                  style={{
-                    borderRadius: 22, overflow: "hidden",
-                    background: isDark ? "rgba(22, 9, 18, 0.85)" : "rgba(255, 255, 255, 0.95)",
-                    border: `1.5px solid ${isDark ? "rgba(56,189,248,0.22)" : "rgba(148,41,69,0.12)"}`,
-                    boxShadow: isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)",
-                    padding: 24, display: "flex", flexDirection: "column", justifyContent: "space-between",
-                    transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.transform = "translateY(-6px)";
-                    e.currentTarget.style.borderColor = stage.color;
-                    e.currentTarget.style.boxShadow = `0 18px 40px ${stage.color}35`;
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.borderColor = isDark ? "rgba(56,189,248,0.22)" : "rgba(148,41,69,0.12)";
-                    e.currentTarget.style.boxShadow = isDark ? "0 12px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(148,41,69,0.06)";
-                  }}
-                >
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                      <span style={{
-                        fontSize: 10, padding: "3px 10px", borderRadius: 99,
-                        background: `${stage.color}18`, color: stage.color, fontWeight: 700,
-                        border: `1px solid ${stage.color}35`, fontFamily: "'Poppins', sans-serif",
-                      }}>
-                        {stage.tag}
-                      </span>
-                      <Box size={16} color={stage.color} />
-                    </div>
-
-                    <h3 style={{ margin: "0 0 8px", fontSize: 17, fontWeight: 800, color: colors.text, fontFamily: "Syne, sans-serif" }}>
-                      {stage.title}
-                    </h3>
-
-                    <p style={{ margin: "0 0 18px", fontSize: 13, color: colors.textMuted, lineHeight: 1.5, fontFamily: "'Instrument Sans', sans-serif" }}>
-                      {stage.desc}
-                    </p>
-
-                    {/* Specs */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
-                      {stage.specs.map((sp, idx) => (
-                        <span key={idx} style={{
-                          fontSize: 10.5, padding: "3px 8px", borderRadius: 6,
-                          background: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)",
-                          color: isDark ? "rgba(255,255,255,0.7)" : "#374151",
-                          fontFamily: "monospace",
-                        }}>
-                          • {sp}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => onNavigate("mockup_studio")}
-                    style={{
-                      width: "100%", padding: "10px 0", borderRadius: 12,
-                      background: `linear-gradient(135deg, ${stage.color}, #942945)`,
-                      border: "none", color: "#fff", fontSize: 12.5, fontWeight: 700,
-                      fontFamily: "Syne, sans-serif", cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-                    }}
-                  >
-                    <Box size={14} /> Customize in 3D Viewport →
-                  </button>
-                </div>
-              ))}
-            </div>
-
+          /* ── EMBEDDED REAL 3D MOCKUP STUDIO ── */
+          <div style={{ minHeight: "100vh" }}>
+            <MockupStudio
+              onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onNavigate={onNavigate}
+              user={user}
+              isEmbedded={true}
+              isDark={isDark}
+            />
+          </div>
+        ) : activeNav === "profile" ? (
+          /* ── EMBEDDED PROFILE PAGE — keeps main sidebar visible ── */
+          <div style={{ minHeight: "100vh" }}>
+            <ProfilePage
+              embedded
+              user={user}
+              onSignOut={onSignOut}
+              theme={isDark ? "dark" : "light"}
+              onToggleTheme={(t) => { if (window.__creatifyToggleTheme) window.__creatifyToggleTheme(t); }}
+              onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              isDark={isDark}
+              THEME={THEME}
+            />
           </div>
         ) : (
           <>
@@ -1909,9 +1667,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
               style={{
                 position: "relative",
                 width: "100%",
-                maxWidth: "960px",
-                height: "420px",
-                margin: "0 auto 20px",
+                maxWidth: "1000px",
+                height: "440px",
+                margin: "0 auto 24px",
               }}
             >
               {infiniteStudioCards.map((f, i) => {
@@ -1928,26 +1686,29 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                       inset: 0,
                       padding: "32px 36px",
                       borderRadius: "28px",
-                      background: isDark ? "rgba(22, 8, 17, 0.92)" : "rgba(255, 255, 255, 0.97)",
-                      border: `1.5px solid ${isActive ? "rgba(225, 73, 109, 0.55)" : "rgba(225, 73, 109, 0.15)"}`,
+                      background: isDark 
+                        ? "linear-gradient(145deg, rgba(28, 9, 21, 0.96) 0%, rgba(15, 4, 11, 0.98) 100%)" 
+                        : "linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(253, 245, 248, 0.96) 100%)",
+                      border: `1.5px solid ${isActive ? "rgba(225, 73, 109, 0.45)" : "rgba(225, 73, 109, 0.12)"}`,
                       boxShadow: isActive
                         ? isDark
-                          ? "0 28px 70px rgba(0, 0, 0, 0.75), 0 0 50px rgba(225, 73, 109, 0.22)"
-                          : "0 24px 60px rgba(148, 41, 69, 0.16), 0 0 35px rgba(225, 73, 109, 0.14)"
+                          ? "0 32px 80px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255,255,255,0.12), 0 0 50px rgba(225, 73, 109, 0.22)"
+                          : "0 28px 70px rgba(148, 41, 69, 0.14), inset 0 1px 0 rgba(255,255,255,0.9), 0 0 40px rgba(225, 73, 109, 0.12)"
                         : "none",
                       backdropFilter: "blur(28px)",
-                      transition: "all 0.65s cubic-bezier(0.16, 1, 0.3, 1)",
+                      willChange: "transform, opacity, filter",
+                      transition: "opacity 0.75s cubic-bezier(0.2, 0.9, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.9, 0.2, 1), filter 0.65s cubic-bezier(0.2, 0.9, 0.2, 1)",
                       opacity: isActive ? 1 : 0,
                       transform: isActive
-                        ? "translateY(0px) scale(1)"
+                        ? "translate3d(0, 0px, 0) scale(1)"
                         : isPast
-                          ? "translateY(-70px) scale(0.94)"
-                          : "translateY(70px) scale(0.94)",
-                      filter: isActive ? "blur(0px)" : "blur(6px)",
+                          ? "translate3d(0, -32px, 0) scale(0.97)"
+                          : "translate3d(0, 32px, 0) scale(0.97)",
+                      filter: isActive ? "blur(0px)" : "blur(8px)",
                       pointerEvents: isActive ? "auto" : "none",
                       display: "grid",
-                      gridTemplateColumns: "1.1fr 1fr",
-                      gap: "28px",
+                      gridTemplateColumns: "1.05fr 1.15fr",
+                      gap: "32px",
                       alignItems: "center",
                       textAlign: "left",
                     }}
@@ -1955,60 +1716,108 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                     {/* LEFT COLUMN: Feature Info & Detailed Capabilities */}
                     <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: "100%" }}>
                       <div>
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                        {/* Top Header Strip */}
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
                           <div
                             style={{
-                              width: "46px",
-                              height: "46px",
+                              width: "48px",
+                              height: "48px",
                               borderRadius: "14px",
                               background: f.gradient,
-                              border: "1px solid rgba(225,73,109,0.35)",
+                              border: "1.5px solid rgba(225,73,109,0.35)",
+                              boxShadow: `0 6px 18px ${isDark ? "rgba(0,0,0,0.4)" : "rgba(225,73,109,0.15)"}`,
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
                             }}
                           >
-                            <IconComp size={22} color={f.iconColor} />
+                            <IconComp size={23} color={f.iconColor} />
                           </div>
-                          <span
-                            style={{
+                          
+                          <div style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "4px 14px",
+                            borderRadius: 99,
+                            background: isDark ? "rgba(225, 73, 109, 0.12)" : "rgba(225, 73, 109, 0.08)",
+                            border: "1px solid rgba(225, 73, 109, 0.25)",
+                          }}>
+                            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#e1496d" }} />
+                            <span style={{
                               fontSize: "11px",
                               fontWeight: 700,
-                              color: "#ff8da7",
-                              background: "rgba(225,73,109,0.15)",
-                              padding: "4px 12px",
-                              borderRadius: 99,
-                              letterSpacing: "0.03em",
-                              border: "1px solid rgba(225,73,109,0.28)",
-                            }}
-                          >
-                            {f.tag}
-                          </span>
+                              fontFamily: "Syne, sans-serif",
+                              color: "#e1496d",
+                              letterSpacing: "0.04em",
+                              textTransform: "uppercase",
+                            }}>
+                              {f.tag}
+                            </span>
+                          </div>
                         </div>
 
-                        <div style={{ fontSize: "11px", fontWeight: 800, color: "#e1496d", letterSpacing: "0.08em", marginBottom: "4px", textTransform: "uppercase" }}>
+                        {/* Feature Number Label */}
+                        <div style={{ 
+                          fontSize: "11.5px", 
+                          fontWeight: 800, 
+                          color: "#e1496d", 
+                          letterSpacing: "0.08em", 
+                          marginBottom: "6px", 
+                          textTransform: "uppercase",
+                          fontFamily: "Syne, sans-serif",
+                        }}>
                           Feature {f.num} of 05
                         </div>
 
-                        <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: "23px", fontWeight: 800, color: colors.text, marginBottom: "8px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+                        {/* Title */}
+                        <h3 style={{ 
+                          fontFamily: "Syne, sans-serif", 
+                          fontSize: "24px", 
+                          fontWeight: 800, 
+                          color: colors.text, 
+                          marginBottom: "10px", 
+                          letterSpacing: "-0.025em", 
+                          lineHeight: 1.18 
+                        }}>
                           {f.title}
                         </h3>
 
-                        <p style={{ fontSize: "13px", color: colors.textMuted, lineHeight: 1.5, fontFamily: "'Instrument Sans', sans-serif", margin: "0 0 14px" }}>
+                        {/* Description */}
+                        <p style={{ 
+                          fontSize: "13.5px", 
+                          color: colors.textMuted, 
+                          lineHeight: 1.55, 
+                          fontFamily: "'Instrument Sans', sans-serif", 
+                          margin: "0 0 16px" 
+                        }}>
                           {f.desc}
                         </p>
 
-                        {/* Capabilities List */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                        {/* Capabilities Checklist with Custom Check Icon Badges */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                           {f.capabilities.map((cap, capIdx) => (
-                            <div key={capIdx} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "11.5px", color: isDark ? "rgba(255,255,255,0.85)" : "#374151" }}>
-                              <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#e1496d" }} />
-                              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 500 }}>{cap}</span>
+                            <div key={capIdx} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: "12px", color: isDark ? "rgba(255,255,255,0.9)" : "#374151" }}>
+                              <div style={{ 
+                                width: 16, 
+                                height: 16, 
+                                borderRadius: 5, 
+                                background: isDark ? "rgba(225, 73, 109, 0.2)" : "rgba(225, 73, 109, 0.12)", 
+                                border: "1px solid rgba(225, 73, 109, 0.35)", 
+                                display: "flex", 
+                                alignItems: "center", 
+                                justifyContent: "center",
+                                flexShrink: 0,
+                              }}>
+                                <Check size={10} color="#e1496d" strokeWidth={3} />
+                              </div>
+                              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600 }}>{cap}</span>
                             </div>
                           ))}
                         </div>
                       </div>
 
+                      {/* Action Button */}
                       <button
                         onClick={() => {
                           if (!user) return onNavigate("auth", "signup");
@@ -2016,171 +1825,408 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                         }}
                         style={{
                           alignSelf: "flex-start",
-                          marginTop: 14,
-                          padding: "9px 20px",
+                          marginTop: 16,
+                          padding: "10px 22px",
                           borderRadius: "12px",
-                          background: "linear-gradient(135deg, #e1496d, #942945)",
-                          border: "none",
+                          background: "linear-gradient(135deg, #e1496d 0%, #942945 100%)",
+                          border: "1px solid rgba(255,255,255,0.2)",
                           color: "#fff",
                           fontSize: "12.5px",
-                          fontWeight: 700,
+                          fontWeight: 800,
                           fontFamily: "Syne, sans-serif",
+                          letterSpacing: "0.02em",
                           cursor: "pointer",
                           display: "inline-flex",
                           alignItems: "center",
-                          gap: 6,
+                          gap: 8,
+                          boxShadow: "0 6px 18px rgba(225, 73, 109, 0.35)",
                           transition: "all 0.25s ease",
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = "none"}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "translateY(-2px)";
+                          e.currentTarget.style.boxShadow = "0 10px 24px rgba(225, 73, 109, 0.5)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "none";
+                          e.currentTarget.style.boxShadow = "0 6px 18px rgba(225, 73, 109, 0.35)";
+                        }}
                       >
                         <span>Open in Studio</span>
-                        <span>→</span>
+                        <ArrowRight size={14} />
                       </button>
                     </div>
 
-                    {/* RIGHT COLUMN: Live Interactive Mockup Visual */}
+                    {/* RIGHT COLUMN: Live Interactive Mockup Visual Stage */}
                     <div
                       style={{
                         height: "100%",
-                        borderRadius: "20px",
-                        background: isDark ? "rgba(10, 3, 8, 0.7)" : "rgba(245, 235, 240, 0.75)",
-                        border: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.15)"}`,
-                        padding: "18px",
+                        borderRadius: "22px",
+                        background: isDark ? "#0e040b" : "#ffffff",
+                        border: `1.5px solid ${isDark ? "rgba(225,73,109,0.25)" : "rgba(148,41,69,0.18)"}`,
+                        boxShadow: isDark 
+                          ? "0 16px 40px rgba(0,0,0,0.5), inset 0 0 30px rgba(0,0,0,0.4)" 
+                          : "0 14px 36px rgba(148,41,69,0.08), inset 0 0 30px rgba(245,235,240,0.5)",
                         position: "relative",
                         overflow: "hidden",
                         display: "flex",
                         flexDirection: "column",
-                        justifyContent: "center",
+                        backgroundImage: isDark
+                          ? "radial-gradient(circle, rgba(225, 73, 109, 0.12) 1px, transparent 1px)"
+                          : "radial-gradient(circle, rgba(148, 41, 69, 0.08) 1px, transparent 1px)",
+                        backgroundSize: "16px 16px",
                       }}
                     >
+                      {/* Top Canvas Bar */}
+                      <div style={{
+                        padding: "10px 16px",
+                        borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        background: isDark ? "rgba(22, 7, 17, 0.6)" : "rgba(250, 240, 245, 0.6)",
+                        backdropFilter: "blur(10px)",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b" }} />
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981" }} />
+                          <span style={{ fontSize: "10.5px", fontWeight: 700, color: colors.textMuted, marginLeft: 8, fontFamily: "Syne, sans-serif" }}>
+                            {f.tag} • Live Viewport
+                          </span>
+                        </div>
+                        <div style={{
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          color: "#10b981",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                        }}>
+                          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 6px #10b981" }} />
+                          <span>ACTIVE</span>
+                        </div>
+                      </div>
+
+                      {/* ── DEMO 1: SPATIAL INFINITE NODE GRAPH WITH BEZIER SPLINES ── */}
                       {f.demoType === "nodes" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 12, position: "relative" }}>
-                          {/* Node 1 */}
-                          <div style={{ padding: "10px 14px", borderRadius: 10, background: isDark ? "#1e0b17" : "#fff", border: "1px solid rgba(225,73,109,0.35)", width: "65%", boxShadow: "0 4px 14px rgba(0,0,0,0.2)" }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: "#ff8da7", textTransform: "uppercase" }}>Input Node</div>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: colors.text }}>User Prompt & Assets</div>
-                          </div>
-                          {/* Node 2 */}
-                          <div style={{ padding: "10px 14px", borderRadius: 10, background: isDark ? "#280d1f" : "#fff", border: "1.5px solid #e1496d", width: "70%", alignSelf: "flex-end", boxShadow: "0 6px 20px rgba(225,73,109,0.25)" }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: "#22d3a8", textTransform: "uppercase" }}>✦ Neural Engine</div>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: colors.text }}>Executable React Canvas</div>
-                          </div>
-                          {/* Node 3 */}
-                          <div style={{ padding: "10px 14px", borderRadius: 10, background: isDark ? "#1e0b17" : "#fff", border: "1px solid rgba(225,73,109,0.35)", width: "60%", boxShadow: "0 4px 14px rgba(0,0,0,0.2)" }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: "#38bdf8", textTransform: "uppercase" }}>Export Port</div>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: colors.text }}>Clean Production Code</div>
-                          </div>
-                        </div>
-                      )}
+                        <div style={{ position: "relative", flex: 1, padding: "20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                          {/* Real SVG Bezier Cable Connectors */}
+                          <svg
+                            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 1 }}
+                          >
+                            {/* Cable 1: Input to Neural Engine */}
+                            <path
+                              d="M 175 60 C 230 60, 180 140, 240 140"
+                              fill="none"
+                              stroke="#e1496d"
+                              strokeWidth="2.5"
+                              strokeDasharray="6 4"
+                            />
+                            {/* Cable 2: Neural Engine to Export */}
+                            <path
+                              d="M 370 140 C 390 140, 210 220, 250 220"
+                              fill="none"
+                              stroke="#38bdf8"
+                              strokeWidth="2.5"
+                            />
+                          </svg>
 
-                      {f.demoType === "code" && (
-                        <div style={{ fontFamily: "monospace", fontSize: 11, color: isDark ? "#e2e8f0" : "#1e293b", display: "flex", flexDirection: "column", gap: 6 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, paddingBottom: 6, borderBottom: "1px solid rgba(225,73,109,0.2)" }}>
-                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
-                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#f59e0b" }} />
-                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981" }} />
-                            <span style={{ fontSize: 10, color: colors.textMuted, marginLeft: 6 }}>LiveComponent.jsx</span>
-                          </div>
-                          <div><span style={{ color: "#e1496d" }}>export default</span> <span style={{ color: "#38bdf8" }}>function</span> <span style={{ color: "#facc15" }}>Artboard</span>() &#123;</div>
-                          <div style={{ paddingLeft: 12 }}><span style={{ color: "#e1496d" }}>return</span> (</div>
-                          <div style={{ paddingLeft: 24, color: "#38bdf8" }}>&lt;<span style={{ color: "#ff8da7" }}>div</span> <span style={{ color: "#22d3a8" }}>className</span>=<span style={{ color: "#a855f7" }}>"canvas-node"</span>&gt;</div>
-                          <div style={{ paddingLeft: 36, color: "#facc15" }}>&lt;InteractiveDOM /&gt;</div>
-                          <div style={{ paddingLeft: 24, color: "#38bdf8" }}>&lt;/<span style={{ color: "#ff8da7" }}>div</span>&gt;</div>
-                          <div style={{ paddingLeft: 12 }}>);</div>
-                          <div>&#125;</div>
-                        </div>
-                      )}
-
-                      {f.demoType === "ai" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          <div style={{ padding: "8px 12px", borderRadius: 10, background: isDark ? "rgba(225,73,109,0.18)" : "#fff", border: "1px solid rgba(225,73,109,0.3)", fontSize: 11, color: colors.text, display: "flex", alignItems: "center", gap: 6 }}>
-                            <span>✨</span>
-                            <span style={{ fontWeight: 600 }}>"Generate 3-tier Pricing Table"</span>
-                          </div>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                            <div style={{ padding: 10, borderRadius: 10, background: isDark ? "#1b0a14" : "#fff", border: "1px solid rgba(225,73,109,0.25)", textAlign: "center" }}>
-                              <div style={{ fontSize: 9, color: "#ff8da7", fontWeight: 700 }}>PRO TIER</div>
-                              <div style={{ fontSize: 14, fontWeight: 800, color: colors.text }}>$29/mo</div>
-                            </div>
-                            <div style={{ padding: 10, borderRadius: 10, background: isDark ? "#280d1f" : "#fff", border: "1.5px solid #e1496d", textAlign: "center" }}>
-                              <div style={{ fontSize: 9, color: "#22d3a8", fontWeight: 700 }}>ENTERPRISE</div>
-                              <div style={{ fontSize: 14, fontWeight: 800, color: colors.text }}>$99/mo</div>
-                            </div>
-                          </div>
-                          <div style={{ fontSize: 10, color: "#22d3a8", textAlign: "center", fontWeight: 600 }}>
-                            ✓ 18 DOM Nodes Generated with Flexbox Auto-Layout
-                          </div>
-                        </div>
-                      )}
-
-                      {f.demoType === "collab" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          {/* Live Canvas Mock with Presence Cursors */}
+                          {/* Node 1: Input Node */}
                           <div style={{
-                            padding: "12px", borderRadius: 12,
-                            background: isDark ? "#180612" : "#fff",
-                            border: "1px solid rgba(16, 185, 129, 0.35)",
-                            position: "relative", minHeight: 120,
-                            display: "flex", flexDirection: "column", justifyContent: "space-between"
+                            position: "relative",
+                            zIndex: 2,
+                            width: "165px",
+                            borderRadius: 12,
+                            background: isDark ? "#1f0918" : "#ffffff",
+                            border: "1.5px solid rgba(225,73,109,0.35)",
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+                            overflow: "hidden",
                           }}>
-                            {/* Cursor 1: Alex */}
-                            <div style={{ position: "absolute", top: 18, left: 24, display: "flex", alignItems: "center", gap: 4 }}>
-                              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 8px #10b981" }} />
-                              <span style={{ fontSize: 9.5, padding: "2px 6px", borderRadius: 4, background: "#10b981", color: "#fff", fontWeight: 700 }}>
+                            <div style={{ padding: "5px 10px", background: "rgba(225,73,109,0.2)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: "9px", fontWeight: 800, color: "#ff8da7", textTransform: "uppercase" }}>Input Node</span>
+                              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#ff8da7" }} />
+                            </div>
+                            <div style={{ padding: "8px 10px", fontSize: "11px", fontWeight: 600, color: colors.text }}>
+                              Prompt & UI Assets
+                            </div>
+                            {/* Right Port Pin */}
+                            <div style={{ position: "absolute", right: -5, top: "50%", transform: "translateY(-50%)", width: 10, height: 10, borderRadius: "50%", background: "#e1496d", border: "2px solid #fff", boxShadow: "0 0 6px #e1496d" }} />
+                          </div>
+
+                          {/* Node 2: Neural Engine (Center Highlighted) */}
+                          <div style={{
+                            position: "relative",
+                            zIndex: 2,
+                            width: "210px",
+                            alignSelf: "flex-end",
+                            borderRadius: 14,
+                            background: isDark ? "#280b1e" : "#ffffff",
+                            border: "2px solid #e1496d",
+                            boxShadow: "0 12px 32px rgba(225,73,109,0.35)",
+                            overflow: "hidden",
+                          }}>
+                            {/* Left Port Pin */}
+                            <div style={{ position: "absolute", left: -5, top: "50%", transform: "translateY(-50%)", width: 10, height: 10, borderRadius: "50%", background: "#e1496d", border: "2px solid #fff", boxShadow: "0 0 6px #e1496d" }} />
+                            
+                            <div style={{ padding: "6px 12px", background: "linear-gradient(90deg, rgba(225,73,109,0.3), rgba(34,211,168,0.2))", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: "9.5px", fontWeight: 800, color: "#22d3a8", textTransform: "uppercase" }}>✦ Neural Engine</span>
+                              <span style={{ fontSize: "8.5px", padding: "1px 5px", borderRadius: 4, background: "rgba(34,211,168,0.25)", color: "#22d3a8", fontWeight: 700 }}>8ms</span>
+                            </div>
+                            <div style={{ padding: "8px 12px", fontSize: "11.5px", fontWeight: 700, color: colors.text }}>
+                              Executable React Canvas
+                            </div>
+                            
+                            {/* Right Port Pin */}
+                            <div style={{ position: "absolute", right: -5, top: "50%", transform: "translateY(-50%)", width: 10, height: 10, borderRadius: "50%", background: "#38bdf8", border: "2px solid #fff", boxShadow: "0 0 6px #38bdf8" }} />
+                          </div>
+
+                          {/* Node 3: Export Node */}
+                          <div style={{
+                            position: "relative",
+                            zIndex: 2,
+                            width: "175px",
+                            borderRadius: 12,
+                            background: isDark ? "#1f0918" : "#ffffff",
+                            border: "1.5px solid rgba(56,189,248,0.35)",
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+                            overflow: "hidden",
+                          }}>
+                            {/* Left Port Pin */}
+                            <div style={{ position: "absolute", left: -5, top: "50%", transform: "translateY(-50%)", width: 10, height: 10, borderRadius: "50%", background: "#38bdf8", border: "2px solid #fff", boxShadow: "0 0 6px #38bdf8" }} />
+                            
+                            <div style={{ padding: "5px 10px", background: "rgba(56,189,248,0.18)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: "9px", fontWeight: 800, color: "#38bdf8", textTransform: "uppercase" }}>Export Port</span>
+                              <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#38bdf8" }} />
+                            </div>
+                            <div style={{ padding: "8px 10px", fontSize: "11px", fontWeight: 600, color: colors.text }}>
+                              Clean Production Code
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ── DEMO 2: LIVE CODE-TO-CANVAS REACT DOM ── */}
+                      {f.demoType === "code" && (
+                        <div style={{ flex: 1, padding: "16px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                          <div style={{
+                            fontFamily: "'Fira Code', 'Courier New', monospace",
+                            fontSize: "11.5px",
+                            lineHeight: 1.7,
+                            display: "flex",
+                            flexDirection: "column",
+                            color: isDark ? "#e2e8f0" : "#1e293b",
+                          }}>
+                            <div style={{ display: "flex", gap: 12 }}>
+                              <span style={{ color: "#64748b", userSelect: "none" }}>1</span>
+                              <div><span style={{ color: "#e1496d", fontWeight: 700 }}>export default function</span> <span style={{ color: "#38bdf8", fontWeight: 700 }}>Artboard</span>() &#123;</div>
+                            </div>
+                            <div style={{ display: "flex", gap: 12 }}>
+                              <span style={{ color: "#64748b", userSelect: "none" }}>2</span>
+                              <div style={{ paddingLeft: 12 }}><span style={{ color: "#e1496d", fontWeight: 700 }}>return</span> (</div>
+                            </div>
+                            <div style={{ display: "flex", gap: 12, background: isDark ? "rgba(225,73,109,0.15)" : "rgba(225,73,109,0.08)", borderRadius: 4 }}>
+                              <span style={{ color: "#e1496d", fontWeight: 700, userSelect: "none" }}>3</span>
+                              <div style={{ paddingLeft: 24, color: "#38bdf8" }}>
+                                &lt;<span style={{ color: "#ff8da7", fontWeight: 700 }}>div</span> <span style={{ color: "#22d3a8" }}>className</span>=<span style={{ color: "#a855f7" }}>"canvas-node"</span>&gt;
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", gap: 12 }}>
+                              <span style={{ color: "#64748b", userSelect: "none" }}>4</span>
+                              <div style={{ paddingLeft: 36, color: "#facc15", fontWeight: 600 }}>&lt;InteractiveDOM autoSync /&gt;</div>
+                            </div>
+                            <div style={{ display: "flex", gap: 12 }}>
+                              <span style={{ color: "#64748b", userSelect: "none" }}>5</span>
+                              <div style={{ paddingLeft: 24, color: "#38bdf8" }}>&lt;/<span style={{ color: "#ff8da7", fontWeight: 700 }}>div</span>&gt;</div>
+                            </div>
+                            <div style={{ display: "flex", gap: 12 }}>
+                              <span style={{ color: "#64748b", userSelect: "none" }}>6</span>
+                              <div style={{ paddingLeft: 12 }}>);</div>
+                            </div>
+                            <div style={{ display: "flex", gap: 12 }}>
+                              <span style={{ color: "#64748b", userSelect: "none" }}>7</span>
+                              <div>&#125;</div>
+                            </div>
+                          </div>
+
+                          <div style={{
+                            padding: "8px 12px",
+                            borderRadius: 10,
+                            background: isDark ? "rgba(34,211,168,0.12)" : "rgba(34,211,168,0.1)",
+                            border: "1px solid rgba(34,211,168,0.3)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            color: "#10b981",
+                          }}>
+                            <span>✓ React 18 HMR Compilation Active</span>
+                            <span>0 Errors</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ── DEMO 3: NEURAL PROMPT-TO-LAYOUT SYNTHESIS ── */}
+                      {f.demoType === "ai" && (
+                        <div style={{ flex: 1, padding: "16px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                          {/* AI Prompt Input Bar */}
+                          <div style={{
+                            padding: "8px 14px",
+                            borderRadius: 12,
+                            background: isDark ? "rgba(225,73,109,0.15)" : "rgba(255,255,255,0.9)",
+                            border: "1.5px solid rgba(225,73,109,0.4)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            boxShadow: "0 4px 14px rgba(225,73,109,0.15)",
+                          }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "11.5px", color: colors.text, fontWeight: 600 }}>
+                              <Sparkles size={14} color="#e1496d" />
+                              <span>"Build a responsive SaaS pricing grid"</span>
+                            </div>
+                            <span style={{ fontSize: "9.5px", padding: "2px 8px", borderRadius: 99, background: "rgba(168,85,247,0.2)", color: "#c084fc", fontWeight: 800 }}>
+                              AI Synth
+                            </span>
+                          </div>
+
+                          {/* Synthesized Live Pricing Cards */}
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                            <div style={{
+                              padding: "12px",
+                              borderRadius: 14,
+                              background: isDark ? "#1c0915" : "#fff",
+                              border: "1px solid rgba(225,73,109,0.25)",
+                              boxShadow: "0 6px 18px rgba(0,0,0,0.2)",
+                            }}>
+                              <div style={{ fontSize: "9px", color: "#ff8da7", fontWeight: 800, textTransform: "uppercase" }}>Developer</div>
+                              <div style={{ fontSize: "16px", fontWeight: 900, color: colors.text, margin: "2px 0 6px" }}>$19<span style={{ fontSize: "10px", color: colors.textMuted }}>/mo</span></div>
+                              <div style={{ fontSize: "9.5px", color: "#10b981", fontWeight: 600 }}>✓ 10 Canvas Workspaces</div>
+                            </div>
+                            
+                            <div style={{
+                              padding: "12px",
+                              borderRadius: 14,
+                              background: isDark ? "#2a0d20" : "#fff",
+                              border: "1.5px solid #e1496d",
+                              boxShadow: "0 8px 24px rgba(225,73,109,0.25)",
+                            }}>
+                              <div style={{ fontSize: "9px", color: "#22d3a8", fontWeight: 800, textTransform: "uppercase" }}>✦ Enterprise</div>
+                              <div style={{ fontSize: "16px", fontWeight: 900, color: colors.text, margin: "2px 0 6px" }}>$89<span style={{ fontSize: "10px", color: colors.textMuted }}>/mo</span></div>
+                              <div style={{ fontSize: "9.5px", color: "#22d3a8", fontWeight: 600 }}>✓ Unlimited Nodes & CRDT</div>
+                            </div>
+                          </div>
+
+                          <div style={{
+                            padding: "6px 12px",
+                            borderRadius: 8,
+                            background: isDark ? "rgba(34,211,168,0.1)" : "rgba(34,211,168,0.08)",
+                            fontSize: "10.5px",
+                            color: "#10b981",
+                            fontWeight: 700,
+                            textAlign: "center",
+                          }}>
+                            ✓ 18 DOM Nodes Generated with Flexbox Hierarchy in 380ms
+                          </div>
+                        </div>
+                      )}
+
+                      {/* ── DEMO 4: REAL-TIME MULTIPLAYER CRDT SPATIAL SYNC ── */}
+                      {f.demoType === "collab" && (
+                        <div style={{ flex: 1, padding: "16px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                          {/* Live Presence Workspace with Bounding Box and Cursors */}
+                          <div style={{
+                            position: "relative",
+                            height: "140px",
+                            borderRadius: 14,
+                            background: isDark ? "#190714" : "#ffffff",
+                            border: "1.5px solid rgba(16,185,129,0.35)",
+                            boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                            padding: "16px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}>
+                            {/* Active Element Selection Box (Locked by Alex) */}
+                            <div style={{
+                              padding: "8px 16px",
+                              borderRadius: 10,
+                              background: isDark ? "#240a1b" : "rgba(16,185,129,0.08)",
+                              border: "1.5px dashed #10b981",
+                              textAlign: "center",
+                            }}>
+                              <div style={{ fontSize: "11.5px", fontWeight: 800, color: colors.text }}>
+                                HeroSection.jsx
+                              </div>
+                              <div style={{ fontSize: "9.5px", color: "#10b981", fontWeight: 600, marginTop: 2 }}>
+                                Locked by Alex (Live Editing)
+                              </div>
+                            </div>
+
+                            {/* Multiplayer Cursor 1: Alex */}
+                            <div style={{ position: "absolute", top: 18, left: 24, display: "flex", alignItems: "center", gap: 6 }}>
+                              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} />
+                              <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: 99, background: "#10b981", color: "#fff", fontWeight: 800 }}>
                                 Alex (Lead)
                               </span>
                             </div>
 
-                            {/* Cursor 2: Sam */}
-                            <div style={{ position: "absolute", bottom: 22, right: 30, display: "flex", alignItems: "center", gap: 4 }}>
-                              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#38bdf8", boxShadow: "0 0 8px #38bdf8" }} />
-                              <span style={{ fontSize: 9.5, padding: "2px 6px", borderRadius: 4, background: "#38bdf8", color: "#000", fontWeight: 700 }}>
+                            {/* Multiplayer Cursor 2: Sam */}
+                            <div style={{ position: "absolute", bottom: 18, right: 28, display: "flex", alignItems: "center", gap: 6 }}>
+                              <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#38bdf8", boxShadow: "0 0 10px #38bdf8" }} />
+                              <span style={{ fontSize: "10px", padding: "2px 8px", borderRadius: 99, background: "#38bdf8", color: "#000", fontWeight: 800 }}>
                                 Sam (Dev)
                               </span>
                             </div>
-
-                            <div style={{ textAlign: "center", padding: "16px 0" }}>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: "#10b981" }}>CRDT Spatial Session #4821</div>
-                              <div style={{ fontSize: 9.5, color: colors.textMuted, marginTop: 2 }}>Sub-10ms Latency • 0 Conflicts</div>
-                            </div>
                           </div>
 
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#10b981", fontWeight: 600 }}>
-                            <span>● Live Peer Sync</span>
-                            <span>Granular Object Locking Active</span>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11px", color: "#10b981", fontWeight: 700 }}>
+                            <span>● CRDT Spatial Session #4821</span>
+                            <span>Latency: 3.8ms • 0 Conflicts</span>
                           </div>
                         </div>
                       )}
 
+                      {/* ── DEMO 5: UNIVERSAL PRODUCTION EXPORT CONSOLE ── */}
                       {f.demoType === "export" && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: "#f59e0b", textTransform: "uppercase" }}>
-                            Universal Export Console
-                          </div>
-                          
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                            <div style={{ padding: "6px 10px", borderRadius: 8, background: isDark ? "rgba(245,158,11,0.12)" : "#fff", border: "1px solid rgba(245,158,11,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <span style={{ fontSize: 10.5, fontWeight: 700, color: colors.text }}>SVG Vector</span>
-                              <span style={{ fontSize: 9, color: "#10b981", fontWeight: 700 }}>✓ READY</span>
+                        <div style={{ flex: 1, padding: "16px 20px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                          {/* 4 Format Selector Cards */}
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                            <div style={{ padding: "8px 12px", borderRadius: 10, background: isDark ? "#1f0918" : "#fff", border: "1.5px solid rgba(245,158,11,0.35)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: "11px", fontWeight: 800, color: colors.text }}>SVG Vector</span>
+                              <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: 4, background: "rgba(16,185,129,0.2)", color: "#10b981", fontWeight: 800 }}>READY</span>
                             </div>
-                            <div style={{ padding: "6px 10px", borderRadius: 8, background: isDark ? "rgba(245,158,11,0.12)" : "#fff", border: "1px solid rgba(245,158,11,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <span style={{ fontSize: 10.5, fontWeight: 700, color: colors.text }}>4K Alpha Video</span>
-                              <span style={{ fontSize: 9, color: "#10b981", fontWeight: 700 }}>✓ 60FPS</span>
+                            
+                            <div style={{ padding: "8px 12px", borderRadius: 10, background: isDark ? "#1f0918" : "#fff", border: "1.5px solid rgba(245,158,11,0.35)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: "11px", fontWeight: 800, color: colors.text }}>4K WebM Video</span>
+                              <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: 4, background: "rgba(16,185,129,0.2)", color: "#10b981", fontWeight: 800 }}>60FPS</span>
                             </div>
-                            <div style={{ padding: "6px 10px", borderRadius: 8, background: isDark ? "rgba(245,158,11,0.12)" : "#fff", border: "1px solid rgba(245,158,11,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <span style={{ fontSize: 10.5, fontWeight: 700, color: colors.text }}>React JSX</span>
-                              <span style={{ fontSize: 9, color: "#38bdf8", fontWeight: 700 }}>✓ TAILWIND</span>
+
+                            <div style={{ padding: "8px 12px", borderRadius: 10, background: isDark ? "#280b1e" : "#fff", border: "1.5px solid #e1496d", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: "11px", fontWeight: 800, color: colors.text }}>React JSX</span>
+                              <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: 4, background: "rgba(56,189,248,0.2)", color: "#38bdf8", fontWeight: 800 }}>TAILWIND</span>
                             </div>
-                            <div style={{ padding: "6px 10px", borderRadius: 8, background: isDark ? "rgba(245,158,11,0.12)" : "#fff", border: "1px solid rgba(245,158,11,0.3)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                              <span style={{ fontSize: 10.5, fontWeight: 700, color: colors.text }}>3D GLTF</span>
-                              <span style={{ fontSize: 9, color: "#c084fc", fontWeight: 700 }}>✓ PBR</span>
+
+                            <div style={{ padding: "8px 12px", borderRadius: 10, background: isDark ? "#1f0918" : "#fff", border: "1.5px solid rgba(245,158,11,0.35)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                              <span style={{ fontSize: "11px", fontWeight: 800, color: colors.text }}>3D WebGL GLTF</span>
+                              <span style={{ fontSize: "9px", padding: "2px 6px", borderRadius: 4, background: "rgba(192,132,252,0.2)", color: "#c084fc", fontWeight: 800 }}>PBR</span>
                             </div>
                           </div>
 
-                          <div style={{ padding: "8px 10px", borderRadius: 8, background: isDark ? "#1b0a14" : "#fff", border: "1px solid rgba(245,158,11,0.2)", display: "flex", justifyContent: "space-between", fontSize: 10, color: colors.textMuted }}>
-                            <span>Resolution: 3840 × 2160</span>
-                            <span style={{ color: "#f59e0b", fontWeight: 700 }}>Lossless 99.8%</span>
+                          {/* Export Info & Status */}
+                          <div style={{
+                            padding: "10px 14px",
+                            borderRadius: 12,
+                            background: isDark ? "rgba(245,158,11,0.12)" : "rgba(245,158,11,0.08)",
+                            border: "1px solid rgba(245,158,11,0.25)",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            fontSize: "11px",
+                            color: colors.text,
+                            fontWeight: 700,
+                          }}>
+                            <span>Resolution: 3840 × 2160 (4K UHD)</span>
+                            <span style={{ color: "#f59e0b", fontWeight: 800 }}>Lossless 99.8%</span>
                           </div>
                         </div>
                       )}
@@ -2193,11 +2239,11 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
             {/* Step Progress Indicators & Jump Controls */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
               {[
-                { label: "01 Nodes", idx: 0 },
-                { label: "02 Live DOM", idx: 1 },
-                { label: "03 AI Engine", idx: 2 },
-                { label: "04 Real-Time Sync", idx: 3 },
-                { label: "05 Universal Export", idx: 4 },
+                { label: "Nodes", idx: 0 },
+                { label: "Live DOM", idx: 1 },
+                { label: "AI Engine", idx: 2 },
+                { label: "Real-Time Sync", idx: 3 },
+                { label: "Universal Export", idx: 4 },
               ].map((step) => {
                 const activeIndex = Math.min(4, Math.max(0, Math.floor(studioScrollProgress * 5)));
                 const isStepActive = step.idx === activeIndex;
@@ -2427,31 +2473,18 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
       {/* ── DELIGHTFUL PANORAMIC VECTOR CITYSCAPE ART BANNER ── */}
       <CreativeCityscapeArt onNavigate={onNavigate} isDark={isDark} THEME={THEME} />
 
-      {/* ── JOLLY CURVY RIVER LIVE CREATIVE STRIP (UNINTERRUPTED CONTINUOUS FLOW) ── */}
+      {/* ── IT'S TIME TO EXPERIENCE CREATIFY (CONVEX DOME ARCH WITH 3 VALUE CARDS) ── */}
+      <ExperienceCreatifySection onNavigate={onNavigate} user={user} isDark={isDark} THEME={THEME} />
+
+      {/* ── JOLLY CURVY RIVER LIVE CREATIVE STRIP ── */}
       <div style={{
         position: "relative",
         overflow: "hidden",
         padding: "32px 0 36px",
         background: isDark
-          ? "linear-gradient(180deg, #0e040b 0%, #1c0817 35%, #160613 70%, #0d0309 100%)"
-          : "linear-gradient(180deg, #fdf8fa 0%, #fdeff4 35%, #fae6ed 70%, #fdf8fa 100%)",
+          ? "linear-gradient(180deg, #170511 0%, #1c0817 35%, #160613 70%, #12030d 100%)"
+          : "linear-gradient(180deg, #fce7f3 0%, #fdeff4 35%, #fbe4ee 70%, #fae0ea 100%)",
       }}>
-        {/* Top Curvy River Wave SVG Border */}
-        <div style={{ position: "absolute", top: 0, left: 0, width: "100%", lineHeight: 0, overflow: "hidden", pointerEvents: "none", zIndex: 4 }}>
-          <svg viewBox="0 0 1440 36" fill="none" preserveAspectRatio="none" style={{ width: "100%", height: "30px", display: "block" }}>
-            <path
-              d="M0,0 C240,32 480,-6 720,20 C960,38 1200,2 1440,18 L1440,0 L0,0 Z"
-              fill={isDark ? "#090307" : "#faf5f8"}
-            />
-            <path
-              d="M0,6 C240,36 480,0 720,26 C960,42 1200,8 1440,24"
-              stroke="rgba(225, 73, 109, 0.35)"
-              strokeWidth="2.5"
-              fill="none"
-            />
-          </svg>
-        </div>
-
         {/* Dynamic Animated Liquid River Current Streams in Background */}
         <div style={{
           position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 2, opacity: isDark ? 0.35 : 0.45
@@ -2503,14 +2536,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         {/* Deep Left Mirror River Fade */}
         <div style={{
           position: "absolute", left: 0, top: 0, bottom: 0, width: 170,
-          background: `linear-gradient(90deg, ${isDark ? "#0e040b" : "#fdf8fa"} 35%, transparent)`,
+          background: `linear-gradient(90deg, ${isDark ? "#170511" : "#fce7f3"} 35%, transparent)`,
           zIndex: 6, pointerEvents: "none",
         }} />
 
         {/* Deep Right Mirror River Fade */}
         <div style={{
           position: "absolute", right: 0, top: 0, bottom: 0, width: 170,
-          background: `linear-gradient(270deg, ${isDark ? "#0e040b" : "#fdf8fa"} 35%, transparent)`,
+          background: `linear-gradient(270deg, ${isDark ? "#12030d" : "#fae0ea"} 35%, transparent)`,
           zIndex: 6, pointerEvents: "none",
         }} />
 
@@ -2558,29 +2591,29 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                       gap: 10,
                       padding: "9px 18px 9px 12px",
                       borderRadius: 99,
-                      background: isDark ? "rgba(30, 10, 23, 0.9)" : "rgba(255, 255, 255, 0.96)",
-                      border: `1.5px solid ${isDark ? "rgba(225, 73, 109, 0.32)" : "rgba(225, 73, 109, 0.22)"}`,
+                      background: isDark ? "rgba(30, 10, 23, 0.9)" : "rgba(255, 241, 246, 0.92)",
+                      border: `1.5px solid ${isDark ? "rgba(225, 73, 109, 0.32)" : "rgba(225, 73, 109, 0.3)"}`,
                       cursor: "pointer",
                       backdropFilter: "blur(20px)",
                       transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease",
                       boxShadow: isDark
                         ? "0 8px 24px rgba(0,0,0,0.4), 0 0 16px rgba(225, 73, 109, 0.15)"
-                        : "0 6px 20px rgba(148,41,69,0.09), 0 0 12px rgba(225, 73, 109, 0.1)",
+                        : "0 6px 20px rgba(148,41,69,0.12), 0 0 12px rgba(225, 73, 109, 0.12)",
                       animationDelay: `${(idx % 8) * 0.3}s`,
                     }}
                     onMouseEnter={e => {
                       e.currentTarget.style.transform = "scale(1.16) translateY(-10px) rotate(3deg)";
-                      e.currentTarget.style.background = isDark ? "rgba(48, 14, 36, 0.98)" : "#ffffff";
+                      e.currentTarget.style.background = isDark ? "rgba(48, 14, 36, 0.98)" : "rgba(255, 230, 240, 0.99)";
                       e.currentTarget.style.borderColor = item.color;
                       e.currentTarget.style.boxShadow = `0 16px 36px ${item.color}50, 0 0 24px ${item.color}40`;
                     }}
                     onMouseLeave={e => {
                       e.currentTarget.style.transform = "none";
-                      e.currentTarget.style.background = isDark ? "rgba(30, 10, 23, 0.9)" : "rgba(255, 255, 255, 0.96)";
-                      e.currentTarget.style.borderColor = isDark ? "rgba(225, 73, 109, 0.32)" : "rgba(225, 73, 109, 0.22)";
+                      e.currentTarget.style.background = isDark ? "rgba(30, 10, 23, 0.9)" : "rgba(255, 241, 246, 0.92)";
+                      e.currentTarget.style.borderColor = isDark ? "rgba(225, 73, 109, 0.32)" : "rgba(225, 73, 109, 0.3)";
                       e.currentTarget.style.boxShadow = isDark
                         ? "0 8px 24px rgba(0,0,0,0.4), 0 0 16px rgba(225, 73, 109, 0.15)"
-                        : "0 6px 20px rgba(148,41,69,0.09), 0 0 12px rgba(225, 73, 109, 0.1)";
+                        : "0 6px 20px rgba(148,41,69,0.12), 0 0 12px rgba(225, 73, 109, 0.12)";
                     }}
                   >
                     {/* Glowing Icon Pip with Playful Hover Spin */}
@@ -2649,7 +2682,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
           <svg viewBox="0 0 1440 36" fill="none" preserveAspectRatio="none" style={{ width: "100%", height: "30px", display: "block" }}>
             <path
               d="M0,18 C240,0 480,38 720,14 C960,-8 1200,30 1440,10 L1440,36 L0,36 Z"
-              fill={isDark ? "#280a1c" : "#60122e"}
+              fill={isDark ? "#12030d" : "#fae0ea"}
             />
             <path
               d="M0,12 C240,-4 480,32 720,8 C960,-14 1200,24 1440,4"
@@ -2661,11 +2694,11 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         </div>
       </div>
 
-      {/* ── IT'S TIME TO EXPERIENCE CREATIFY (CONVEX DOME ARCH WITH 3 VALUE CARDS & NATURE HORIZON) ── */}
-      <ExperienceCreatifySection onNavigate={onNavigate} user={user} isDark={isDark} THEME={THEME} />
-
       {/* ── UPGRADED LUXURY CONTACT & FEEDBACK FOOTER SECTION ── */}
       <ContactSection user={user} onNavigate={onNavigate} isDark={isDark} THEME={THEME} />
+
+      {/* ── LIVE ECOSYSTEM & SPONSORS STRIP (Bright Code, Demand Sight, AquaDristi, Numa, Jal Dristi) ── */}
+      <EcosystemStrip isDark={isDark} />
 
       {/* ── PANORAMIC DEVELOPER COMMUNITY LANDSCAPE ARTWORK (FREE LIKE A BIRD) ── */}
       <CommunityLandscapeBanner onNavigate={onNavigate} isDark={isDark} />
@@ -2679,7 +2712,10 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         <StudioPicker
           isDark={isDark}
           onClose={() => setShowStudioPicker(false)}
-          onSelect={(toolId) => onNavigate(toolId)}
+          onSelect={(toolId) => {
+            awardXP("CREATE_PROJECT", { detail: `Launched new creative session: ${toolId.replace(/_/g, " ")}`, name: toolId });
+            onNavigate(toolId);
+          }}
         />
       )}
 

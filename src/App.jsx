@@ -106,8 +106,16 @@ export default function App() {
     }
   }, [currentPage]);
 
+  const [homeNav, setHomeNav] = useState("home");
+
   const navigate = (page, data) => {
-    if (page === "auth") {
+    if (page === "profile") {
+      setHomeNav("profile");
+      setCurrentPage("home");
+    } else if (page === "home") {
+      setHomeNav("home");
+      setCurrentPage("home");
+    } else if (page === "auth") {
       setAuthTab(data || "signup");
       setCurrentPage("auth");
     } else if (page === "presentation_load") {
@@ -167,7 +175,7 @@ export default function App() {
   };
 
   if (currentPage === "home") {
-    return <HomePage onNavigate={navigate} user={user} onSignOut={handleSignOut} theme={appTheme} />;
+    return <HomePage onNavigate={navigate} user={user} onSignOut={handleSignOut} theme={appTheme} initialNav={homeNav} />;
   }
 
   if (currentPage === "auth") {

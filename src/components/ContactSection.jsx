@@ -68,21 +68,21 @@ export default function ContactSection({ user, onNavigate, isDark, THEME }) {
   };
 
   const bgSection = isDark
-    ? "linear-gradient(180deg, #0d0309 0%, #070104 100%)"
-    : "linear-gradient(180deg, #ffffff 0%, #fdf2f6 50%, #fae6ee 100%)";
+    ? "linear-gradient(180deg, #12030d 0%, #0d0309 35%, #080205 100%)"
+    : "linear-gradient(180deg, #fae0ea 0%, #fdf2f8 35%, #ffffff 100%)";
 
   const cardBg = isDark
-    ? "rgba(22, 7, 16, 0.75)"
-    : "rgba(255, 255, 255, 0.9)";
+    ? "linear-gradient(145deg, rgba(38, 11, 28, 0.72) 0%, rgba(20, 5, 15, 0.85) 100%)"
+    : "linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 241, 246, 0.85) 100%)";
 
   const cardBorder = isDark
-    ? "1px solid rgba(225, 73, 109, 0.22)"
-    : "1px solid rgba(148, 41, 69, 0.14)";
+    ? "1px solid rgba(225, 73, 109, 0.28)"
+    : "1px solid rgba(225, 73, 109, 0.2)";
 
   const textPrimary = isDark ? "#ffffff" : "#1a040d";
-  const textMuted = isDark ? "rgba(255, 255, 255, 0.6)" : "rgba(35, 8, 18, 0.65)";
-  const inputBg = isDark ? "rgba(0, 0, 0, 0.35)" : "rgba(255, 255, 255, 0.85)";
-  const inputBorder = isDark ? "rgba(225, 73, 109, 0.25)" : "rgba(148, 41, 69, 0.2)";
+  const textMuted = isDark ? "rgba(255, 200, 215, 0.7)" : "rgba(96, 18, 46, 0.75)";
+  const inputBg = isDark ? "rgba(10, 2, 8, 0.6)" : "rgba(255, 255, 255, 0.9)";
+  const inputBorder = isDark ? "rgba(225, 73, 109, 0.3)" : "rgba(225, 73, 109, 0.25)";
 
   return (
     <section
@@ -91,23 +91,33 @@ export default function ContactSection({ user, onNavigate, isDark, THEME }) {
         position: "relative",
         width: "100%",
         background: bgSection,
-        borderTop: isDark ? "1px solid rgba(225, 73, 109, 0.16)" : "1px solid rgba(148, 41, 69, 0.12)",
-        padding: "70px 24px 40px",
+        padding: "70px 24px 70px",
         boxSizing: "border-box",
         overflow: "hidden",
       }}
     >
-      {/* Ambient Floor Glow */}
+      {/* Top Seamless Blending Wave */}
+      <div style={{ position: "absolute", top: 0, left: 0, width: "100%", lineHeight: 0, pointerEvents: "none", zIndex: 1 }}>
+        <svg viewBox="0 0 1440 32" fill="none" preserveAspectRatio="none" style={{ width: "100%", height: "24px", display: "block" }}>
+          <path
+            d="M0,0 L1440,0 L1440,8 C1080,24 720,0 360,18 L0,10 Z"
+            fill={isDark ? "#15040f" : "#fbe4ee"}
+            opacity="0.9"
+          />
+        </svg>
+      </div>
+
+      {/* Ambient Rose Radial Glow */}
       <div
         style={{
           position: "absolute",
-          top: "10%",
+          top: "20%",
           left: "50%",
           transform: "translateX(-50%)",
-          width: "700px",
-          height: "300px",
-          background: "radial-gradient(circle, rgba(225, 73, 109, 0.15) 0%, transparent 70%)",
-          filter: "blur(90px)",
+          width: "800px",
+          height: "400px",
+          background: "radial-gradient(circle, rgba(225, 73, 109, 0.18) 0%, rgba(131, 24, 67, 0.08) 50%, transparent 75%)",
+          filter: "blur(100px)",
           pointerEvents: "none",
         }}
       />

@@ -7,6 +7,7 @@ export default function ExperienceCreatifySection({ onNavigate, user, isDark, TH
 
   const strokeColor = isDark ? "#ff8da7" : "#831843";
   const textPrimary = isDark ? "#ffffff" : "#1a040d";
+  const accentRose = "#e1496d";
 
   const cards = [
     {
@@ -126,34 +127,55 @@ export default function ExperienceCreatifySection({ onNavigate, user, isDark, TH
         style={{
           position: "relative",
           width: "100%",
-          padding: "30px 24px 70px",
+          padding: "30px 24px 60px",
           background: isDark
-            ? "linear-gradient(180deg, #280a1c 0%, #170511 40%, #0d0309 85%, #080205 100%)"
-            : "linear-gradient(180deg, #60122e 0%, #8b1d43 35%, #b13453 65%, #fce7f3 92%, #ffffff 100%)",
+            ? "linear-gradient(180deg, #280a1c 0%, #220818 35%, #1d0614 70%, #170511 100%)"
+            : "linear-gradient(180deg, #60122e 0%, #7d193d 30%, #a2294e 65%, #fce7f3 100%)",
           boxSizing: "border-box",
         }}
       >
         <style>{`
           @keyframes floatingBalloon {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(3deg); }
+            50% { transform: translateY(-12px) rotate(2deg); }
           }
-          @keyframes windSail {
-            0%, 100% { transform: translateX(0px) rotate(0deg); }
-            50% { transform: translateX(14px) rotate(1.5deg); }
+          @keyframes childBrushMove {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(-14deg); }
           }
-          @keyframes spinTurbine {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+          @keyframes slideOrbit {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-7px); }
+          }
+          @keyframes playheadScan {
+            0% { transform: translateX(0px); }
+            100% { transform: translateX(110px); }
+          }
+          @keyframes warmSteam {
+            0% { transform: translateY(0) scale(1); opacity: 0.7; }
+            100% { transform: translateY(-12px) scale(1.3); opacity: 0; }
+          }
+          @keyframes paperPlaneGlide {
+            0% { transform: translate(0, 0) rotate(-2deg); }
+            50% { transform: translate(35px, -15px) rotate(4deg); }
+            100% { transform: translate(0, 0) rotate(-2deg); }
+          }
+          @keyframes logicDataPulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.4); opacity: 1; }
+          }
+          @keyframes ribbonFlow {
+            0% { stroke-dashoffset: 40; }
+            100% { stroke-dashoffset: 0; }
+          }
+          @keyframes cloudDriftSmooth {
+            0% { transform: translateX(-5%); }
+            100% { transform: translateX(105vw); }
           }
           @keyframes birdFly {
             0% { transform: translate(0, 0); }
             50% { transform: translate(20px, -8px); }
             100% { transform: translate(0, 0); }
-          }
-          @keyframes cloudDriftSmooth {
-            0% { transform: translateX(-5%); }
-            100% { transform: translateX(105vw); }
           }
         `}</style>
 
@@ -486,346 +508,7 @@ export default function ExperienceCreatifySection({ onNavigate, user, isDark, TH
             </div>
           </div>
 
-          {/* ── ADVANCED HIGH-PRODUCTION VECTOR ARTWORK (1440 × 340) ── */}
-          <div style={{ width: "100%", lineHeight: 0, position: "relative", marginTop: 85, overflow: "hidden" }}>
-            <svg
-              viewBox="0 0 1440 340"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              preserveAspectRatio="xMidYMax meet"
-              style={{ width: "100%", height: "auto", display: "block" }}
-            >
-              <defs>
-                {/* Sunburst Gradient */}
-                <radialGradient id="expSunburst" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="#ffd700" stopOpacity={isDark ? "0.45" : "0.75"} />
-                  <stop offset="60%" stopColor="#f43f5e" stopOpacity={isDark ? "0.2" : "0.35"} />
-                  <stop offset="100%" stopColor="#e1496d" stopOpacity="0" />
-                </radialGradient>
 
-                {/* Mountain Ridge 1 (Far Background Deep Alpine) */}
-                <linearGradient id="expMountFar" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isDark ? "#380d24" : "#be185d"} />
-                  <stop offset="100%" stopColor={isDark ? "#170511" : "#fce7f3"} />
-                </linearGradient>
-
-                {/* Mountain Ridge 2 (Mid-ground Rosy Slate) */}
-                <linearGradient id="expMountMid" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isDark ? "#4a1233" : "#e11d48"} />
-                  <stop offset="100%" stopColor={isDark ? "#1f0717" : "#ffe4e6"} />
-                </linearGradient>
-
-                {/* Mountain Ridge 3 (Foreground Mountain) */}
-                <linearGradient id="expMountNear" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isDark ? "#5e143f" : "#f43f5e"} />
-                  <stop offset="100%" stopColor={isDark ? "#280a1c" : "#fdf2f8"} />
-                </linearGradient>
-
-                {/* Foothill Forest Jade Gradient */}
-                <linearGradient id="expForestHill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isDark ? "#064e3b" : "#059669"} />
-                  <stop offset="100%" stopColor={isDark ? "#022c22" : "#a7f3d0"} />
-                </linearGradient>
-
-                {/* Lake Shimmer Gradient */}
-                <linearGradient id="expLakeShimmer" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isDark ? "#0369a1" : "#0284c7"} />
-                  <stop offset="60%" stopColor={isDark ? "#0284c7" : "#38bdf8"} />
-                  <stop offset="100%" stopColor={isDark ? "#0c4a6e" : "#bae6fd"} />
-                </linearGradient>
-
-                {/* Meadow Blossom Gradient */}
-                <linearGradient id="expMeadowGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isDark ? "#240a1b" : "#fdf2f8"} />
-                  <stop offset="100%" stopColor={isDark ? "#12030d" : "#fce7f3"} />
-                </linearGradient>
-              </defs>
-
-              {/* ── 1. SKY CELESTIAL SUN & RADIAL RAYS ── */}
-              <circle cx="720" cy="200" r="220" fill="url(#expSunburst)" />
-              <circle cx="720" cy="200" r="80" fill="#fef08a" opacity={isDark ? "0.35" : "0.75"} />
-
-              {/* Soaring Swallows Flock */}
-              <g style={{ animation: "birdFly 7s ease-in-out infinite" }}>
-                <path d="M 460 60 Q 470 50 480 58 Q 490 50 500 60" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" fill="none" />
-                <path d="M 520 45 Q 528 38 536 43 Q 544 38 552 45" stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round" fill="none" />
-                <path d="M 490 75 Q 496 70 502 74 Q 508 70 514 75" stroke={strokeColor} strokeWidth="1.5" strokeLinecap="round" fill="none" />
-              </g>
-
-              {/* Drifting Clouds */}
-              <g style={{ animation: "cloudDriftSmooth 60s linear infinite", opacity: 0.85 }}>
-                <path
-                  d="M 120 70 Q 110 70 110 60 Q 110 50 125 50 Q 130 38 145 40 Q 160 36 170 45 Q 182 42 190 52 Q 200 52 200 62 Q 200 70 190 70 Z"
-                  fill={isDark ? "rgba(255,255,255,0.08)" : "#ffffff"}
-                  stroke={strokeColor}
-                  strokeWidth="1.5"
-                />
-              </g>
-
-              {/* ── 2. HOT AIR BALLOONS (DETAILED STRIPED ENVELOPES) ── */}
-              {/* Main Hot Air Balloon (Left) */}
-              <g style={{ animation: "floatingBalloon 8s ease-in-out infinite" }} transform="translate(210, 30)">
-                {/* Envelope Base */}
-                <path d="M 15 50 Q 0 25 20 5 Q 40 -10 60 5 Q 80 25 65 50 Q 55 65 48 78 L 32 78 Q 25 65 15 50 Z" fill="#e1496d" stroke={strokeColor} strokeWidth="2.2" />
-                {/* Gores */}
-                <path d="M 30 78 Q 20 40 32 0" stroke="#ffd700" strokeWidth="3" fill="none" />
-                <path d="M 50 78 Q 60 40 48 0" stroke="#38bdf8" strokeWidth="3" fill="none" />
-                <ellipse cx="40" cy="38" rx="8" ry="34" fill="#ffffff" opacity="0.3" />
-                {/* Burner Flame */}
-                <polygon points="36,80 40,73 44,80" fill="#f59e0b" />
-                {/* Ropes */}
-                <line x1="32" y1="78" x2="35" y2="94" stroke={strokeColor} strokeWidth="1.5" />
-                <line x1="48" y1="78" x2="45" y2="94" stroke={strokeColor} strokeWidth="1.5" />
-                {/* Basket */}
-                <rect x="33" y="94" width="14" height="12" rx="2" fill="#d97706" stroke={strokeColor} strokeWidth="1.8" />
-                <line x1="33" y1="100" x2="47" y2="100" stroke="#ffffff" strokeWidth="1.2" />
-              </g>
-
-              {/* Distant Smaller Hot Air Balloon (Right) */}
-              <g style={{ animation: "floatingBalloon 6s ease-in-out infinite 2s" }} transform="translate(1180, 50) scale(0.6)">
-                <path d="M 15 50 Q 0 25 20 5 Q 40 -10 60 5 Q 80 25 65 50 Q 55 65 48 78 L 32 78 Q 25 65 15 50 Z" fill="#38bdf8" stroke={strokeColor} strokeWidth="2.2" />
-                <path d="M 30 78 Q 20 40 32 0" stroke="#ff8da7" strokeWidth="3" fill="none" />
-                <path d="M 50 78 Q 60 40 48 0" stroke="#ffd700" strokeWidth="3" fill="none" />
-                <rect x="34" y="90" width="12" height="10" rx="2" fill="#d97706" stroke={strokeColor} strokeWidth="1.8" />
-              </g>
-
-              {/* ── 3. SOLID LAYER 1: FAR ALPINE PEAKS (NO CRISS-CROSS LINES) ── */}
-              <path
-                d="M -40 340 L 120 120 L 320 250 L 520 80 L 720 220 L 960 70 L 1180 230 L 1360 90 L 1480 340 Z"
-                fill="url(#expMountFar)"
-                stroke={strokeColor}
-                strokeWidth="2.5"
-                strokeLinejoin="round"
-              />
-              {/* Snow Caps */}
-              <polygon points="120,120 95,160 120,150 145,165" fill="#ffffff" />
-              <polygon points="520,80 490,130 520,118 550,135" fill="#ffffff" />
-              <polygon points="960,70 930,125 960,112 990,130" fill="#ffffff" />
-              <polygon points="1360,90 1335,135 1360,125 1385,140" fill="#ffffff" />
-
-              {/* ── 4. SOLID LAYER 2: MID-GROUND MOUNTAIN RIDGES ── */}
-              <path
-                d="M -20 340 L 240 140 L 480 280 L 720 110 L 920 260 L 1140 120 L 1460 340 Z"
-                fill="url(#expMountMid)"
-                stroke={strokeColor}
-                strokeWidth="2.5"
-                strokeLinejoin="round"
-              />
-              {/* Mid Snow Caps */}
-              <polygon points="240,140 215,180 240,170 265,185" fill="#ffffff" opacity="0.9" />
-              <polygon points="720,110 685,165 720,150 755,170" fill="#ffffff" opacity="0.9" />
-              <polygon points="1140,120 1110,165 1140,155 1170,170" fill="#ffffff" opacity="0.9" />
-
-              {/* ── 5. SOLID LAYER 3: FOREGROUND MOUNTAIN FACETS ── */}
-              <path
-                d="M -20 340 L 80 180 L 360 340 L 600 170 L 840 340 L 1040 160 L 1320 340 Z"
-                fill="url(#expMountNear)"
-                stroke={strokeColor}
-                strokeWidth="2.2"
-                strokeLinejoin="round"
-              />
-
-              {/* ── 6. SOLID LAYER 4: ROLLING FOREST FOOTHILLS ── */}
-              {/* Left Rolling Forest Hill */}
-              <path
-                d="M -20 340 Q 180 180 440 250 L 440 340 Z"
-                fill="url(#expForestHill)"
-                stroke={strokeColor}
-                strokeWidth="2.5"
-              />
-              
-              {/* Dense Evergreen Pine Clusters on Left Hill */}
-              {[
-                { x: 60, y: 220, s: 1 },
-                { x: 100, y: 205, s: 1.2 },
-                { x: 145, y: 195, s: 1.4 },
-                { x: 190, y: 210, s: 1.1 },
-                { x: 230, y: 225, s: 1.3 },
-                { x: 280, y: 215, s: 1 },
-                { x: 330, y: 235, s: 1.2 },
-              ].map((p, i) => (
-                <g key={i} transform={`translate(${p.x}, ${p.y}) scale(${p.s})`}>
-                  {/* Trunk */}
-                  <line x1="0" y1="10" x2="0" y2="24" stroke={strokeColor} strokeWidth="2.2" />
-                  {/* 3 Tiers of Needles */}
-                  <polygon points="0,-18 -12,0 12,0" fill={isDark ? "#064e3b" : "#10b981"} stroke={strokeColor} strokeWidth="1.5" />
-                  <polygon points="0,-8 -15,10 15,10" fill={isDark ? "#065f46" : "#059669"} stroke={strokeColor} strokeWidth="1.5" />
-                  <polygon points="0,2 -18,20 18,20" fill={isDark ? "#047857" : "#047857"} stroke={strokeColor} strokeWidth="1.5" />
-                </g>
-              ))}
-
-              {/* Right Hill with Wind Turbines & Studio Villa */}
-              <path
-                d="M 1000 250 Q 1240 160 1460 340 L 1000 340 Z"
-                fill="url(#expForestHill)"
-                stroke={strokeColor}
-                strokeWidth="2.5"
-              />
-
-              {/* Wind Turbine 1 */}
-              <g transform="translate(1120, 140)">
-                <line x1="20" y1="30" x2="20" y2="120" stroke={strokeColor} strokeWidth="3" />
-                <circle cx="20" cy="30" r="5" fill="#ffffff" stroke={strokeColor} strokeWidth="2" />
-                <g style={{ animation: "spinTurbine 8s linear infinite", transformOrigin: "20px 30px" }}>
-                  <line x1="20" y1="30" x2="20" y2="-8" stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="20" y1="30" x2="52" y2="48" stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="20" y1="30" x2="-12" y2="48" stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" />
-                </g>
-              </g>
-
-              {/* Wind Turbine 2 */}
-              <g transform="translate(1260, 155)">
-                <line x1="16" y1="24" x2="16" y2="100" stroke={strokeColor} strokeWidth="2.5" />
-                <circle cx="16" cy="24" r="4" fill="#ffffff" stroke={strokeColor} strokeWidth="1.8" />
-                <g style={{ animation: "spinTurbine 6s linear infinite", transformOrigin: "16px 24px" }}>
-                  <line x1="16" y1="24" x2="16" y2="-6" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" />
-                  <line x1="16" y1="24" x2="42" y2="39" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" />
-                  <line x1="16" y1="24" x2="-10" y2="39" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" />
-                </g>
-              </g>
-
-              {/* Hillside Creative Studio Villa */}
-              <g transform="translate(1180, 200)">
-                {/* Main Building */}
-                <rect x="0" y="16" width="46" height="34" rx="4" fill={isDark ? "#280a1c" : "#ffffff"} stroke={strokeColor} strokeWidth="2.2" />
-                {/* Slanted Glass Skylight Roof */}
-                <polygon points="-6,16 23,-2 52,16" fill="#e1496d" stroke={strokeColor} strokeWidth="2.2" />
-                {/* Glowing Glass Studio Windows */}
-                <rect x="8" y="24" width="14" height="16" rx="2" fill="#38bdf8" stroke={strokeColor} strokeWidth="1.5" />
-                <rect x="28" y="26" width="10" height="24" rx="1" fill="#831843" />
-                {/* Balcony Railing */}
-                <line x1="-2" y1="36" x2="48" y2="36" stroke={strokeColor} strokeWidth="1.5" />
-              </g>
-
-              {/* ── 7. SOLID LAYER 5: CENTER GLOWING SHIMMER LAKE & RIVER ── */}
-              {/* River Stream flowing from Mountains */}
-              <path
-                d="M 680 180 Q 700 210 660 230 Q 640 240 680 260 L 740 260 Q 720 230 730 210 Q 720 190 710 180 Z"
-                fill="url(#expLakeShimmer)"
-                stroke={strokeColor}
-                strokeWidth="1.8"
-              />
-
-              {/* Main Crystal Lake Lagoon (Solid Occluding Oval) */}
-              <ellipse cx="720" cy="275" rx="340" ry="38" fill="url(#expLakeShimmer)" stroke={isDark ? "#38bdf8" : "#0284c7"} strokeWidth="2.5" />
-              
-              {/* Lake Shimmer Reflection Ripple Lines */}
-              <ellipse cx="640" cy="275" rx="90" ry="8" fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.75" strokeDasharray="8 10" />
-              <ellipse cx="800" cy="282" rx="75" ry="7" fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.65" strokeDasharray="6 8" />
-              <ellipse cx="720" cy="292" rx="120" ry="9" fill="none" stroke="#ffffff" strokeWidth="1.5" opacity="0.55" strokeDasharray="10 12" />
-
-              {/* Sailboat 1: Cruising Dual-Sail Yacht */}
-              <g style={{ animation: "windSail 6s ease-in-out infinite" }} transform="translate(730, 220)">
-                {/* Reflection under water */}
-                <ellipse cx="30" cy="48" rx="26" ry="4" fill="rgba(2,132,199,0.4)" />
-                {/* Yacht Hull */}
-                <path d="M 0 34 L 60 34 L 50 46 L 12 46 Z" fill="#ffffff" stroke={strokeColor} strokeWidth="2.2" />
-                <line x1="32" y1="4" x2="32" y2="34" stroke={strokeColor} strokeWidth="2.8" />
-                {/* Main Mainsail */}
-                <polygon points="32,6 56,30 32,30" fill="#e1496d" stroke={strokeColor} strokeWidth="1.8" />
-                {/* Jib Foresail */}
-                <polygon points="30,10 8,30 30,30" fill="#ff8da7" stroke={strokeColor} strokeWidth="1.8" />
-                {/* Mast Pennant Flag */}
-                <polygon points="32,4 42,8 32,12" fill="#ffd700" />
-              </g>
-
-              {/* Sailboat 2: Leisure Catamaran */}
-              <g style={{ animation: "windSail 5s ease-in-out infinite 1.5s" }} transform="translate(560, 245)">
-                <path d="M 0 20 L 38 20 L 30 28 L 8 28 Z" fill="#ffffff" stroke={strokeColor} strokeWidth="1.8" />
-                <line x1="22" y1="3" x2="22" y2="20" stroke={strokeColor} strokeWidth="2" />
-                <polygon points="22,4 36,18 22,18" fill="#38bdf8" />
-                <polygon points="20,7 6,18 20,18" fill="#fef08a" />
-              </g>
-
-              {/* Stone Arched River Bridge */}
-              <g transform="translate(640, 245)">
-                <path d="M 0 16 Q 30 4 60 16 L 60 22 Q 30 10 0 22 Z" fill="#e2e8f0" stroke={strokeColor} strokeWidth="2" />
-                <line x1="12" y1="12" x2="12" y2="18" stroke={strokeColor} strokeWidth="1.5" />
-                <line x1="28" y1="8" x2="28" y2="15" stroke={strokeColor} strokeWidth="1.5" />
-                <line x1="44" y1="10" x2="44" y2="16" stroke={strokeColor} strokeWidth="1.5" />
-              </g>
-
-              {/* ── 8. SOLID LAYER 6: FOREGROUND BLOSSOM MEADOW & ASTRONAUT ── */}
-              <path
-                d="M -20 340 Q 360 280 720 305 Q 1080 280 1460 340 Z"
-                fill="url(#expMeadowGrad)"
-                stroke={strokeColor}
-                strokeWidth="3"
-              />
-
-              {/* Flowering Sakura / Botanical Tree on Left Foreground */}
-              <g transform="translate(320, 230)">
-                {/* Trunk */}
-                <path d="M 20 80 Q 22 45 15 25 Q 30 35 40 20 Q 34 50 35 80 Z" fill={isDark ? "#581232" : "#831843"} />
-                {/* Cloud Foliage */}
-                <path
-                  d="M 5 25 Q -10 10 5 -10 Q 20 -25 45 -10 Q 70 -20 75 5 Q 85 25 65 35 Q 45 45 25 35 Z"
-                  fill={isDark ? "rgba(225,73,109,0.35)" : "rgba(251,113,133,0.55)"}
-                  stroke="#e1496d"
-                  strokeWidth="2.2"
-                />
-                {/* Blossom Dots */}
-                <circle cx="15" cy="-5" r="4" fill="#ffffff" />
-                <circle cx="35" cy="-12" r="4.5" fill="#f43f5e" />
-                <circle cx="55" cy="5" r="4" fill="#ffffff" />
-                <circle cx="28" cy="18" r="4" fill="#f43f5e" />
-                <circle cx="62" cy="22" r="3.5" fill="#ffffff" />
-              </g>
-
-              {/* Creatify Astronaut Artist at the Studio Easel */}
-              <g transform="translate(430, 240)">
-                {/* Wooden Easel Tripod */}
-                <line x1="16" y1="20" x2="2" y2="78" stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" />
-                <line x1="16" y1="20" x2="30" y2="78" stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" />
-                <line x1="16" y1="20" x2="16" y2="72" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" />
-                {/* Canvas Artwork */}
-                <rect x="-6" y="24" width="38" height="28" rx="3" fill="#ffffff" stroke={strokeColor} strokeWidth="2.2" />
-                <circle cx="13" cy="38" r="6" fill="#e1496d" />
-                <line x1="-2" y1="44" x2="28" y2="44" stroke="#f59e0b" strokeWidth="1.5" />
-
-                {/* Astronaut Explorer Character */}
-                <g transform="translate(48, 14)">
-                  {/* Helmet & Head */}
-                  <circle cx="20" cy="18" r="13" fill={isDark ? "#240a1b" : "#ffffff"} stroke={strokeColor} strokeWidth="2.4" />
-                  <ellipse cx="20" cy="18" rx="9" ry="6" fill="#e1496d" opacity="0.9" />
-                  {/* Torso & Suit */}
-                  <rect x="8" y="30" width="24" height="26" rx="6" fill={isDark ? "#4a1233" : "#fed7e2"} stroke={strokeColor} strokeWidth="2.4" />
-                  <circle cx="15" cy="38" r="2.5" fill="#e1496d" />
-                  <circle cx="25" cy="38" r="2.5" fill="#38bdf8" />
-                  {/* Legs */}
-                  <line x1="14" y1="56" x2="14" y2="70" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
-                  <line x1="26" y1="56" x2="26" y2="70" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
-                  {/* Arm holding Painter's Palette & Stylus */}
-                  <line x1="8" y1="36" x2="-8" y2="30" stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" />
-                  <circle cx="-10" cy="29" r="3.5" fill="#ffd700" stroke={strokeColor} strokeWidth="1.5" />
-                </g>
-
-                {/* Curious Little Cosmic Bunny Companion */}
-                <g transform="translate(92, 48)">
-                  <ellipse cx="10" cy="16" rx="7" ry="5" fill="#ffffff" stroke={strokeColor} strokeWidth="1.8" />
-                  <circle cx="14" cy="12" r="4" fill="#ffffff" stroke={strokeColor} strokeWidth="1.8" />
-                  <line x1="14" y1="8" x2="14" y2="0" stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="17" y1="9" x2="19" y2="1" stroke={strokeColor} strokeWidth="1.8" strokeLinecap="round" />
-                  <circle cx="15" cy="12" r="1" fill="#e1496d" />
-                </g>
-              </g>
-
-              {/* Wildflower Blooms along the Foreground Line */}
-              {[...Array(18)].map((_, w) => {
-                const wx = 80 + w * 75;
-                const wy = 320 + (w % 3) * 4;
-                return (
-                  <g key={w}>
-                    <line x1={wx} y1={wy} x2={wx} y2={wy + 8} stroke={isDark ? "#10b981" : "#059669"} strokeWidth="1.5" />
-                    <circle cx={wx} cy={wy} r="3" fill={w % 3 === 0 ? "#e1496d" : (w % 3 === 1 ? "#ffd700" : "#38bdf8")} stroke="none" />
-                  </g>
-                );
-              })}
-
-              {/* Base Horizon Ground Line */}
-              <line x1="0" y1="338" x2="1440" y2="338" stroke={strokeColor} strokeWidth="3" />
-            </svg>
-          </div>
 
           {/* Direct CTA (100% Free) */}
           <div style={{ textAlign: "center", marginTop: 56 }}>

@@ -1,9 +1,11 @@
 import React, { useState, useRef } from "react";
 import { ExternalLink, Heart, Sparkles } from "lucide-react";
 
-export default function CommunityLandscapeBanner({ onNavigate, isDark }) {
+export default function CommunityLandscapeBanner({ onNavigate, isDark, showText = true, themeShade = "default" }) {
   const [mouseOffset, setMouseOffset] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
+
+  const isPipelineShade = themeShade === "pipeline";
 
   const handleMouseMove = (e) => {
     if (!containerRef.current) return;
@@ -17,6 +19,12 @@ export default function CommunityLandscapeBanner({ onNavigate, isDark }) {
     setMouseOffset({ x: 0, y: 0 });
   };
 
+  const containerBg = isPipelineShade
+    ? "transparent"
+    : (isDark 
+        ? "linear-gradient(180deg, #090207 0%, #150512 45%, #0c020a 100%)" 
+        : "linear-gradient(180deg, #fbf2f6 0%, #fef8fa 40%, #edf7f4 100%)");
+
   return (
     <section 
       ref={containerRef}
@@ -29,9 +37,7 @@ export default function CommunityLandscapeBanner({ onNavigate, isDark }) {
         padding: "0",
         overflow: "hidden",
         boxSizing: "border-box",
-        background: isDark 
-          ? "linear-gradient(180deg, #090207 0%, #150512 45%, #0c020a 100%)" 
-          : "linear-gradient(180deg, #fbf2f6 0%, #fef8fa 40%, #edf7f4 100%)",
+        background: containerBg,
         color: isDark ? "#ffffff" : "#1a040d",
         fontFamily: "'Plus Jakarta Sans', sans-serif",
         userSelect: "none",
@@ -121,175 +127,179 @@ export default function CommunityLandscapeBanner({ onNavigate, isDark }) {
         }
       `}</style>
       
-      {/* ── TOP SCENIC CURVED ARCH TRANSITION ── */}
-      <div style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: "55px",
-        zIndex: 20,
-        pointerEvents: "none",
-      }}>
-        <svg
-          viewBox="0 0 1440 55"
-          style={{ width: "100%", height: "100%", display: "block" }}
-          preserveAspectRatio="none"
-        >
-          <path
-            d="M0,0 L1440,0 L1440,5 Q720,50 0,5 Z"
-            fill={isDark ? "#070104" : "#fae6ee"}
-          />
-        </svg>
-      </div>
+      {/* ── TOP SCENIC CURVED ARCH TRANSITION (ONLY FOR HOMEPAGE WITH TEXT) ── */}
+      {showText && (
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "55px",
+          zIndex: 20,
+          pointerEvents: "none",
+        }}>
+          <svg
+            viewBox="0 0 1440 55"
+            style={{ width: "100%", height: "100%", display: "block" }}
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0,0 L1440,0 L1440,5 Q720,50 0,5 Z"
+              fill={isDark ? "#070104" : "#fae6ee"}
+            />
+          </svg>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════════
           TOP SECTION: SPONSOR & SUPPORTER SPOTLIGHT (BRIGHT CODE PLATFORM)
           ══════════════════════════════════════════════════════════════════════ */}
-      <div style={{
-        position: "relative",
-        zIndex: 15,
-        padding: "60px 24px 22px",
-        maxWidth: "920px",
-        margin: "0 auto",
-        textAlign: "center",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}>
-
-        {/* Floating Quote Marks Graphic Accent */}
+      {showText && (
         <div style={{
-          fontSize: "44px",
-          fontFamily: "Georgia, serif",
-          fontWeight: 900,
-          color: isDark ? "rgba(225, 73, 109, 0.45)" : "rgba(225, 73, 109, 0.28)",
-          lineHeight: 0.6,
-          marginBottom: 12,
-        }}>
-          “
-        </div>
-
-        {/* Supporter Badge */}
-        <div style={{
-          display: "inline-flex",
+          position: "relative",
+          zIndex: 15,
+          padding: "60px 24px 22px",
+          maxWidth: "920px",
+          margin: "0 auto",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          gap: 8,
-          padding: "5px 18px",
-          borderRadius: 99,
-          background: isDark ? "rgba(225, 73, 109, 0.15)" : "rgba(255, 255, 255, 0.95)",
-          border: `1.5px solid ${isDark ? "rgba(225, 73, 109, 0.35)" : "rgba(225, 73, 109, 0.22)"}`,
-          boxShadow: isDark ? "0 4px 14px rgba(0,0,0,0.3)" : "0 4px 14px rgba(148, 41, 69, 0.06)",
-          marginBottom: 14,
         }}>
-          <Heart size={13} color="#e1496d" fill="#e1496d" />
-          <span style={{
-            fontSize: "11px",
-            fontWeight: 800,
-            fontFamily: "Syne, sans-serif",
-            color: "#e1496d",
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-          }}>
-            Official Ecosystem Sponsor & Supporter
-          </span>
-        </div>
 
-        {/* Supporter Headline (Solid Clean Text, No Gradient) */}
-        <h2 style={{
-          margin: "0 0 12px",
-          fontSize: "clamp(26px, 3.6vw, 40px)",
-          fontWeight: 900,
-          fontFamily: "Syne, sans-serif",
-          letterSpacing: "-0.03em",
-          color: isDark ? "#ffffff" : "#4a0e22",
-          lineHeight: 1.15,
-        }}>
-          Powered & Supported by Bright Code
-        </h2>
-
-        {/* Description / Story + Future 2-Way UML & Team Integration */}
-        <p style={{
-          margin: "0 0 20px",
-          fontSize: "14.5px",
-          color: isDark ? "rgba(255,255,255,0.85)" : "#5a1827",
-          maxWidth: "720px",
-          lineHeight: 1.6,
-        }}>
-          <strong>Bright Code</strong> is a modern developer learning and coding platform. In upcoming releases, developers will be able to import their UML architecture diagrams, technical RFC specs, and visual DAG pipelines directly into Bright Code to collaborate in real-time with their engineering teams — and seamlessly sync interactive code sandboxes back into Creatify.
-        </p>
-
-        {/* Testimonial Quote Capsule */}
-        <div style={{
-          padding: "14px 26px",
-          borderRadius: 16,
-          background: isDark ? "rgba(18, 5, 14, 0.72)" : "rgba(255, 255, 255, 0.85)",
-          backdropFilter: "blur(16px)",
-          border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.25)" : "rgba(148, 41, 69, 0.15)"}`,
-          boxShadow: isDark ? "0 8px 24px rgba(0,0,0,0.4)" : "0 6px 20px rgba(148, 41, 69, 0.06)",
-          maxWidth: "680px",
-          marginBottom: 18,
-        }}>
-          <p style={{
-            margin: "0 0 6px",
-            fontSize: "13.5px",
-            fontStyle: "italic",
-            lineHeight: 1.45,
-            color: isDark ? "rgba(255,255,255,0.9)" : "#4a0e22",
-          }}>
-            “Enabling engineering teams to design 3D mockups, DAG pipelines, and architecture diagrams directly alongside their coding workspace is the future of collaborative software engineering.”
-          </p>
+          {/* Floating Quote Marks Graphic Accent */}
           <div style={{
-            fontSize: "11px",
-            fontWeight: 800,
-            fontFamily: "Syne, sans-serif",
-            color: "#e1496d",
-            letterSpacing: "0.04em",
-            textTransform: "uppercase",
+            fontSize: "44px",
+            fontFamily: "Georgia, serif",
+            fontWeight: 900,
+            color: isDark ? "rgba(225, 73, 109, 0.45)" : "rgba(225, 73, 109, 0.28)",
+            lineHeight: 0.6,
+            marginBottom: 12,
           }}>
-            — Bright Code Engineering & Ecosystem Team
+            “
           </div>
-        </div>
 
-        {/* GitHub 100% Free & Open Source Direct Action Button */}
-        <a
-          href="https://github.com/SachinYadav2446/Creatify"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
+          {/* Supporter Badge */}
+          <div style={{
             display: "inline-flex",
             alignItems: "center",
             gap: 8,
-            padding: "9px 26px",
+            padding: "5px 18px",
             borderRadius: 99,
-            background: "linear-gradient(135deg, #e1496d, #942945)",
-            border: "2px solid #ffffff",
-            color: "#ffffff",
-            fontSize: "12.5px",
-            fontWeight: 800,
-            fontFamily: "Syne, sans-serif",
-            cursor: "pointer",
-            textDecoration: "none",
-            boxShadow: "0 8px 24px rgba(225, 73, 109, 0.4)",
-            transition: "all 0.25s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "scale(1.05) translateY(-2px)";
-            e.currentTarget.style.boxShadow = "0 12px 32px rgba(225, 73, 109, 0.6)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "scale(1) translateY(0)";
-            e.currentTarget.style.boxShadow = "0 8px 24px rgba(225, 73, 109, 0.4)";
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
-          </svg>
-          <span>100% FREE & OPEN SOURCE ON GITHUB</span>
-          <ExternalLink size={13} style={{ opacity: 0.85 }} />
-        </a>
+            background: isDark ? "rgba(225, 73, 109, 0.15)" : "rgba(255, 255, 255, 0.95)",
+            border: `1.5px solid ${isDark ? "rgba(225, 73, 109, 0.35)" : "rgba(225, 73, 109, 0.22)"}`,
+            boxShadow: isDark ? "0 4px 14px rgba(0,0,0,0.3)" : "0 4px 14px rgba(148, 41, 69, 0.06)",
+            marginBottom: 14,
+          }}>
+            <Heart size={13} color="#e1496d" fill="#e1496d" />
+            <span style={{
+              fontSize: "11px",
+              fontWeight: 800,
+              fontFamily: "Syne, sans-serif",
+              color: "#e1496d",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}>
+              Official Ecosystem Sponsor & Supporter
+            </span>
+          </div>
 
-      </div>
+          {/* Supporter Headline (Solid Clean Text, No Gradient) */}
+          <h2 style={{
+            margin: "0 0 12px",
+            fontSize: "clamp(26px, 3.6vw, 40px)",
+            fontWeight: 900,
+            fontFamily: "Syne, sans-serif",
+            letterSpacing: "-0.03em",
+            color: isDark ? "#ffffff" : "#4a0e22",
+            lineHeight: 1.15,
+          }}>
+            Powered & Supported by Bright Code
+          </h2>
+
+          {/* Description / Story + Future 2-Way UML & Team Integration */}
+          <p style={{
+            margin: "0 0 20px",
+            fontSize: "14.5px",
+            color: isDark ? "rgba(255,255,255,0.85)" : "#5a1827",
+            maxWidth: "720px",
+            lineHeight: 1.6,
+          }}>
+            <strong>Bright Code</strong> is a modern developer learning and coding platform. In upcoming releases, developers will be able to import their UML architecture diagrams, technical RFC specs, and visual DAG pipelines directly into Bright Code to collaborate in real-time with their engineering teams — and seamlessly sync interactive code sandboxes back into Creatify.
+          </p>
+
+          {/* Testimonial Quote Capsule */}
+          <div style={{
+            padding: "14px 26px",
+            borderRadius: 16,
+            background: isDark ? "rgba(18, 5, 14, 0.72)" : "rgba(255, 255, 255, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.25)" : "rgba(148, 41, 69, 0.15)"}`,
+            boxShadow: isDark ? "0 8px 24px rgba(0,0,0,0.4)" : "0 6px 20px rgba(148, 41, 69, 0.06)",
+            maxWidth: "680px",
+            marginBottom: 18,
+          }}>
+            <p style={{
+              margin: "0 0 6px",
+              fontSize: "13.5px",
+              fontStyle: "italic",
+              lineHeight: 1.45,
+              color: isDark ? "rgba(255,255,255,0.9)" : "#4a0e22",
+            }}>
+              “Enabling engineering teams to design 3D mockups, DAG pipelines, and architecture diagrams directly alongside their coding workspace is the future of collaborative software engineering.”
+            </p>
+            <div style={{
+              fontSize: "11px",
+              fontWeight: 800,
+              fontFamily: "Syne, sans-serif",
+              color: "#e1496d",
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+            }}>
+              — Bright Code Engineering & Ecosystem Team
+            </div>
+          </div>
+
+          {/* GitHub 100% Free & Open Source Direct Action Button */}
+          <a
+            href="https://github.com/SachinYadav2446/Creatify"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "9px 26px",
+              borderRadius: 99,
+              background: "linear-gradient(135deg, #e1496d, #942945)",
+              border: "2px solid #ffffff",
+              color: "#ffffff",
+              fontSize: "12.5px",
+              fontWeight: 800,
+              fontFamily: "Syne, sans-serif",
+              cursor: "pointer",
+              textDecoration: "none",
+              boxShadow: "0 8px 24px rgba(225, 73, 109, 0.4)",
+              transition: "all 0.25s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "scale(1.05) translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 12px 32px rgba(225, 73, 109, 0.6)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "scale(1) translateY(0)";
+              e.currentTarget.style.boxShadow = "0 8px 24px rgba(225, 73, 109, 0.4)";
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+            </svg>
+            <span>100% FREE & OPEN SOURCE ON GITHUB</span>
+            <ExternalLink size={13} style={{ opacity: 0.85 }} />
+          </a>
+
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════════════
           BOTTOM SECTION: CURVY MOUNTAINS, EXPANSIVE LAKE, DETAILED HOUSES & MICRO-DETAILS
@@ -299,7 +309,7 @@ export default function CommunityLandscapeBanner({ onNavigate, isDark }) {
         width: "100%",
         height: "470px",
         overflow: "hidden",
-        marginTop: "-15px",
+        marginTop: showText ? "-15px" : "0px",
       }}>
 
         {/* Scalable Multi-Layered SVG Panorama */}
@@ -317,51 +327,52 @@ export default function CommunityLandscapeBanner({ onNavigate, isDark }) {
           <defs>
             {/* Sky Horizon Gradient */}
             <linearGradient id="artSkyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={isDark ? "#12040f" : "#fef8fa"} />
-              <stop offset="35%" stopColor={isDark ? "#24081c" : "#fae0ec"} />
-              <stop offset="70%" stopColor={isDark ? "#48092a" : "#f2bfd2"} />
-              <stop offset="100%" stopColor={isDark ? "#681037" : "#e4a7be"} />
+              <stop offset="0%" stopColor={isPipelineShade ? (isDark ? "#0c040a" : "#fdf8fa") : (isDark ? "#12040f" : "#fef8fa")} />
+              <stop offset="25%" stopColor={isPipelineShade ? (isDark ? "#0c040a" : "#fdf8fa") : (isDark ? "#24081c" : "#fae0ec")} />
+              <stop offset="60%" stopColor={isPipelineShade ? (isDark ? "#19030e" : "#fce7f0") : (isDark ? "#48092a" : "#f2bfd2")} />
+              <stop offset="85%" stopColor={isPipelineShade ? (isDark ? "#290518" : "#f9cfde") : (isDark ? "#681037" : "#e4a7be")} />
+              <stop offset="100%" stopColor={isPipelineShade ? (isDark ? "#1a020f" : "#f4b3c9") : (isDark ? "#681037" : "#e4a7be")} />
             </linearGradient>
 
             {/* Radiant Sun Glow */}
             <radialGradient id="artSunGrad" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
-              <stop offset="25%" stopColor="#ff8da7" stopOpacity="0.75" />
-              <stop offset="55%" stopColor="#e1496d" stopOpacity="0.3" />
-              <stop offset="85%" stopColor="#942945" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="#942945" stopOpacity="0" />
+              <stop offset="25%" stopColor={isPipelineShade ? "#ff8da7" : "#ff8da7"} stopOpacity="0.75" />
+              <stop offset="55%" stopColor={isPipelineShade ? "#e1496d" : "#e1496d"} stopOpacity="0.35" />
+              <stop offset="85%" stopColor={isPipelineShade ? "#942945" : "#942945"} stopOpacity="0.08" />
+              <stop offset="100%" stopColor={isPipelineShade ? "#942945" : "#942945"} stopOpacity="0" />
             </radialGradient>
 
-            {/* Curvy Mountain Gradients */}
+            {/* Curvy Mountain Gradients - SOPHISTICATED BORDEAUX & ROSE WINE */}
             <linearGradient id="curvyMtnFarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={isDark ? "#480a2f" : "#e29cb0"} />
-              <stop offset="60%" stopColor={isDark ? "#2e061e" : "#ba6881"} />
-              <stop offset="100%" stopColor={isDark ? "#190310" : "#8e3d55"} />
+              <stop offset="0%" stopColor={isPipelineShade ? (isDark ? "#340615" : "#d4708f") : (isDark ? "#480a2f" : "#e29cb0")} />
+              <stop offset="60%" stopColor={isPipelineShade ? (isDark ? "#25030e" : "#bd5374") : (isDark ? "#2e061e" : "#ba6881")} />
+              <stop offset="100%" stopColor={isPipelineShade ? (isDark ? "#150107" : "#9e3b5a") : (isDark ? "#190310" : "#8e3d55")} />
             </linearGradient>
             <linearGradient id="curvyMtnMidGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={isDark ? "#63103c" : "#cf5e81"} />
-              <stop offset="50%" stopColor={isDark ? "#430926" : "#a13c59"} />
-              <stop offset="100%" stopColor={isDark ? "#220413" : "#691b32"} />
+              <stop offset="0%" stopColor={isPipelineShade ? (isDark ? "#4f081c" : "#942945") : (isDark ? "#63103c" : "#cf5e81")} />
+              <stop offset="50%" stopColor={isPipelineShade ? (isDark ? "#380513" : "#7d1d36") : (isDark ? "#430926" : "#a13c59")} />
+              <stop offset="100%" stopColor={isPipelineShade ? (isDark ? "#20020a" : "#5c1126") : (isDark ? "#220413" : "#691b32")} />
             </linearGradient>
 
             {/* Rolling Green Hills Gradients */}
             <linearGradient id="hillGreenGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={isDark ? "#1e5340" : "#57b88e"} />
-              <stop offset="60%" stopColor={isDark ? "#13382b" : "#328564"} />
-              <stop offset="100%" stopColor={isDark ? "#0a1e17" : "#1c563f"} />
+              <stop offset="0%" stopColor={isPipelineShade ? (isDark ? "#065f46" : "#34d399") : (isDark ? "#1e5340" : "#57b88e")} />
+              <stop offset="60%" stopColor={isPipelineShade ? (isDark ? "#064e3b" : "#10b981") : (isDark ? "#13382b" : "#328564")} />
+              <stop offset="100%" stopColor={isPipelineShade ? (isDark ? "#022c22" : "#059669") : (isDark ? "#0a1e17" : "#1c563f")} />
             </linearGradient>
             <linearGradient id="hillGreenGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={isDark ? "#296e54" : "#6ecea6"} />
-              <stop offset="70%" stopColor={isDark ? "#184535" : "#3fa27a"} />
-              <stop offset="100%" stopColor={isDark ? "#0d261d" : "#24664c"} />
+              <stop offset="0%" stopColor={isPipelineShade ? (isDark ? "#047857" : "#6ee7b7") : (isDark ? "#296e54" : "#6ecea6")} />
+              <stop offset="70%" stopColor={isPipelineShade ? (isDark ? "#064e3b" : "#34d399") : (isDark ? "#184535" : "#3fa27a")} />
+              <stop offset="100%" stopColor={isPipelineShade ? (isDark ? "#022c22" : "#059669") : (isDark ? "#0d261d" : "#24664c")} />
             </linearGradient>
 
             {/* Deep Expansive Crystal-Clear Bluish Lake Gradient */}
             <linearGradient id="lakeWaterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={isDark ? "#062238" : "#0284c7"} />
-              <stop offset="30%" stopColor={isDark ? "#0c3b5e" : "#0ea5e9"} />
-              <stop offset="65%" stopColor={isDark ? "#061f36" : "#0369a1"} />
-              <stop offset="100%" stopColor={isDark ? "#030f1c" : "#075985"} />
+              <stop offset="0%" stopColor={isPipelineShade ? (isDark ? "#0c4a6e" : "#38bdf8") : (isDark ? "#062238" : "#0284c7")} />
+              <stop offset="30%" stopColor={isPipelineShade ? (isDark ? "#075985" : "#0284c7") : (isDark ? "#0c3b5e" : "#0ea5e9")} />
+              <stop offset="65%" stopColor={isPipelineShade ? (isDark ? "#0369a1" : "#0369a1") : (isDark ? "#061f36" : "#0369a1")} />
+              <stop offset="100%" stopColor={isPipelineShade ? (isDark ? "#082f49" : "#075985") : (isDark ? "#030f1c" : "#075985")} />
             </linearGradient>
 
             {/* Paved Dedicated Asphalt Velo Track Gradient (Slate / Charcoal) */}
@@ -375,17 +386,21 @@ export default function CommunityLandscapeBanner({ onNavigate, isDark }) {
           {/* ════════ 1. ATMOSPHERIC SKY & GOD RAYS ════════ */}
           <rect width="1440" height="470" fill="url(#artSkyGrad)" />
 
-          {/* Glowing Radial Sun Orb */}
-          <circle cx="720" cy="150" r="160" fill="url(#artSunGrad)" />
+          {/* Glowing Radial Sun Orb (Hidden on Pipeline Page) */}
+          {!isPipelineShade && (
+            <circle cx="720" cy="150" r="160" fill="url(#artSunGrad)" />
+          )}
 
-          {/* Sun Rays Beam Streaks */}
-          <g opacity={isDark ? "0.08" : "0.18"}>
-            <polygon points="720,150 520,0 580,0" fill="#ffffff" />
-            <polygon points="720,150 660,0 720,0" fill="#ffffff" />
-            <polygon points="720,150 840,0 900,0" fill="#ffffff" />
-            <polygon points="720,150 1020,0 1100,0" fill="#ffffff" />
-            <polygon points="720,150 380,0 430,0" fill="#ffffff" />
-          </g>
+          {/* Sun Rays Beam Streaks (Hidden on Pipeline Page) */}
+          {!isPipelineShade && (
+            <g opacity={isDark ? "0.08" : "0.18"}>
+              <polygon points="720,150 520,0 580,0" fill="#ffffff" />
+              <polygon points="720,150 660,0 720,0" fill="#ffffff" />
+              <polygon points="720,150 840,0 900,0" fill="#ffffff" />
+              <polygon points="720,150 1020,0 1100,0" fill="#ffffff" />
+              <polygon points="720,150 380,0 430,0" fill="#ffffff" />
+            </g>
+          )}
 
           {/* Flock of Birds in V-Formation */}
           <g style={{ animation: "birdFlap 3s ease-in-out infinite", opacity: 0.65 }}>

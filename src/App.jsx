@@ -167,8 +167,8 @@ export default function App() {
       setActiveWhiteboardProject(null);
       setCurrentPage("whiteboard");
     } else if (page === "infinite_studio") {
-      setActiveStudioProject(data || null);
-      setCurrentPage("infinite_studio");
+      setHomeNav("infinite_studio");
+      setCurrentPage("home");
     } else {
       setCurrentPage(page);
     }

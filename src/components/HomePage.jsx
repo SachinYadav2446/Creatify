@@ -33,6 +33,7 @@ import CommunityLandscapeBanner from "./CommunityLandscapeBanner";
 import VaultView from "./VaultView";
 import CorePowerTrioSection from "./CorePowerTrioSection";
 import ProfilePage from "./ProfilePage";
+import InfiniteStudioLanding from "./InfiniteStudioLanding";
 import { awardXP, getXpState, getLevelInfo } from "../utils/xpSystem";
 
 const TOOL_ACCENTS = {
@@ -1473,16 +1474,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
             active={activeNav === "infinite_studio"}
             label="Infinite Studio"
             onClick={() => {
-              if (activeNav !== "home") {
-                setActiveNav("home");
-                setTimeout(() => {
-                  const el = document.getElementById("infinite-studio-section");
-                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                }, 150);
-              } else {
-                const el = document.getElementById("infinite-studio-section");
-                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-              }
+              setActiveNav("infinite_studio");
+              window.scrollTo({ top: 0, behavior: "instant" });
             }}
             icon={InfinityIcon}
             animationType="scale"
@@ -1562,6 +1555,17 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
               theme={isDark ? "dark" : "light"}
               onToggleTheme={(t) => { if (window.__creatifyToggleTheme) window.__creatifyToggleTheme(t); }}
               onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              isDark={isDark}
+              THEME={THEME}
+            />
+          </div>
+        ) : activeNav === "infinite_studio" ? (
+          /* ── EMBEDDED DEDICATED INFINITE STUDIO ARCHITECTURE LANDING PAGE ── */
+          <div style={{ minHeight: "100vh" }}>
+            <InfiniteStudioLanding
+              onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+              onNavigate={onNavigate}
+              user={user}
               isDark={isDark}
               THEME={THEME}
             />

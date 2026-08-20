@@ -1,11 +1,16 @@
 export const TRACK_COLORS = {
-  video:   { bg: "rgba(148,41,69,0.15)",   border: "rgba(148,41,69,0.55)", label: "#942945", accent: "#b13453" },
-  image:   { bg: "rgba(168,85,247,0.14)",  border: "rgba(147,51,234,0.45)", label: "#7e22ce", accent: "#c084fc" },
-  text:    { bg: "rgba(225,73,109,0.10)",  border: "rgba(209,58,95,0.40)",  label: "#b13453", accent: "#eba5b6" },
-  audio:   { bg: "rgba(236,72,153,0.10)",  border: "rgba(219,39,119,0.40)", label: "#db2777", accent: "#f472b6" },
-  shape:   { bg: "rgba(147,51,234,0.12)",  border: "rgba(126,34,206,0.45)", label: "#7e22ce", accent: "#a855f7" },
-  sticker: { bg: "rgba(225,73,109,0.12)",  border: "rgba(177,52,83,0.45)",  label: "#942945", accent: "#e1496d" },
+  video:    { bg: "#f1f5f9", border: "#cbd5e1", label: "#334155", accent: "#4f46e5", gradient: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%)", text: "#1e1b4b" },
+  image:    { bg: "#f8fafc", border: "#cbd5e1", label: "#475569", accent: "#0ea5e9", gradient: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)", text: "#0c4a6e" },
+  code:     { bg: "#f8fafc", border: "#93c5fd", label: "#1d4ed8", accent: "#2563eb", gradient: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", text: "#1e3a8a" },
+  terminal: { bg: "#f8fafc", border: "#86efac", label: "#15803d", accent: "#16a34a", gradient: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", text: "#14532d" },
+  mockup:   { bg: "#faf5ff", border: "#d8b4fe", label: "#7e22ce", accent: "#9333ea", gradient: "linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%)", text: "#581c87" },
+  badge:    { bg: "#fffbeb", border: "#fde68a", label: "#b45309", accent: "#d97706", gradient: "linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)", text: "#78350f" },
+  text:     { bg: "#fdf4ff", border: "#f0abfc", label: "#a21caf", accent: "#c026d3", gradient: "linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%)", text: "#701a75" },
+  audio:    { bg: "#fff1f2", border: "#fecdd3", label: "#be123c", accent: "#e11d48", gradient: "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)", text: "#881337" },
+  shape:    { bg: "#f0fdfa", border: "#99f6e4", label: "#0f766e", accent: "#0d9488", gradient: "linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)", text: "#134e4a" },
+  sticker:  { bg: "#fff7ed", border: "#fed7aa", label: "#c2410c", accent: "#ea580c", gradient: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)", text: "#7c2d12" },
 };
+
 
 export const ASPECT_RATIOS = [
   { id: "16:9",  name: "YouTube / Desktop",  w: 1920, h: 1080, icon: "▬" },
@@ -189,16 +194,231 @@ export const STICKERS = [
   { id: "st20",name: "Diamond",  emoji: "💎" },
 ];
 
-export const TEMPLATES = [
-  { id: "tpl_intro",  name: "Cinematic Intro",  desc: "3-clip intro with titles, fade transitions, epic BGM", clips: "3+", duration: "15s", icon: "🎬" },
-  { id: "tpl_youtube",name: "YouTube Outro",    desc: "Subscribe + CTA layout with transition", clips: "2", duration: "10s", icon: "▶" },
-  { id: "tpl_reel",   name: "Reel / TikTok Promo", desc: "9:16 hook + text reveal with pop", clips: "2+", duration: "12s", icon: "📱" },
-  { id: "tpl_slide",  name: "Slideshow Montage", desc: "Ken Burns photo slideshow with crossfade", clips: "5+", duration: "30s", icon: "🖼" },
-  { id: "tpl_product",name: "Product Showcase", desc: "3-product reveal + price card", clips: "4", duration: "20s", icon: "🛍" },
-  { id: "tpl_text",   name: "Typography Motion",desc: "Bold animated titles sequence", clips: "3", duration: "8s", icon: "A" },
-  { id: "tpl_social", name: "Social Quote",     desc: "Animated quote card with background", clips: "2", duration: "10s", icon: "💭" },
-  { id: "tpl_logo",   name: "Logo Sting",       desc: "Logo reveal + sparkles (5s)", clips: "1", duration: "5s", icon: "✨" },
+export const DEV_TEMPLATES = [
+  {
+    id: "dev_saas_launch",
+    name: "🚀 SaaS Hero & Product Launch",
+    desc: "Browser mockup frame, animated headline, feature callouts & CTA for product releases",
+    duration: 15,
+    tag: "Launch",
+    icon: "🚀"
+  },
+  {
+    id: "dev_terminal_cli",
+    name: "💻 CLI & Terminal Walkthrough",
+    desc: "Mac terminal window, live typing commands, fast build output, and version badge",
+    duration: 12,
+    tag: "Developer Tool",
+    icon: "💻"
+  },
+  {
+    id: "dev_code_spotlight",
+    name: "⚡ Code & API Feature Spotlight",
+    desc: "Syntax-highlighted code editor card, line highlight spotlight, benchmark badges",
+    duration: 14,
+    tag: "API & SDK",
+    icon: "⚡"
+  },
+  {
+    id: "dev_changelog",
+    name: "📦 Release Changelog & Fixes",
+    desc: "Version bump announcement, split feature breakdown, and star on GitHub callout",
+    duration: 10,
+    tag: "Changelog",
+    icon: "📦"
+  },
+  {
+    id: "dev_mobile_web",
+    name: "📱 Responsive Cross-Platform Demo",
+    desc: "Side-by-side desktop browser and mobile device mockup showcase",
+    duration: 16,
+    tag: "Multi-Platform",
+    icon: "📱"
+  }
 ];
+
+export const DEV_CODE_PRESETS = [
+  {
+    id: "code_react",
+    name: "React 19 Server Component",
+    lang: "tsx",
+    filename: "ProductHero.tsx",
+    code: `export async function ProductHero({ orgId }: Props) {
+  const analytics = await getRealtimeMetrics(orgId);
+  
+  return (
+    <div className="flex items-center gap-4 p-8 rounded-2xl bg-indigo-50 border border-indigo-200">
+      <SparklesIcon className="w-8 h-8 text-indigo-600 animate-pulse" />
+      <div>
+        <h1 className="text-3xl font-black text-slate-900">Blazing Fast Studio</h1>
+        <p className="text-sm text-slate-600">Active Nodes: {analytics.totalActive}</p>
+      </div>
+    </div>
+  );
+}`
+  },
+  {
+    id: "code_python",
+    name: "FastAPI Async AI Service",
+    lang: "python",
+    filename: "main.py",
+    code: `@app.post("/api/v1/generate-video")
+async def generate_product_video(payload: VideoRequest):
+    pipeline = AICompositionEngine(gpu_acceleration=True)
+    result = await pipeline.render_async(
+        timeline=payload.timeline,
+        codec="h264",
+        fps=60
+    )
+    return {"status": "success", "latency_ms": 42.8, "url": result.cdn_url}`
+  },
+  {
+    id: "code_rust",
+    name: "Rust High-Speed Codec",
+    lang: "rust",
+    filename: "engine.rs",
+    code: `pub fn process_timeline_frame(buffer: &mut [u8], width: u32, height: u32) -> Result<(), RenderError> {
+    let raw_pixels = RayonParallelIterator::new(buffer);
+    raw_pixels.for_each(|pixel| {
+        apply_shader_grade(pixel, ColorSpace::LinearRgb);
+    });
+    Ok(())
+}`
+  },
+  {
+    id: "code_typescript",
+    name: "TypeScript Client SDK",
+    lang: "typescript",
+    filename: "client.ts",
+    code: `import { CreatifyClient } from '@creatify/sdk';
+
+const creatify = new CreatifyClient({
+  apiKey: process.env.CREATIFY_KEY,
+  region: 'us-east-1',
+  cache: true,
+});
+
+const video = await creatify.videos.create({
+  template: 'saas-hero',
+  theme: 'light',
+  exportFormat: 'mp4',
+});`
+  },
+  {
+    id: "code_docker",
+    name: "Docker Compose Microservices",
+    lang: "yaml",
+    filename: "docker-compose.yml",
+    code: `version: '3.8'
+services:
+  creatify-engine:
+    image: creatify/video-worker:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - CONCURRENCY=16
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]`
+  }
+];
+
+export const DEV_TERMINAL_PRESETS = [
+  {
+    id: "term_npm",
+    name: "NPM Package Install",
+    title: "zsh — creatify-app — 80x24",
+    prompt: "alex@macbook:~/projects/creatify$",
+    command: "npx create-creatify-app@latest my-startup --template=saas",
+    output: `✔ Resolving packages...
+✔ Installing React 19, Vite, Tailwind CSS v4, Lucide Icons
+✔ Compiling native video WASM acceleration engine
+✨ Project created successfully in 1.4s!
+
+To start development:
+  cd my-startup
+  npm run dev  --> http://localhost:5173`
+  },
+  {
+    id: "term_git",
+    name: "Git Release Commit & Push",
+    title: "zsh — git repo — 80x24",
+    prompt: "dev@workstation:~/creatify-core (main)$",
+    command: 'git commit -m "feat(engine): 60fps canvas renderer + developer light studio"',
+    output: `[main 8a93bf1] feat(engine): 60fps canvas renderer + developer light studio
+ 8 files changed, 542 insertions(+), 18 deletions(-)
+ create mode 100644 src/components/DeveloperStudio.jsx
+🚀 Pushed to origin/main (all CI checks passed)`
+  },
+  {
+    id: "term_cargo",
+    name: "Cargo Build Optimized",
+    title: "bash — rust compiler",
+    prompt: "root@render-node-01:~/wasm-core#",
+    command: "cargo build --release --target wasm32-unknown-unknown",
+    output: `   Compiling creatify-wasm-pipeline v2.4.0
+   Compiling ffmpeg-next-sys v5.1.2
+   Compiling image-filters v0.9.1
+    Finished release [optimized + lto] target(s) in 3.12s
+⚡ Binary size: 480 KB (Gzipped)`
+  },
+  {
+    id: "term_curl",
+    name: "REST API Curl Request",
+    title: "zsh — api client",
+    command: `curl -X POST https://api.creatify.dev/v1/projects \\
+  -H "Authorization: Bearer dev_sec_9942" \\
+  -d '{"template":"saas_launch","fps":60}'`,
+    output: `{
+  "status": "success",
+  "project_id": "proj_88fa29",
+  "render_time_ms": 128.4,
+  "download_url": "https://cdn.creatify.dev/export/saas_v1.mp4"
+}`
+  }
+];
+
+export const DEV_BADGES = [
+  { id: "b_react", name: "React 19", category: "Stack", bg: "#e0f2fe", border: "#38bdf8", text: "#0369a1", icon: "⚛️" },
+  { id: "b_next", name: "Next.js 15", category: "Stack", bg: "#f1f5f9", border: "#64748b", text: "#0f172a", icon: "▲" },
+  { id: "b_ts", name: "TypeScript", category: "Stack", bg: "#dbeafe", border: "#60a5fa", text: "#1d4ed8", icon: "🔷" },
+  { id: "b_rust", name: "Rust", category: "Stack", bg: "#ffedd5", border: "#fb923c", text: "#c2410c", icon: "🦀" },
+  { id: "b_python", name: "Python", category: "Stack", bg: "#fef3c7", border: "#facc15", text: "#854d0e", icon: "🐍" },
+  { id: "b_docker", name: "Docker Ready", category: "Stack", bg: "#e0f2fe", border: "#0ea5e9", text: "#0369a1", icon: "🐳" },
+  { id: "b_tailwind", name: "Tailwind CSS", category: "Stack", bg: "#ccfbf1", border: "#2dd4bf", text: "#0f766e", icon: "🎨" },
+  { id: "b_ai", name: "AI Powered", category: "Stack", bg: "#f3e8ff", border: "#c084fc", text: "#7e22ce", icon: "✨" },
+  { id: "b_fast", name: "⚡ 10x Blazing Fast", category: "Metric", bg: "#fef9c3", border: "#fde047", text: "#a16207", icon: "⚡" },
+  { id: "b_stars", name: "⭐ 15k GitHub Stars", category: "Metric", bg: "#fff7ed", border: "#fdba74", text: "#c2410c", icon: "⭐" },
+  { id: "b_zero", name: "Zero Dependencies", category: "Metric", bg: "#ecfdf5", border: "#34d399", text: "#047857", icon: "🛡️" },
+  { id: "b_typesafe", name: "100% Type-Safe", category: "Metric", bg: "#eff6ff", border: "#60a5fa", text: "#1d4ed8", icon: "🔒" },
+  { id: "b_v2", name: "🚀 v2.0 Released", category: "Release", bg: "#ede9fe", border: "#a78bfa", text: "#6d28d9", icon: "🚀" },
+  { id: "b_new", name: "✨ New Feature", category: "Release", bg: "#fdf2f8", border: "#f472b6", text: "#be185d", icon: "✨" },
+  { id: "b_bug", name: "🐛 Bug Fixed", category: "Release", bg: "#fef2f2", border: "#f87171", text: "#b91c1c", icon: "🐛" },
+  { id: "b_open", name: "Open Source (MIT)", category: "Release", bg: "#f0fdf4", border: "#4ade80", text: "#15803d", icon: "💚" },
+];
+
+export const DEV_SFX = [
+  { id: "sfx_key1", name: "Keyboard Click", url: "https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3", duration: 1, thumb: "⌨️", category: "Mechanical" },
+  { id: "sfx_bell", name: "Terminal Bell", url: "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3", duration: 2, thumb: "🔔", category: "Terminal" },
+  { id: "sfx_pop", name: "Button Pop", url: "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3", duration: 1, thumb: "🔘", category: "UI" },
+  { id: "sfx_snap", name: "Snap / Shutter", url: "https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3", duration: 1, thumb: "📸", category: "Mockup" },
+  { id: "sfx_cheer", name: "Deploy Fanfare", url: "https://assets.mixkit.co/active_storage/sfx/2805/2805-preview.mp3", duration: 4, thumb: "🎉", category: "Launch" },
+  { id: "sfx_whoosh", name: "Fast Whoosh", url: "https://assets.mixkit.co/active_storage/sfx/2688/2688-preview.mp3", duration: 2, thumb: "💨", category: "Transition" },
+];
+
+export const CANVAS_PATTERNS = [
+  { id: "dot_grid", name: "Developer Dot Grid", bg: "#f8fafc", gridColor: "#cbd5e1", type: "dots" },
+  { id: "blueprint", name: "Engineering Blueprint", bg: "#0f172a", gridColor: "#334155", type: "grid" },
+  { id: "clean_white", name: "Clean Studio Light", bg: "#ffffff", gridColor: "transparent", type: "solid" },
+  { id: "soft_gradient", name: "Indigo Mesh Glow", bg: "linear-gradient(135deg, #f0fdf4 0%, #e0e7ff 50%, #fae8ff 100%)", type: "gradient" },
+  { id: "dark_glass", name: "Midnight Terminal Dark", bg: "#090d16", gridColor: "#1e293b", type: "dots" },
+];
+
+export const TEMPLATES = DEV_TEMPLATES;
+
 
 export const INITIAL_STATE = {
   tracks: [],

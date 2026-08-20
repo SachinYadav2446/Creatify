@@ -1,24 +1,25 @@
+import React from "react";
+import { Keyboard, X, Command } from "lucide-react";
+
 export default function ShortcutsModal({ show, onClose }) {
   if (!show) return null;
 
   const shortcuts = [
-    { key: "Space", desc: "Play / Pause playback" },
-    { key: "S", desc: "Split clip at current playhead position" },
+    { key: "Space", desc: "Play / Pause video preview" },
+    { key: "S", desc: "Split clip at current playhead" },
     { key: "Delete / Backspace", desc: "Delete selected clip" },
     { key: "Ctrl + Z", desc: "Undo last action" },
     { key: "Ctrl + Y / Shift+Z", desc: "Redo action" },
-    { key: "Ctrl + S", desc: "Save project" },
-    { key: "Arrow Left / Right", desc: "Seek playhead by 5 seconds (Hold Shift for 1 frame)" },
-    { key: "Home", desc: "Jump to start of timeline (00:00)" },
-    { key: "End", desc: "Jump to end of timeline" },
-    { key: "I", desc: "Set In point at playhead" },
-    { key: "O", desc: "Set Out point at playhead" },
-    { key: "M", desc: "Add marker at playhead" },
-    { key: "Shift + F", desc: "Zoom to fit all clips" },
-    { key: "C", desc: "Switch to Cut tool" },
-    { key: "V", desc: "Switch to Select tool" },
-    { key: "T", desc: "Switch to Trim tool" },
-    { key: "?", desc: "Toggle this Keyboard Shortcuts modal" },
+    { key: "Ctrl + S", desc: "Save project locally & cloud" },
+    { key: "Arrow Left / Right", desc: "Seek playhead by 5s (Hold Shift for 1 frame)" },
+    { key: "Home / End", desc: "Jump to beginning or end of timeline" },
+    { key: "I", desc: "Set In-Point marker" },
+    { key: "O", desc: "Set Out-Point marker" },
+    { key: "M", desc: "Add timestamp marker" },
+    { key: "Shift + F", desc: "Zoom to fit all timeline clips" },
+    { key: "V / C / T", desc: "Switch between Select / Cut / Trim tools" },
+    { key: "R", desc: "Toggle Screen & Camera PIP recorder" },
+    { key: "?", desc: "Toggle this Shortcuts modal" },
   ];
 
   return (
@@ -26,13 +27,12 @@ export default function ShortcutsModal({ show, onClose }) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.75)",
-        backdropFilter: "blur(12px)",
+        background: "rgba(15, 23, 42, 0.45)",
+        backdropFilter: "blur(8px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         zIndex: 9999,
-        animation: "fadeIn 0.2s ease-out",
       }}
       onClick={onClose}
     >
@@ -41,57 +41,58 @@ export default function ShortcutsModal({ show, onClose }) {
           width: "560px",
           maxWidth: "92vw",
           maxHeight: "85vh",
-          background: "rgba(18, 14, 18, 0.95)",
-          border: "1px solid rgba(225, 73, 109, 0.25)",
-          borderRadius: "20px",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.8), 0 0 40px rgba(225,73,109,0.15)",
-          padding: "28px",
+          background: "#ffffff",
+          border: "1px solid #e2e8f0",
+          borderRadius: "18px",
+          boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05)",
+          padding: "24px 28px",
           display: "flex",
           flexDirection: "column",
-          color: "#e5e5e5",
+          color: "#0f172a",
           fontFamily: "'Instrument Sans', sans-serif",
           overflow: "hidden",
         }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <span style={{ fontSize: "24px" }}>⌨️</span>
+            <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "#e0e7ff", color: "#4f46e5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Keyboard size={20} />
+            </div>
             <div>
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: "20px", fontWeight: 800, color: "#fff", margin: 0, letterSpacing: "-0.02em" }}>
+              <h2 style={{ fontFamily: "'Poppins', sans-serif", fontSize: "17px", fontWeight: 700, color: "#0f172a", margin: 0, letterSpacing: "-0.01em" }}>
                 Keyboard Shortcuts
               </h2>
-              <p style={{ fontSize: "12px", color: "#8c8780", margin: "2px 0 0" }}>
-                Master CinéCut with rapid keyboard hotkeys
+              <p style={{ fontSize: "12px", color: "#64748b", margin: "2px 0 0" }}>
+                Developer hotkeys for rapid timeline editing
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             style={{
-              background: "rgba(225, 73, 109, 0.1)",
-              border: "1px solid rgba(225, 73, 109, 0.2)",
-              color: "#e1496d",
+              background: "#f1f5f9",
+              border: "1px solid #e2e8f0",
+              color: "#64748b",
               width: "32px",
               height: "32px",
               borderRadius: "50%",
               cursor: "pointer",
-              fontSize: "14px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              transition: "all 0.18s",
+              transition: "all 0.15s",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(225, 73, 109, 0.25)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(225, 73, 109, 0.1)"; }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "#e2e8f0"; e.currentTarget.style.color = "#0f172a"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "#f1f5f9"; e.currentTarget.style.color = "#64748b"; }}
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
 
         {/* Shortcuts grid */}
-        <div style={{ flex: 1, overflowY: "auto", paddingRight: "6px", display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
+        <div style={{ flex: 1, overflowY: "auto", paddingRight: "4px", display: "grid", gridTemplateColumns: "1fr", gap: "6px" }}>
           {shortcuts.map((sc) => (
             <div
               key={sc.key}
@@ -99,23 +100,23 @@ export default function ShortcutsModal({ show, onClose }) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "8px 14px",
-                background: "rgba(255, 255, 255, 0.03)",
-                border: "1px solid rgba(225, 73, 109, 0.08)",
-                borderRadius: "10px",
+                padding: "8px 12px",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: "8px",
               }}
             >
-              <span style={{ fontSize: "13px", color: "#c5c0b8" }}>{sc.desc}</span>
+              <span style={{ fontSize: "13px", color: "#334155", fontWeight: 500 }}>{sc.desc}</span>
               <kbd
                 style={{
-                  background: "linear-gradient(135deg, rgba(225,73,109,0.18), rgba(148,41,69,0.25))",
-                  border: "1px solid rgba(225, 73, 109, 0.35)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
-                  color: "#ff8da7",
-                  padding: "4px 10px",
+                  background: "#ffffff",
+                  border: "1px solid #cbd5e1",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                  color: "#4f46e5",
+                  padding: "3px 8px",
                   borderRadius: "6px",
-                  fontSize: "11px",
-                  fontFamily: "'Poppins', monospace",
+                  fontSize: "11.5px",
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
                   fontWeight: 600,
                   whiteSpace: "nowrap",
                 }}
@@ -127,12 +128,14 @@ export default function ShortcutsModal({ show, onClose }) {
         </div>
 
         {/* Footer */}
-        <div style={{ marginTop: "20px", paddingTop: "14px", borderTop: "1px solid rgba(225, 73, 109, 0.12)", textAlign: "center" }}>
-          <span style={{ fontSize: "11px", color: "#5c5650" }}>
-            Press <kbd style={{ color: "#e1496d", background: "none", border: "none" }}>Esc</kbd> or click outside to dismiss
+        <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid #f1f5f9", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
+          <Command size={13} color="#94a3b8" />
+          <span style={{ fontSize: "11.5px", color: "#94a3b8" }}>
+            Press <kbd style={{ color: "#4f46e5", background: "#eef2ff", padding: "1px 5px", borderRadius: "4px", border: "1px solid #c7d2fe", fontWeight: 600 }}>Esc</kbd> or click outside to close
           </span>
         </div>
       </div>
     </div>
   );
 }
+

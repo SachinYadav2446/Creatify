@@ -5,11 +5,11 @@ export default function ShowroomHero({ onNavigate, user, isDark, THEME }) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const sampleIdeas = [
-    { label: "4K YouTube Reel", color: "#e1496d" },
-    { label: "Minimalist Brand Logo", color: "#38bdf8" },
-    { label: "Startup Pitch Deck", color: "#a855f7" },
-    { label: "AI Cyberpunk Visual", color: "#10b981" },
-    { label: "Media Kit Document", color: "#f59e0b" },
+    { label: "Microservices HLD (Kafka + Redis)", color: "#e1496d" },
+    { label: "Payment Gateway Sequence LLD", color: "#38bdf8" },
+    { label: "PostgreSQL Database ERD", color: "#10b981" },
+    { label: "Distributed Cache RFC Spec", color: "#a855f7" },
+    { label: "System Design Review Deck", color: "#f59e0b" },
   ];
 
   const handleGenerate = (e) => {
@@ -385,12 +385,12 @@ export default function ShowroomHero({ onNavigate, user, isDark, THEME }) {
         </svg>
       </div>
 
-      {/* ── CRISP & SMALL PUNCHY CENTER HEADLINE ── */}
+      {/* ── CRISP & PROPORTIONED CENTER HEADLINE ── */}
       <div
         style={{
           position: "relative",
           zIndex: 10,
-          maxWidth: 820,
+          maxWidth: 760,
           margin: "0 auto",
           textAlign: "center",
           display: "flex",
@@ -398,54 +398,64 @@ export default function ShowroomHero({ onNavigate, user, isDark, THEME }) {
           alignItems: "center",
         }}
       >
-        {/* Small, Crisp, Punchy Headline with Refined 3D Shadow */}
+        {/* Sleek Top Pill Badge */}
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "5px 14px",
+            borderRadius: "99px",
+            background: isDark ? "rgba(225, 73, 109, 0.14)" : "rgba(255, 255, 255, 0.9)",
+            border: `1px solid ${isDark ? "rgba(225, 73, 109, 0.3)" : "rgba(148, 41, 69, 0.16)"}`,
+            boxShadow: "0 2px 10px rgba(148, 41, 69, 0.08)",
+            marginBottom: 16,
+          }}
+        >
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#e1496d", boxShadow: "0 0 8px #e1496d" }} />
+          <span
+            style={{
+              fontFamily: "Syne, sans-serif",
+              fontWeight: 800,
+              fontSize: "11px",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: isDark ? "#ff8da7" : "#9f1239",
+            }}
+          >
+            HLD • LLD • UML • DATABASE ERD
+          </span>
+        </div>
+
+        {/* Clean, Refined, Well-Proportioned Main Headline */}
         <h1
           style={{
             fontFamily: "Syne, sans-serif",
             fontWeight: 800,
-            fontSize: "clamp(30px, 4.2vw, 54px)",
+            fontSize: "clamp(24px, 3.2vw, 38px)",
             letterSpacing: "-0.03em",
-            lineHeight: 1.15,
+            lineHeight: 1.2,
             color: isDark ? "#ffffff" : "#1a040d",
             margin: "0 0 12px",
-            textShadow: isDark
-              ? "0 4px 0 rgba(0, 0, 0, 0.4), 0 10px 24px rgba(0, 0, 0, 0.6)"
-              : "0 3px 0 rgba(148, 41, 69, 0.15), 0 8px 20px rgba(148, 41, 69, 0.12)",
+            maxWidth: 680,
           }}
         >
-          Turn Any Idea Into Stunning Design.
+          Architect Systems with High-Level &amp; Low-Level Visuals<span style={{ color: "#e1496d" }}>.</span>
         </h1>
-
-        {/* Punchy Callout */}
-        <h2
-          style={{
-            fontFamily: "Syne, sans-serif",
-            fontWeight: 900,
-            fontSize: "clamp(26px, 3.6vw, 48px)",
-            letterSpacing: "0.02em",
-            textTransform: "uppercase",
-            color: isDark ? "#ff8da7" : "#9f1239",
-            margin: "0 0 14px",
-            textShadow: isDark
-              ? "0 4px 0 rgba(0, 0, 0, 0.35), 0 10px 25px rgba(225, 73, 109, 0.3)"
-              : "0 2px 0 rgba(148, 41, 69, 0.2)",
-          }}
-        >
-          JUST TYPE AN IDEA!
-        </h2>
 
         {/* Crisp Subtitle */}
         <p
           style={{
             fontFamily: "'Instrument Sans', sans-serif",
-            fontSize: "clamp(15px, 1.5vw, 19px)",
-            fontWeight: 500,
-            color: isDark ? "rgba(253, 242, 244, 0.85)" : "rgba(35, 8, 18, 0.8)",
-            margin: "0 0 28px",
-            maxWidth: 580,
+            fontSize: "clamp(13.5px, 1.2vw, 15.5px)",
+            fontWeight: 400,
+            lineHeight: 1.55,
+            color: isDark ? "rgba(253, 242, 244, 0.75)" : "rgba(35, 8, 18, 0.72)",
+            margin: "0 0 24px",
+            maxWidth: 560,
           }}
         >
-          Instant 4K Videos, Vector Logos, Slide Decks &amp; Graphics generated in seconds.
+          Model cloud microservices, object-oriented class hierarchies, database schemas, and engineering RFC tech specs.
         </p>
 
         {/* ── UNIFIED MODERN PROMPT & GENERATE CAPSULE (NO EMOJIS) ── */}

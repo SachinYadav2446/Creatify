@@ -166,6 +166,15 @@ export default function App() {
     } else if (page === "whiteboard") {
       setActiveWhiteboardProject(null);
       setCurrentPage("whiteboard");
+    } else if (page === "pipelines") {
+      setHomeNav("pipelines");
+      setCurrentPage("home");
+    } else if (page === "capacity") {
+      setHomeNav("capacity");
+      setCurrentPage("home");
+    } else if (page === "templates") {
+      setHomeNav("templates");
+      setCurrentPage("home");
     } else if (page === "infinite_studio") {
       setHomeNav("infinite_studio");
       setCurrentPage("home");

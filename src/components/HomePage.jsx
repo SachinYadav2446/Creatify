@@ -8,7 +8,8 @@ import {
   Code, Share2, Globe, Cpu, Users, Zap,
   Search, Trash2, Plus, ArrowRight, Check, X,
   Palette, Box, Compass, ChevronLeft, ChevronRight,
-  Send, MessageSquare, Copy, CheckCheck, Bug, Lightbulb, Briefcase, Mail, Clock, ShieldCheck
+  Send, MessageSquare, Copy, CheckCheck, Bug, Lightbulb, Briefcase, Mail, Clock, ShieldCheck,
+  Calculator, Database
 } from "lucide-react";
 
 // Import generated preview images
@@ -21,10 +22,9 @@ import logoPrev       from "../assets/images/logo_preview.png";
 import docPrev        from "../assets/images/doc_preview.png";
 import whiteboardPrev from "../assets/images/whiteboard_preview.png";
 
-import BrandKit from "./BrandKit";
 import TemplatesMarketplace from "./TemplatesMarketplace";
 import WorkflowPipelines from "./WorkflowPipelines";
-import MockupStudio from "./MockupStudio";
+import CapacityCalculator from "./CapacityCalculator";
 import CreativeCityscapeArt from "./CreativeCityscapeArt";
 import ExperienceCreatifySection from "./ExperienceCreatifySection";
 import EcosystemStrip from "./EcosystemStrip";
@@ -35,17 +35,16 @@ import CorePowerTrioSection from "./CorePowerTrioSection";
 import ProfilePage from "./ProfilePage";
 import InfiniteStudioLanding from "./InfiniteStudioLanding";
 import { awardXP, getXpState, getLevelInfo } from "../utils/xpSystem";
+import { HldCover, LldCover, ErdCover, RfcCover, DeckCover, PipelineCover } from "./ArchitectureCovers";
 
 const TOOL_ACCENTS = {
-  "Video Editor": "#ef4444",
-  "Presentations": "#3b82f6",
-  "Logo Maker": "#10b981",
-  "Whiteboard": "#a855f7",
-  "Image Editor": "#f59e0b",
-  "Documents": "#06b6d4",
-  "Social Studio": "#ec4899",
-  "Print Design": "#f97316",
-  "AI Magic": "#8b5cf6",
+  "HLD Studio": "#e1496d",
+  "LLD & UML": "#38bdf8",
+  "Database ERD": "#10b981",
+  "RFC Docs": "#ec4899",
+  "Tech Decks": "#a855f7",
+  "Pipelines": "#f97316",
+  "3D Rigs": "#22d3a8",
   "Infinite Studio": "#e1496d",
 };
 
@@ -149,76 +148,58 @@ function SidebarIcon({ active, icon: IconComponent, label, onClick, THEME, crown
 // ─── Studio Picker Modal ──────────────────────────────────────────────────
 const STUDIO_TOOLS = [
   {
-    id: "editor",       name: "Video Editor",
-    desc: "Multi-track timeline, color grading, audio mixing",
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>,
-    color: "#e1496d", tag: "WebGL · WASM",
+    id: "whiteboard",   name: "HLD Architecture Studio",
+    desc: "Cloud topologies, microservices, AWS/GCP/K8s nodes & Kafka event buses",
+    icon: <LayoutGrid size={22} />,
+    color: "#e1496d", tag: "Cloud HLD · Topology",
   },
   {
-    id: "presentation",  name: "Presentations",
-    desc: "Animated slides, 500+ templates, PPTX export",
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="13" rx="2"/><path d="M8 21h8M12 16v5"/></svg>,
-    color: "#942945", tag: "PPTX · PDF · HTML5",
+    id: "infinite_studio", name: "LLD & UML Studio",
+    desc: "Class diagrams, Sequence flows, State machines & bi-directional code sync",
+    icon: <Code size={22} />,
+    color: "#38bdf8", tag: "UML · LLD · AST Sync",
   },
   {
-    id: "whiteboard",    name: "Whiteboard",
-    desc: "Infinite canvas, sticky notes, live multiplayer",
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>,
-    color: "#b13453", tag: "Canvas · Real-time",
+    id: "database_erd",  name: "Database & ERD Modeler",
+    desc: "Visual schema design, primary/foreign keys, 1-click SQL DDL export",
+    icon: <Cpu size={22} />,
+    color: "#10b981", tag: "SQL · PostgreSQL · Prisma",
   },
   {
-    id: "logo_maker",    name: "Logo Maker",
-    desc: "Vector studio, AI suggestions, SVG export",
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
-    color: "#e1496d", tag: "SVG · AI-assisted",
+    id: "documents",     name: "Engineering RFC & ADR Docs",
+    desc: "Architecture Decision Records & tech specs with live reactive Mermaid diagrams",
+    icon: <FileText size={22} />,
+    color: "#ec4899", tag: "RFC · Tech Specs · Markdown",
   },
   {
-    id: "social_studio", name: "Social Studio",
-    desc: "Instagram, X, LinkedIn — all formats in one place",
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>,
-    color: "#942945", tag: "All social formats",
+    id: "presentation",  name: "System Design Review Decks",
+    desc: "Architecture sprint reviews, tech presentations & RFC sign-off slides",
+    icon: <Presentation size={22} />,
+    color: "#a855f7", tag: "PPTX · System Design Decks",
   },
   {
-    id: "image_editor",  name: "Image Editor",
-    desc: "Layers, masks, filters, blend modes",
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>,
-    color: "#b13453", tag: "Canvas API",
+    id: "pipelines",     name: "Distributed Event Pipelines",
+    desc: "Visual Kafka pub/sub, microservice data flow & CI/CD DAG graphs",
+    icon: <Zap size={22} />,
+    color: "#f97316", tag: "Distributed DAG · Pub/Sub",
   },
   {
-    id: "documents",     name: "Documents",
-    desc: "Rich docs with media, tables, charts",
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>,
-    color: "#e1496d", tag: "DOCX · PDF",
+    id: "mockup_studio", name: "3D Architecture & Device Rigs",
+    desc: "3D Cloud server racks, terminals & perspective OpenGraph social assets",
+    icon: <Box size={22} />,
+    color: "#22d3a8", tag: "Three.js · WebGL 3D",
   },
   {
-    id: "infinite_studio", name: "Infinite Studio",
-    desc: "Executable canvas, live APIs, multiplayer",
-    icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg>,
-    color: "#942945", tag: "React · Live APIs",
-  },
-  {
-    id: "templates",     name: "Templates Marketplace",
-    desc: "1-Click remixable community showcases & decks",
+    id: "templates",     name: "System Architecture Templates",
+    desc: "Reference designs: YouTube, Uber, WhatsApp, CQRS & Distributed Rate Limiters",
     icon: <Compass size={22} />,
-    color: "#e1496d", tag: "Community · Remix",
+    color: "#e1496d", tag: "Reference Architectures",
   },
   {
-    id: "brand_kit",     name: "Brand Kit Hub",
-    desc: "Global palettes, typography hierarchy, logos",
+    id: "brand_kit",     name: "Engineering Design Tokens",
+    desc: "Global system tokens, microservice color hierarchy & topology palettes",
     icon: <Palette size={22} />,
     color: "#38bdf8", tag: "Design Systems",
-  },
-  {
-    id: "pipelines",     name: "Workflow Pipelines",
-    desc: "Visual Unreal Blueprint AI automation wires",
-    icon: <Zap size={22} />,
-    color: "#a855f7", tag: "Blueprints · AI",
-  },
-  {
-    id: "mockup_studio", name: "3D Mockup Studio",
-    desc: "Interactive Three.js 3D devices & packaging stages",
-    icon: <Box size={22} />,
-    color: "#22d3a8", tag: "Three.js · WebGL",
   },
 ];
 
@@ -447,46 +428,48 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
     // Fallback seed projects
     const defaultWorks = [
       {
-        id: "cinema-intro",
-        title: "Cinematic Intro Reel",
-        category: "Video Edit",
-        tool: "Video Editor",
+        id: "ecommerce-hld",
+        title: "E-Commerce Microservices HLD",
+        category: "System Design",
+        tool: "HLD Studio",
         year: "2026",
-        accent: "#b13453",
-        gradient: "linear-gradient(135deg, #1a0f14 0%, #3a0c19 45%, #581c87 100%)",
-        image: videoPrev,
-        tags: ["4K UHD", "LUTs", "15s"],
-        desc: "Cinematic intro sequence with wine-toned color LUTs and silk-smooth title transitions.",
-        data: {
-          tracks: [
-            { id: "track_v1", type: "video", name: "Video Track 1", clips: [
-              { id: "clip_v1", name: "Cinematic Forest", start: 0, duration: 10, type: "video", url: "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4" }
-            ]},
-            { id: "track_t1", type: "text", name: "Title Overlay", clips: [
-              { id: "clip_t1", name: "Main Title", start: 2, duration: 6, type: "text", text: "THE CINEMATIC EXPERIENCE" }
-            ]}
-          ],
-          duration: 15
-        }
+        accent: "#e1496d",
+        gradient: "linear-gradient(135deg, #1a0f14 0%, #3a0c19 45%, #e1496d 100%)",
+        tags: ["Kafka", "Redis", "K8s Cluster"],
+        desc: "High-level architecture showing API Gateway routing, Kafka event streams, Redis cache clusters, and PostgreSQL sharding.",
       },
       {
-        id: "pitch-deck",
-        title: "Startup Pitch Deck",
-        category: "Presentation",
-        tool: "Slide Studio",
+        id: "payment-lld",
+        title: "Stripe Payment Engine LLD",
+        category: "UML Design",
+        tool: "LLD & UML",
         year: "2026",
-        accent: "#7e22ce",
-        gradient: "linear-gradient(135deg, #180825 0%, #3a0e5b 45%, #1a0f14 100%)",
-        image: pptPrev,
-        tags: ["10 Slides", "Vector", "Pitch"],
-        desc: "Modern corporate pitch deck with plum accents and razor-sharp vector grid alignment.",
-        data: {
-          themeIdx: 0,
-          slides: [
-            { id: "s1", layout: "title", title: "Next Gen Platform", subtitle: "Building the future of creation", bulletPoints: ["Empowering millions of creators", "Zero friction deployment", "Fully decentralized platform"], elements: [] },
-            { id: "s2", layout: "split", title: "Market Growth", subtitle: "Traction and projections", bulletPoints: ["300% YoY growth", "High user retention", "Profitable from day one"], elements: [] }
-          ]
-        }
+        accent: "#38bdf8",
+        gradient: "linear-gradient(135deg, #090b14 0%, #111a2e 45%, #0284c7 100%)",
+        tags: ["Class Diagram", "Sequence", "TypeScript"],
+        desc: "Object-oriented class hierarchy with IPaymentEngine interface, idempotency handling, and webhook verification sequence flow.",
+      },
+      {
+        id: "postgres-erd",
+        title: "Multi-Tenant SaaS Database ERD",
+        category: "Database Schema",
+        tool: "Database ERD",
+        year: "2026",
+        accent: "#10b981",
+        gradient: "linear-gradient(135deg, #04120e 0%, #0a261d 45%, #059669 100%)",
+        tags: ["PostgreSQL", "Prisma", "1-N Relations"],
+        desc: "Relational schema design with users, workspaces, project JSONB trees, composite primary keys, and index configurations.",
+      },
+      {
+        id: "cache-rfc",
+        title: "RFC-042: Distributed Cache Invalidation",
+        category: "Tech Spec",
+        tool: "RFC Docs",
+        year: "2026",
+        accent: "#ec4899",
+        gradient: "linear-gradient(135deg, #180a14 0%, #2b0d22 45%, #be185d 100%)",
+        tags: ["Architecture Decision", "SLA p99", "Redis"],
+        desc: "Engineering architecture decision record (ADR) analyzing Redis pub/sub cache purge vs TTL expiration benchmarks.",
       }
     ];
 
@@ -949,14 +932,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
   }, []);
 
   // ── Tool definitions (ordered for Bento layout) ──────────────────────────
-  // Grid: 3 columns  2 rows. All tools equally sized to fit in one studio without gaps
+  // Grid: 3 columns × 2 rows. All tools equally sized for developer architecture suite
   const tools = [
-    { id:"video",   name:"Video Editor",       desc:"Full multi-track timeline with WebGL color grading, audio mixing & in-browser rendering. No uploads needed.", icon:"🎬", color:"#942945",  tag:"WebGL · WASM",           colSpan:1, rowSpan:1, image: videoPrev      },
-    { id:"image",   name:"Image Editor",       desc:"Layers, masks, filters, blend modes. Pro-grade photo editing in your browser.",                                icon:"🖼️", color:"#e1496d",  tag:"Canvas API",             colSpan:1, rowSpan:1, image: imagePrev      },
-    { id:"logo",    name:"Logo Maker",         desc:"Vector-based logo studio. AI suggestions, custom icons, SVG export.",                                          icon:"✦",  color:"#ec4899",  tag:"SVG · AI-assisted",      colSpan:1, rowSpan:1, image: logoPrev       },
-    { id:"ppt",     name:"Presentations",      desc:"Slides that animate. Real-time collaboration, 500+ templates, one-click export.",                              icon:"🎠", color:"#7c233c",  tag:"PPTX · PDF · HTML5",     colSpan:1, rowSpan:1, image: pptPrev        },
-    { id:"white",   name:"Whiteboard",         desc:"Freehand canvas with sticky notes, arrows, shapes, laser pointer & live multiplayer cursors.",                  icon:"🖊️",  color:"#be185d",  tag:"Canvas · Real-time",     colSpan:1, rowSpan:1, image: whiteboardPrev },
-    { id:"doc",     name:"Documents",          desc:"Rich docs with embedded media, tables, charts. Beautiful by default.",                                         icon:"📄", color:"#eba5b6",  tag:"DOCX · PDF",             colSpan:1, rowSpan:1, image: docPrev        },
+    { id:"hld",       name:"HLD Architecture Studio",   desc:"Cloud topologies, microservices, load balancers, AWS/GCP nodes & Kafka event buses.", Cover: HldCover,      color:"#e1496d",  tag:"Cloud HLD · Topology",   colSpan:1, rowSpan:1 },
+    { id:"lld",       name:"LLD & UML Studio",          desc:"Class hierarchies, sequence flows, state machines & bi-directional code sync.",       Cover: LldCover,      color:"#38bdf8",  tag:"UML · LLD · AST Sync",   colSpan:1, rowSpan:1 },
+    { id:"erd",       name:"Database & ERD Modeler",    desc:"Visual relational schemas, primary/foreign keys, indexes & 1-click SQL DDL export.",   Cover: ErdCover,      color:"#10b981",  tag:"PostgreSQL · Prisma",    colSpan:1, rowSpan:1 },
+    { id:"doc",       name:"Engineering RFC & ADR Docs",desc:"Architecture Decision Records & tech specs with live reactive Mermaid diagrams.",      Cover: RfcCover,      color:"#ec4899",  tag:"RFC · Tech Specs",       colSpan:1, rowSpan:1 },
+    { id:"ppt",       name:"System Design Decks",       desc:"Architecture sprint reviews, tech presentations & RFC sign-off slides.",              Cover: DeckCover,     color:"#a855f7",  tag:"System Design Decks",    colSpan:1, rowSpan:1 },
+    { id:"pipelines", name:"Distributed Event Streams", desc:"Visual Kafka pub/sub, microservice data flow & real-time DAG execution.",             Cover: PipelineCover, color:"#f97316",  tag:"Distributed DAG",        colSpan:1, rowSpan:1 },
   ];
 
   const pricing = [
@@ -1252,6 +1235,21 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
           0%, 100% { opacity: 0.5; }
           50% { opacity: 1; }
         }
+        .arch-showcase-grid-3x2 {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 24px;
+        }
+        @media (max-width: 1024px) {
+          .arch-showcase-grid-3x2 {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+        @media (max-width: 680px) {
+          .arch-showcase-grid-3x2 {
+            grid-template-columns: 1fr;
+          }
+        }
       `}</style>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Instrument+Sans:wght@300;400;500;600&family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
 
@@ -1425,7 +1423,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
           <SidebarIcon
             THEME={THEME}
             active={activeNav === "templates"}
-            label="Templates"
+            label="Architectures"
             onClick={() => {
               setActiveNav("templates");
               window.scrollTo({ top: 0, behavior: "instant" });
@@ -1435,13 +1433,13 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
           />
           <SidebarIcon
             THEME={THEME}
-            active={activeNav === "brand_kit"}
-            label="Brand Kit"
+            active={activeNav === "capacity"}
+            label="Capacity Math"
             onClick={() => {
-              setActiveNav("brand_kit");
+              setActiveNav("capacity");
               window.scrollTo({ top: 0, behavior: "instant" });
             }}
-            icon={Palette}
+            icon={Calculator}
             animationType="scale"
           />
           <SidebarIcon
@@ -1454,17 +1452,6 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
             }}
             icon={Zap}
             animationType="bounce"
-          />
-          <SidebarIcon
-            THEME={THEME}
-            active={activeNav === "mockup_studio"}
-            label="3D Mockups"
-            onClick={() => {
-              setActiveNav("mockup_studio");
-              window.scrollTo({ top: 0, behavior: "instant" });
-            }}
-            icon={Box}
-            animationType="scale"
           />
 
           <div style={{ width: "60%", height: 1, background: "rgba(225,73,109,0.15)", margin: "2px 0" }} />
@@ -1501,7 +1488,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
             setActiveNav={setActiveNav}
           />
         ) : activeNav === "templates" ? (
-          /* ── TEMPLATES MARKETPLACE INLINE VIEW — Keeps sidebar visible ── */
+          /* ── REFERENCE ARCHITECTURES MARKETPLACE INLINE VIEW ── */
           <div style={{ minHeight: "100vh" }}>
             <TemplatesMarketplace
               onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
@@ -1513,31 +1500,20 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
               colors={colors}
             />
           </div>
-        ) : activeNav === "brand_kit" ? (
-          /* ── BRAND KIT DESIGN SYSTEM INLINE VIEW — Keeps sidebar visible ── */
+        ) : activeNav === "capacity" ? (
+          /* ── CAPACITY & TRAFFIC ESTIMATION CALCULATOR ── */
           <div style={{ minHeight: "100vh" }}>
-            <BrandKit
+            <CapacityCalculator
               onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               onNavigate={onNavigate}
-              user={user}
-              isEmbedded={true}
+              isDark={isDark}
+              THEME={THEME}
             />
           </div>
         ) : activeNav === "pipelines" ? (
           /* ── EMBEDDED REAL PIPELINES STUDIO ── */
           <div style={{ minHeight: "100vh" }}>
             <WorkflowPipelines
-              onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-              onNavigate={onNavigate}
-              user={user}
-              isEmbedded={true}
-              isDark={isDark}
-            />
-          </div>
-        ) : activeNav === "mockup_studio" ? (
-          /* ── EMBEDDED REAL 3D MOCKUP STUDIO ── */
-          <div style={{ minHeight: "100vh" }}>
-            <MockupStudio
               onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               onNavigate={onNavigate}
               user={user}
@@ -2310,7 +2286,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         </div>
       </div>
 
-      {/* ── BENTO GRID TOOLS SECTION ── */}
+      {/* ── BENTO GRID ARCHITECTURE TOOLS SECTION ── */}
       <div id="tools">
         <div className="reveal" id="tools-section" style={{
           padding:"100px 48px", maxWidth:"1400px", margin:"0 auto",
@@ -2321,17 +2297,19 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
           {/* Section header */}
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:"56px", flexWrap:"wrap", gap:"16px" }}>
             <div>
-              <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(36px,5vw,60px)", fontWeight:800, letterSpacing:"-0.04em", lineHeight:1, color:colors.text }}>One studio.<br/>All formats<span style={{ color: THEME.wine }}>.</span></h2>
+              <h2 style={{ fontFamily:"Syne,sans-serif", fontSize:"clamp(24px,3.2vw,38px)", fontWeight:800, letterSpacing:"-0.03em", lineHeight:1.15, color:colors.text }}>One studio.<br/>All architecture layers<span style={{ color: THEME.wine }}>.</span></h2>
             </div>
-            <p style={{ fontSize:"16px", color:colors.textMuted, maxWidth:"440px", lineHeight:1.65, fontWeight:400, fontFamily:"'Instrument Sans',sans-serif" }}>
-              From a cinematic edit to a full brand deck — Creatify handles every format your ideas demand.
+            <p style={{ fontSize:"16px", color:colors.textMuted, maxWidth:"480px", lineHeight:1.65, fontWeight:400, fontFamily:"'Instrument Sans',sans-serif" }}>
+              From high-level cloud topologies and database ERD schemas to low-level UML class hierarchies and engineering RFC specs.
             </p>
           </div>
 
-          {/* Bento Grid */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3, 1fr)", gridTemplateRows:"repeat(2, 200px)", gap:"14px" }}>
+          {/* Architecture Studios 3x2 Grid (2 rows, 3 cards each) */}
+          <div className="arch-showcase-grid-3x2">
             {tools.map(tool => {
               const isHovered = hoveredCard === tool.id;
+              const CoverComponent = tool.Cover;
+
               return (
                 <div
                   key={tool.id}
@@ -2339,136 +2317,190 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
                   onMouseLeave={() => { setHoveredCard(null); }}
                   onClick={() => {
                     if (!user) return onNavigate("auth", "signup");
-                    if (tool.id === "video") onNavigate("editor");
-                    else if (tool.id === "ppt") onNavigate("presentation");
-                    else if (tool.id === "image") onNavigate("image_editor");
-                    else if (tool.id === "logo") onNavigate("logo_maker");
+                    if (tool.id === "hld") onNavigate("whiteboard");
+                    else if (tool.id === "lld") onNavigate("infinite_studio");
+                    else if (tool.id === "erd") onNavigate("whiteboard");
                     else if (tool.id === "doc") onNavigate("documents");
-                    else if (tool.id === "white") onNavigate("whiteboard");
-                    else if (tool.id === "studio") onNavigate("infinite_studio");
-                    else onNavigate("auth", "signup");
+                    else if (tool.id === "ppt") onNavigate("presentation");
+                    else if (tool.id === "pipelines") onNavigate("pipelines");
+                    else onNavigate("infinite_studio");
                   }}
                   style={{
-                    gridColumn: `span ${tool.colSpan}`,
-                    gridRow:    `span ${tool.rowSpan}`,
-                    position:"relative", borderRadius:"20px", overflow:"hidden",
-                    cursor:"pointer", transition:"all 0.4s cubic-bezier(0.16,1,0.3,1)",
-                    transform: isHovered ? "translateY(-3px) scale(1.01)" : "none",
-                    boxShadow: "0 3px 14px rgba(148,41,69,0.07)",
-                    border: `1px solid ${isHovered ? tool.color + "60" : "rgba(148,41,69,0.14)"}`,
+                    position: "relative",
+                    borderRadius: "22px",
+                    overflow: "hidden",
+                    height: "260px",
+                    background: isDark ? "#090308" : "#fdf6f9",
+                    cursor: "pointer",
+                    transition: "all 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+                    transform: isHovered ? "translateY(-6px) scale(1.015)" : "none",
+                    boxShadow: isHovered 
+                      ? `0 24px 48px ${tool.color}35, 0 6px 20px rgba(0,0,0,0.18)`
+                      : (isDark ? "0 4px 20px rgba(0,0,0,0.4)" : "0 4px 20px rgba(148,41,69,0.06)"),
+                    border: `1.5px solid ${isHovered ? tool.color : (isDark ? "rgba(225,73,109,0.22)" : "rgba(148,41,69,0.12)")}`,
+                    display: "flex",
+                    flexDirection: "column",
                   }}
                 >
-                  {/* Background: image or gradient */}
-                  {tool.image ? (
-                    <div style={{ position:"absolute", inset:0 }}>
-                      <img src={tool.image} alt={tool.name} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top", display:"block" }} />
-                      {/* Dark overlay that lightens on hover */}
-                      <div style={{ position:"absolute", inset:0, background: isHovered ? "rgba(0,0,0,0.42)" : "rgba(0,0,0,0.62)", transition:"background 0.4s" }} />
+                  {/* Window Title Bar */}
+                  <div style={{
+                    padding: "8px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    background: isDark ? "rgba(20, 7, 17, 0.85)" : "rgba(255, 255, 255, 0.9)",
+                    borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)"}`,
+                    zIndex: 10,
+                    backdropFilter: "blur(10px)",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#ef4444" }} />
+                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#f59e0b" }} />
+                      <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981" }} />
                     </div>
-                  ) : (
-                    <div style={{ position:"absolute", inset:0, background: cardGradients[tool.id] || `linear-gradient(135deg, ${isDark ? "#111318" : "#fdf8fa"}, ${tool.color}${isDark?"20":"14"})` }}>
-                      {/* Subtle pattern for no-image cards */}
-                      <div style={{ position:"absolute", inset:0, opacity:0.06, backgroundImage:`radial-gradient(${tool.color} 1px, transparent 1px)`, backgroundSize:"24px 24px" }} />
-                    </div>
-                  )}
-
-                  {/* Accent glow on hover */}
-                  <div style={{ position:"absolute", inset:0, background:`radial-gradient(circle at 30% 20%, ${tool.color}25, transparent 60%)`, opacity: isHovered ? 1 : 0, transition:"opacity 0.4s", pointerEvents:"none" }} />
-
-                  {/* Content */}
-                  <div style={{ position:"relative", zIndex:2, padding:"20px 22px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
-                    {/* Tag chip */}
-                    <div style={{ alignSelf:"flex-start", background:"rgba(255,255,255,0.1)", backdropFilter:"blur(7px)", border:"1px solid rgba(255,255,255,0.16)", borderRadius:"18px", padding:"2px 10px", fontSize:"9px", color:"rgba(255,255,255,0.8)", letterSpacing:"0.04em", marginBottom:"auto", marginTop:"0" }}>
+                    <span style={{ fontSize: "9.5px", fontFamily: "monospace", color: isDark ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)", fontWeight: 700 }}>
                       {tool.tag}
-                    </div>
-
-                    {/* Icon + name + desc */}
-                    <div>
-                      {/* Interactive micro-animation for logo card (no image) */}
-                      {tool.id === "logo" && (
-                        <div style={{ marginBottom:"10px" }}>
-                          <svg width="36" height="36" viewBox="0 0 100 100" style={{ transform:`rotate(${logoAngle}deg)`, transition:"transform 0.05s linear", display:"block" }}>
-                            <circle cx="50" cy="50" r="35" fill="none" stroke="#ec4899" strokeWidth="2.5" strokeDasharray="15,10"/>
-                            <polygon points="50,18 78,66 22,66" fill="none" stroke="#ec4899" strokeWidth="3" strokeLinejoin="round"/>
-                            <circle cx="50" cy="50" r="8" fill="#ec4899"/>
-                          </svg>
-                        </div>
-                      )}
-
-                      {/* Doc card decoration */}
-                      {tool.id === "doc" && (
-                        <div style={{ marginBottom:"10px", display:"flex", flexDirection:"column", gap:"3px" }}>
-                          <div style={{ width:"46%", height:"4px", background:tool.color, borderRadius:"2px", opacity:0.9 }} />
-                          <div style={{ width:"78%", height:"2.5px", background:"rgba(255,255,255,0.2)", borderRadius:"2px" }} />
-                          <div style={{ width:"66%", height:"2.5px", background:"rgba(255,255,255,0.14)", borderRadius:"2px" }} />
-                        </div>
-                      )}
-
-                      {/* Whiteboard card decoration — sticky notes + marker lines */}
-                      {tool.id === "white" && (
-                        <div style={{ marginBottom:"10px", position:"relative", height:"34px" }}>
-                          {/* Soft whiteboard grid bg shape */}
-                          <div style={{ position:"absolute", inset:0, borderRadius:"6px", background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" }} />
-                          {/* Sticky note pink */}
-                          <div style={{ position:"absolute", left:"6px", top:"5px", width:"14px", height:"14px", borderRadius:"2px",
-                                        background:"linear-gradient(135deg,#ec4899,#be185d)", transform:"rotate(-6deg)",
-                                        boxShadow:"0 2px 6px rgba(190,24,93,0.45)" }} />
-                          {/* Sticky note plum */}
-                          <div style={{ position:"absolute", left:"24px", top:"8px", width:"12px", height:"12px", borderRadius:"2px",
-                                        background:"linear-gradient(135deg,#c084fc,#7e22ce)", transform:"rotate(5deg)",
-                                        boxShadow:"0 2px 6px rgba(126,34,206,0.4)" }} />
-                          {/* Arrow marker right */}
-                          <svg style={{ position:"absolute", right:"6px", top:"12px", width:"30px", height:"14px", color:"#fda4af" }}
-                               viewBox="0 0 40 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="4" y1="8" x2="30" y2="8" />
-                            <polyline points="24 3 32 8 24 13" />
-                          </svg>
-                        </div>
-                      )}
-
-                      <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"4px" }}>
-                        <span style={{ fontSize:"18px" }}>{tool.icon}</span>
-                        <span style={{ fontFamily:"Syne,sans-serif", fontSize: tool.colSpan >= 2 ? "19px" : "15px", fontWeight:800, color:"#fff", letterSpacing:"-0.03em" }}>{tool.name}</span>
-                      </div>
-                      <p style={{ fontSize:"11.5px", color:"rgba(255,255,255,0.72)", lineHeight:1.5, fontWeight:300, margin:0, maxWidth: tool.colSpan >= 2 ? "300px" : "none" }}>
-                        {tool.desc}
-                      </p>
-
-                      {/* CTA arrow */}
-                      <div style={{ marginTop:"10px", display:"flex", alignItems:"center", gap:"6px", fontSize:"11px", color:tool.color, fontFamily:"'Poppins',sans-serif", fontWeight:400, opacity: isHovered ? 1 : 0, transform: isHovered ? "translateX(0)" : "translateX(-6px)", transition:"all 0.3s" }}>
-                        <span>Open {tool.name}</span>
-                      </div>
-                    </div>
+                    </span>
                   </div>
 
-                  {/* Video playhead overlay */}
-                  {tool.id === "video" && isHovered && (
-                    <div style={{ position:"absolute", bottom:"76px", left:"22px", right:"22px", zIndex:3 }}>
-                      <div style={{ background:"rgba(0,0,0,0.7)", backdropFilter:"blur(8px)", borderRadius:"8px", padding:"8px", border:"1px solid rgba(148,41,69,0.3)" }}>
-                        <div style={{ fontSize:"7.5px", color:"#22d3a8", fontWeight:700, marginBottom:"5px" }}>— LIVE PLAYBACK</div>
-                        <div style={{ position:"relative", height:"5px", background:"rgba(255,255,255,0.1)", borderRadius:"2.5px" }}>
-                          <div style={{ position:"absolute", left:0, top:0, bottom:0, width:`${timelinePlayhead}%`, background:`linear-gradient(90deg, #942945, #e1496d)`, borderRadius:"2.5px", transition:"width 0.05s" }} />
-                          <div style={{ position:"absolute", top:"-2.5px", width:"10px", height:"10px", borderRadius:"50%", background:"#ef4444", boxShadow:"0 0 6px #ef4444", transition:"left 0.05s", left:`calc(${timelinePlayhead}% - 5px)` }} />
-                        </div>
+                  {/* Background Full Preview Canvas (Blurs and zooms on hover) */}
+                  <div style={{
+                    position: "absolute",
+                    inset: "33px 0 0 0",
+                    overflow: "hidden",
+                    transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                    filter: isHovered ? "blur(7px) brightness(0.35)" : "none",
+                    transform: isHovered ? "scale(1.08)" : "scale(1)",
+                  }}>
+                    {CoverComponent && <CoverComponent isDark={isDark} />}
+                  </div>
+
+                  {/* Default State: Sleek Bottom Badge Pill (Fades out on hover) */}
+                  <div style={{
+                    position: "absolute",
+                    bottom: 12,
+                    left: 14,
+                    right: 14,
+                    padding: "8px 14px",
+                    borderRadius: 12,
+                    background: isDark ? "rgba(18, 5, 14, 0.82)" : "rgba(255, 255, 255, 0.88)",
+                    border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(148,41,69,0.15)"}`,
+                    backdropFilter: "blur(12px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    zIndex: 4,
+                    transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+                    opacity: isHovered ? 0 : 1,
+                    transform: isHovered ? "translateY(14px)" : "translateY(0)",
+                    pointerEvents: "none",
+                  }}>
+                    <span style={{
+                      fontFamily: "Syne, sans-serif",
+                      fontSize: "13.5px",
+                      fontWeight: 800,
+                      color: isDark ? "#ffffff" : "#1a040d",
+                      letterSpacing: "-0.015em",
+                    }}>
+                      {tool.name}
+                    </span>
+                    <span style={{
+                      fontSize: "10.5px",
+                      fontWeight: 700,
+                      color: tool.color,
+                      fontFamily: "'Instrument Sans', sans-serif",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}>
+                      Hover to Explore <ArrowRight size={11} />
+                    </span>
+                  </div>
+
+                  {/* Hover State: Slide-Up Content Drawer from Bottom */}
+                  <div style={{
+                    position: "absolute",
+                    inset: "33px 0 0 0",
+                    padding: "20px 22px 18px",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    background: isDark ? "rgba(15, 3, 12, 0.82)" : "rgba(255, 255, 255, 0.88)",
+                    backdropFilter: "blur(14px)",
+                    zIndex: 8,
+                    transition: "all 0.38s cubic-bezier(0.16, 1, 0.3, 1)",
+                    opacity: isHovered ? 1 : 0,
+                    transform: isHovered ? "translateY(0)" : "translateY(100%)",
+                    pointerEvents: isHovered ? "auto" : "none",
+                  }}>
+                    <div>
+                      {/* Tag Chip */}
+                      <div style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        background: `${tool.color}20`,
+                        border: `1px solid ${tool.color}50`,
+                        borderRadius: "99px",
+                        padding: "3px 10px",
+                        fontSize: "10px",
+                        fontWeight: 800,
+                        color: tool.color,
+                        letterSpacing: "0.04em",
+                        marginBottom: "8px",
+                        fontFamily: "Syne, sans-serif",
+                        textTransform: "uppercase",
+                      }}>
+                        <span style={{ width: 5, height: 5, borderRadius: "50%", background: tool.color }} />
+                        <span>{tool.tag}</span>
                       </div>
+
+                      {/* Tool Title */}
+                      <h3 style={{
+                        fontFamily: "Syne, sans-serif",
+                        fontSize: "18px",
+                        fontWeight: 800,
+                        color: isDark ? "#ffffff" : "#1a040d",
+                        margin: "0 0 8px",
+                        letterSpacing: "-0.025em",
+                        lineHeight: 1.2,
+                      }}>
+                        {tool.name}
+                      </h3>
+
+                      {/* Description */}
+                      <p style={{
+                        fontSize: "12.5px",
+                        color: isDark ? "rgba(255,255,255,0.85)" : "#334155",
+                        lineHeight: 1.45,
+                        fontWeight: 500,
+                        fontFamily: "'Instrument Sans', sans-serif",
+                        margin: 0,
+                      }}>
+                        {tool.desc}
+                      </p>
                     </div>
-                  )}
-                  {/* PPT slides overlay */}
-                  {tool.id === "ppt" && isHovered && (
-                    <div style={{ position:"absolute", top:"18px", right:"18px", zIndex:3, display:"flex", gap:"5px" }}>
-                      {[0,1,2].map(idx => {
-                        const off = (idx - activeSlide + 3) % 3;
-                        return (
-                          <div key={idx} style={{ width:"40px", height:"26px", borderRadius:"3px", background:"rgba(255,255,255,0.14)", backdropFilter:"blur(6px)", border:`1.5px solid rgba(255,255,255,${0.6 - off*0.2})`, opacity: 1 - off*0.3, transform:`translateY(${off*-3}px) scale(${1-off*0.06})`, transition:"all 0.4s" }}>
-                            <div style={{ width:"38%", height:"2.5px", background:"#7c233c", borderRadius:"1px", margin:"4px 3px 2px" }} />
-                            <div style={{ display:"flex", gap:"1.5px", alignItems:"flex-end", padding:"0 3px 3px", height:"10px" }}>
-                              {[7,11,5,8].map((h,i) => <div key={i} style={{ flex:1, height:`${h}px`, background:"rgba(124,35,60,0.6)", borderRadius:"1px" }} />)}
-                            </div>
-                          </div>
-                        );
-                      })}
+
+                    {/* Launch Action Button */}
+                    <div style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                      padding: "8px 16px",
+                      borderRadius: 10,
+                      background: "linear-gradient(135deg, #e1496d 0%, #be123c 100%)",
+                      color: "#ffffff",
+                      fontSize: "12px",
+                      fontFamily: "Syne, sans-serif",
+                      fontWeight: 800,
+                      boxShadow: "0 4px 14px rgba(225,73,109,0.35)",
+                      alignSelf: "flex-start",
+                    }}>
+                      <span>Launch Studio</span>
+                      <ArrowRight size={12} />
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })}

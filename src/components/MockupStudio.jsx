@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import * as THREE from "three";
 import { 
   ArrowLeft, Camera, RotateCw, Sun, Moon, 
@@ -6,44 +6,56 @@ import {
   Terminal, Globe, Code, Copy, Check, RefreshCw, Layers, Monitor,
   Smartphone, Shield, Layout, Eye, Cpu, ZoomIn, ZoomOut, CheckCheck,
   Radio, Sparkle, Palette, Maximize2, FileCode, Disc, Package, Search,
-  ArrowUpRight
+  ArrowUpRight, ChevronRight, X, Play, PlayCircle, ShieldCheck,
+  GitBranch, Cloud, Share2, Settings, CheckCircle2, AlertCircle,
+  Clock, ArrowRight, Database, Send, Compass, Filter, Grid, Bookmark,
+  Laptop, LaptopMinimal, Tv, Flame, Sparkles as SparklesIcon
 } from "lucide-react";
+import CommunityLandscapeBanner from "./CommunityLandscapeBanner";
 
 export default function MockupStudio({ onBack, user, onNavigate, isEmbedded = false, isDark = false }) {
-  // Navigation mode: "hub" (Overview & Stage Presets) or "studio" (3D Three.js Viewport)
+  // Navigation mode: "hub" (Overview & Stage Presets Marketplace) or "studio" (3D Three.js PBR Viewport)
   const [viewMode, setViewMode] = useState("hub");
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [blueprintLayoutMode, setBlueprintLayoutMode] = useState("stack"); // "stack", "grid", "carousel"
+  const [activeDeckIndex, setActiveDeckIndex] = useState(0);
+  const [isDeckHovered, setIsDeckHovered] = useState(false);
 
   const mountRef = useRef(null);
 
-  // ── Active State & Models ──
-  // Models: "terminal", "browser", "github_readme", "macbook", "iphone", "dual_monitor", "glass_card", "crt_monitor", "software_box"
+  // ── Active 3D Studio State & Models ──
+  // Models: "terminal", "macbook", "iphone", "software_box", "dual_monitor", "crt_monitor", "glass_card", "browser", "social_banner"
   const [activeModel, setActiveModel] = useState("terminal");
-  const [activeLighting, setActiveLighting] = useState("cyber"); // "cyber", "matrix", "studio", "monokai", "sunset", "neon_tokyo"
-  const [isAutoRotating, setIsAutoRotating] = useState(false);
+  const [activeLighting, setActiveLighting] = useState("cyber"); // "cyber", "studio", "matrix", "sunset", "neon_tokyo", "clean_white"
+  const [isAutoRotating, setIsAutoRotating] = useState(true);
   const [showGridFloor, setShowGridFloor] = useState(true);
   const [showParticles, setShowParticles] = useState(true);
   const [focalLength, setFocalLength] = useState(45); // Camera FOV: 24 to 75
   const [roughness, setRoughness] = useState(0.2);
-  const [metalness, setMetalness] = useState(0.8);
-  const [glassTransmission, setGlassTransmission] = useState(0.85);
-  const [bgColor, setBgColor] = useState("#080206");
+  const [metalness, setMetalness] = useState(0.85);
+  const [glassTransmission, setGlassTransmission] = useState(0.88);
+  const [wireframeMode, setWireframeMode] = useState(false);
+  const [bgColor, setBgColor] = useState(isDark ? "#090207" : "#f8fafc");
   const [cameraView, setCameraView] = useState("perspective");
   const [copiedCode, setCopiedCode] = useState(false);
-  const [activeSidebarTab, setActiveSidebarTab] = useState("code"); // "models", "code", "presets", "studio", "export"
+  const [copiedSdk, setCopiedSdk] = useState(false);
+  const [activeSidebarTab, setActiveSidebarTab] = useState("code"); // "code", "materials", "lighting", "export"
+  const [isExporting, setIsExporting] = useState(false);
+  const [showExportSuccess, setShowExportSuccess] = useState(false);
   
   // ── Code & File Tabs ──
   const [activeFileTab, setActiveFileTab] = useState("server.ts");
   const [codeTheme, setCodeTheme] = useState("synthwave");
   const [windowTitle, setWindowTitle] = useState("server.ts — Creatify Engine v2.4");
   const [urlBarText, setUrlBarText] = useState("https://creatify.dev/dashboard");
-  const [repoTitle, setRepoTitle] = useState("creatify-engine/core-sdk");
-  const [repoTagline, setRepoTagline] = useState("Next-Gen Creative Studio & Procedural Design Suite for Developers");
+  const [boxBrandTitle, setBoxBrandTitle] = useState("CREATIFY PRO");
+  const [boxTagline, setBoxTagline] = useState("Developer 3D Spatial Engine");
+  const [uploadedImage, setUploadedImage] = useState(null);
 
   // ── Pre-built Developer Code Templates ──
   const SAMPLE_CODE_SNIPPETS = {
-    "server.ts": `// 🚀 High-Velocity Developer Creative Suite
+    "server.ts": `// 🚀 High-Velocity Developer 3D Mockup Suite
 import { CreatifyEngine, PBRRenderer } from "@creatify/core";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -116,11 +128,29 @@ services:
       resources:
         reservations:
           devices:
-            - capabilities: [gpu]`
+            - capabilities: [gpu]`,
+    "App.tsx": `// ⚛️ React 19 Next.js Client Component
+import { useState, useTransition } from "react";
+import { Canvas3D, OrbitControls, PBRShader } from "@creatify/react-3d";
+
+export default function HeroViewport() {
+  const [isPending, startTransition] = useTransition();
+  const [rig, setRig] = useState("glass_terminal");
+
+  return (
+    <div className="relative w-full h-[600px] rounded-3xl overflow-hidden shadow-2xl">
+      <Canvas3D camera={{ fov: 45, position: [0, 1.2, 3.8] }}>
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[5, 8, 5]} intensity={1.8} color="#ff8da7" />
+        <PBRShader rig={rig} metalness={0.88} roughness={0.15} />
+        <OrbitControls autoRotate enableZoom />
+      </Canvas3D>
+    </div>
+  );
+}`
   };
 
   const [customCode, setCustomCode] = useState(SAMPLE_CODE_SNIPPETS["server.ts"]);
-  const [uploadedImage, setUploadedImage] = useState(null);
 
   // ── Three.js Engine References ──
   const sceneRef = useRef(null);
@@ -131,9 +161,12 @@ services:
   const particlesRef = useRef(null);
   const screenMeshRef = useRef(null);
   const lightsRef = useRef({});
+  const animationFrameRef = useRef(null);
+  const isDraggingRef = useRef(false);
+  const previousMousePositionRef = useRef({ x: 0, y: 0 });
 
   // ── Curated 3D Stage Environments for Hub ──
-  const STAGE_CARDS = [
+  const STAGE_CARDS = useMemo(() => [
     {
       id: "terminal",
       name: "Terminal Window CLI (Ray.so Glass)",
@@ -143,349 +176,469 @@ services:
       desc: "Floating translucent terminal chassis with live AST syntax highlighting, terminal tabs, and neon edge specular reflection.",
       specs: ["Live Code Editor", "PBR Metalness 0.85", "Cyber Neon Lighting", "4K Lossless PNG"],
       color: "#e1496d",
+      icon: Terminal,
+      previewBadge: "HOT 🔥",
+      stats: { vertices: "14.2k", shaders: "PBR Specular", fps: "60 FPS" },
     },
     {
       id: "macbook",
       name: "MacBook Pro M3 Liquid Retina",
       category: "hardware",
       categoryLabel: "Hardware & Devices",
-      tag: "Space Black Aluminum",
-      desc: "Anodized aluminum laptop chassis with Liquid Retina XDR display, glass reflections, and adjustable hinge angle.",
-      specs: ["16:10 Liquid Retina", "Anodized Aluminum", "Specular Highlights", "360° Orbit"],
+      tag: "Space Black M3",
+      desc: "Anodized aluminum chassis, precision notch display, chiclet backlit keyboard deck, and 120Hz ProMotion screen projection.",
+      specs: ["Anodized Metallic", "Liquid Retina Screen", "Studio Softbox Lighting", "Custom Image Texture"],
       color: "#0284c7",
+      icon: Laptop,
+      previewBadge: "PRO ⚡",
+      stats: { vertices: "28.6k", shaders: "Dielectric Metal", fps: "60 FPS" },
     },
     {
       id: "iphone",
-      name: "iPhone 16 Pro Titanium",
+      name: "iPhone 16 Pro Max Titanium",
       category: "hardware",
       categoryLabel: "Hardware & Devices",
-      tag: "Natural Titanium",
-      desc: "Curved aerospace titanium smartphone body with realistic Dynamic Island, texture mapping, and orbital studio lighting.",
-      specs: ["Aerospace Titanium", "Dynamic Island", "Curved Bevels", "Portrait / Landscape"],
+      tag: "Titanium Chassis",
+      desc: "Floating bezel-less smartphone mockup with Dynamic Island, rounded glass corners, and realistic PBR brushed titanium frame.",
+      specs: ["Dynamic Island", "Titanium Brushed Finish", "Reflective Glass", "Portrait / Mobile"],
       color: "#9333ea",
-    },
-    {
-      id: "dual_monitor",
-      name: "Dual Developer Monitor Station",
-      category: "terminals",
-      categoryLabel: "Developer Terminals",
-      tag: "Dual Display Rig",
-      desc: "Side-by-side developer workspace rig with dual screens mounted on an articulated brushed steel monitor arm.",
-      specs: ["Dual 4K Screens", "Articulated Stand", "Multi-File Code View", "Studio Softbox"],
-      color: "#16a34a",
+      icon: Smartphone,
+      previewBadge: "MOBILE 📱",
+      stats: { vertices: "19.4k", shaders: "Frosted Glass", fps: "60 FPS" },
     },
     {
       id: "software_box",
-      name: "Software Box & Digital Packaging",
+      name: "Software Package & Retail Box 3D",
       category: "packaging",
-      categoryLabel: "Packaging & Print",
-      tag: "3D Isometric Carton",
-      desc: "Photorealistic 3D software carton with embossed spine, metallic gloss finish, and customizable brand UV maps.",
-      specs: ["PBR Carton Shaders", "Embossed Spine", "UV Texture Map", "Studio Rim Light"],
-      color: "#d97706",
+      categoryLabel: "Packaging & Retail",
+      tag: "Glossy Emboss",
+      desc: "Architectural 3D software packaging box with holographic security seal, embossed typography, and realistic cardboard seams.",
+      specs: ["Gloss Emboss Layer", "Custom Brand Titles", "Isometric Tilt Rig", "Holographic Stamp"],
+      color: "#16a34a",
+      icon: Package,
+      previewBadge: "RETAIL 📦",
+      stats: { vertices: "8.2k", shaders: "Matte + Clearcoat", fps: "60 FPS" },
     },
     {
-      id: "glass_card",
-      name: "Floating Frosted Glass Slab",
-      category: "glass",
-      categoryLabel: "Frosted Glass",
-      tag: "Dielectric Transmission",
-      desc: "High-refractive physical glass shader with translucent transmission, rainbow dispersion highlights, and floating badge elevation.",
-      specs: ["Transmission 0.88", "Refraction 1.5", "Beveled Glass Edges", "Floating Elevation"],
-      color: "#06b6d4",
+      id: "dual_monitor",
+      name: "Dual-Monitor Dev Workstation",
+      category: "hardware",
+      categoryLabel: "Hardware & Devices",
+      tag: "Ultrawide Desk",
+      desc: "Twin curved 32-inch developer displays with split terminal and web app viewports, desktop stand, and RGB ambient bias lighting.",
+      specs: ["Twin Curved Panels", "Split Code + Web View", "Ambient Glow Bias", "Desktop Mount"],
+      color: "#f59e0b",
+      icon: Monitor,
+      previewBadge: "DESK 🖥️",
+      stats: { vertices: "34.1k", shaders: "RGB Bias Light", fps: "60 FPS" },
     },
     {
       id: "crt_monitor",
-      name: "Retro Cyber CRT Monitor",
-      category: "terminals",
-      categoryLabel: "Developer Terminals",
-      tag: "Phosphor Scanline",
-      desc: "Curved retro phosphor cathode-ray tube with scanlines, green-amber matrix glow, and vintage heavy chassis.",
-      specs: ["Curved Phosphor Screen", "Scanline Shader", "Matrix Green Glow", "Retro Chassis"],
-      color: "#22c55e",
+      name: "Retro CRT Terminal (Amber Glow)",
+      category: "retro",
+      categoryLabel: "Retro & Holographic",
+      tag: "Phosphor 1984",
+      desc: "Curved retro-futuristic CRT monitor with glowing amber scanlines, chromatic aberration, and tactile mechanical bezel chassis.",
+      specs: ["Curved Phosphor Mesh", "Scanline Glow Shaders", "Matrix Emerald / Amber", "Cyberpunk Aesthetic"],
+      color: "#10b981",
+      icon: Tv,
+      previewBadge: "RETRO 👾",
+      stats: { vertices: "16.8k", shaders: "Scanline Shader", fps: "60 FPS" },
     },
     {
-      id: "github_readme",
-      name: "GitHub Repository README Showcase",
+      id: "glass_card",
+      name: "Floating Glass Hologram Card",
+      category: "retro",
+      categoryLabel: "Retro & Holographic",
+      tag: "Fresnel Refraction",
+      desc: "Ultra-thin optical glass card with frosted depth blur, floating holographic code glyphs, and iridescent edge diffraction.",
+      specs: ["Transmission 0.95", "Fresnel Iridescence", "Floating Token Badges", "Tokyo Midnight Light"],
+      color: "#ec4899",
+      icon: SparklesIcon,
+      previewBadge: "FUTURISTIC ✨",
+      stats: { vertices: "11.2k", shaders: "Thin Optical Glass", fps: "60 FPS" },
+    },
+    {
+      id: "browser",
+      name: "Safari & Chrome Window Frame",
       category: "terminals",
       categoryLabel: "Developer Terminals",
-      tag: "GitHub Dark / Light",
-      desc: "Official GitHub repository card layout with stars, forks, language distribution bar, and live README hero mockup.",
-      specs: ["Repo Metadata", "Release Badges", "Syntax Highlighting", "Star Counter"],
-      color: "#38bdf8",
+      tag: "Web Browser UI",
+      desc: "Clean floating browser chassis with traffic light controls, custom SSL URL address bar, and back/forward navigation buttons.",
+      specs: ["Custom URL Address", "Clean Light/Dark UI", "Interactive Texture", "Lossless Web Export"],
+      color: "#06b6d4",
+      icon: Globe,
+      previewBadge: "BROWSER 🌐",
+      stats: { vertices: "9.5k", shaders: "Acrylic Glass", fps: "60 FPS" },
     },
-  ];
+    {
+      id: "social_banner",
+      name: "OpenGraph 3D Social Banner",
+      category: "social",
+      categoryLabel: "Social & OpenGraph",
+      tag: "1200x630 Hero",
+      desc: "Perspective angled 3D card tailored for GitHub README banners, Twitter / X summary cards, and Discord embed previews.",
+      specs: ["1200x630 Aspect Ratio", "README Markdown Hero", "4K CDN Ready", "Angle Tilt Preset"],
+      color: "#6366f1",
+      icon: Layout,
+      previewBadge: "BANNER 🚀",
+      stats: { vertices: "12.0k", shaders: "PBR Glossy", fps: "60 FPS" },
+    }
+  ], []);
 
-  // ── Syntax Color Themes ──
-  const CODE_THEMES = {
-    synthwave: { bg: "#140618", border: "#e1496d", comment: "#6d5475", keyword: "#ff7edb", string: "#72f1b8", function: "#36f9f6", number: "#fede5d", type: "#fe4450", text: "#f8f8f2" },
-    onedark: { bg: "#1e1e24", border: "#61afef", comment: "#5c6370", keyword: "#c678dd", string: "#98c379", function: "#61afef", number: "#d19a66", type: "#e5c07b", text: "#abb2bf" },
-    dracula: { bg: "#181424", border: "#bd93f9", comment: "#6272a4", keyword: "#ff79c6", string: "#f1fa8c", function: "#50fa7b", number: "#bd93f9", type: "#8be9fd", text: "#f8f8f2" },
-    matrix: { bg: "#040e06", border: "#00ff66", comment: "#1e5c26", keyword: "#00ff66", string: "#80ffaa", function: "#33ff77", number: "#66ff99", type: "#00ff88", text: "#00ff44" },
-    github: { bg: "#0d1117", border: "#38bdf8", comment: "#8b949e", keyword: "#ff7b72", string: "#a5d6ff", function: "#d2a8ff", number: "#79c0ff", type: "#ffa657", text: "#c9d1d9" },
-    neon_tokyo: { bg: "#0f0e17", border: "#ff8906", comment: "#a7a9be", keyword: "#ff8906", string: "#f25f4c", function: "#e53170", number: "#fffffe", type: "#ff8906", text: "#fffffe" },
+  // Filtered stage cards
+  const filteredStages = useMemo(() => {
+    return STAGE_CARDS.filter(stage => {
+      const matchesCategory = activeCategory === "all" || stage.category === activeCategory;
+      const matchesSearch = !searchQuery || 
+        stage.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        stage.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        stage.tag.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [STAGE_CARDS, activeCategory, searchQuery]);
+
+  // Auto-rotate 3D Deck every 3 seconds unless hovered
+  useEffect(() => {
+    if (blueprintLayoutMode !== "stack" || isDeckHovered || filteredStages.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveDeckIndex(prev => (prev + 1) % filteredStages.length);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, [blueprintLayoutMode, isDeckHovered, filteredStages.length]);
+
+  // ── Open Studio from Hub ──
+  const openModelInStudio = (modelId) => {
+    setActiveModel(modelId);
+    setViewMode("studio");
   };
 
-  // ── Generates High-DPI Dynamic Canvas Textures for 3D Screen Projection ──
-  const generateTextureCanvas = useCallback(() => {
+  // ── Helper: Generate Dynamic Screen Texture via HTML5 Canvas ──
+  const generateDynamicTexture = useCallback(() => {
     const canvas = document.createElement("canvas");
-    canvas.width = 2048;
-    canvas.height = 1320;
+    canvas.width = 1024;
+    canvas.height = 768;
     const ctx = canvas.getContext("2d");
-
-    const th = CODE_THEMES[codeTheme] || CODE_THEMES.synthwave;
 
     if (uploadedImage) {
       const img = new Image();
       img.src = uploadedImage;
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.needsUpdate = true;
-      return tex;
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+      return texture;
     }
 
-    if (activeModel === "terminal" || activeModel === "crt_monitor" || activeModel === "glass_card") {
-      const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      bgGrad.addColorStop(0, th.bg);
-      bgGrad.addColorStop(1, activeModel === "crt_monitor" ? "#020a04" : "#0a0208");
-      ctx.fillStyle = bgGrad;
+    if (activeModel === "software_box") {
+      // Software Box Packaging Face
+      const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+      grad.addColorStop(0, "#1a0814");
+      grad.addColorStop(0.5, "#4a1228");
+      grad.addColorStop(1, "#0e030b");
+      ctx.fillStyle = grad;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.strokeStyle = th.border;
+      // Gold / Rose Accent Lines
+      ctx.strokeStyle = "#e1496d";
+      ctx.lineWidth = 6;
+      ctx.strokeRect(30, 30, canvas.width - 60, canvas.height - 60);
+
+      // Holographic Circle
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, 240, 90, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(225, 73, 109, 0.25)";
+      ctx.fill();
+      ctx.strokeStyle = "#ff8da7";
       ctx.lineWidth = 3;
-      ctx.strokeRect(0, 0, canvas.width, canvas.height);
+      ctx.stroke();
 
-      // Header
-      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-      ctx.fillRect(0, 0, canvas.width, 68);
+      // Brand Title
+      ctx.font = "bold 44px 'Syne', sans-serif";
+      ctx.fillStyle = "#ffffff";
+      ctx.textAlign = "center";
+      ctx.fillText(boxBrandTitle, canvas.width / 2, 400);
 
-      // Traffic lights
-      ctx.fillStyle = "#ff5f56"; ctx.beginPath(); ctx.arc(36, 34, 10, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#ffbd2e"; ctx.beginPath(); ctx.arc(68, 34, 10, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#27c93f"; ctx.beginPath(); ctx.arc(100, 34, 10, 0, Math.PI * 2); ctx.fill();
+      ctx.font = "20px 'Poppins', sans-serif";
+      ctx.fillStyle = "#ff8da7";
+      ctx.fillText(boxTagline, canvas.width / 2, 445);
 
-      // Tabs
-      const files = ["server.ts", "pipeline.rs", "model.py", "docker.yml"];
-      let tabX = 145;
-      files.forEach(f => {
-        const isActive = activeFileTab === f;
-        ctx.fillStyle = isActive ? "rgba(225, 73, 109, 0.28)" : "rgba(255, 255, 255, 0.03)";
-        ctx.beginPath();
-        ctx.roundRect(tabX, 12, 210, 44, 8);
-        ctx.fill();
-
-        ctx.fillStyle = isActive ? "#ffffff" : "rgba(255, 255, 255, 0.55)";
-        ctx.font = "600 18px 'JetBrains Mono', Consolas, monospace";
-        ctx.fillText(`⚡ ${f}`, tabX + 18, 40);
-        tabX += 222;
-      });
-
-      // Code lines
-      const lines = customCode.split("\n");
-      ctx.font = "500 24px 'JetBrains Mono', Consolas, monospace";
-      let y = 135;
-      lines.slice(0, 24).forEach((line, idx) => {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-        ctx.fillText(String(idx + 1).padStart(2, " "), 32, y);
-
-        ctx.fillStyle = th.text;
-        ctx.fillText(line, 85, y);
-        y += 42;
-      });
-    } else {
-      // Default modern screen
-      ctx.fillStyle = "#0c040e";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#e1496d";
-      ctx.font = "900 48px 'Syne', sans-serif";
-      ctx.fillText("Creatify Developer Studio", 80, 140);
-      ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
-      ctx.font = "28px 'Plus Jakarta Sans', sans-serif";
-      ctx.fillText("Real-time WebGL PBR Hardware & Packaging Stage", 80, 210);
+      // Barcode simulation
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(canvas.width / 2 - 120, 560, 240, 60);
+      ctx.fillStyle = "#000000";
+      for (let i = 0; i < 240; i += 6) {
+        if (Math.sin(i * 99) > -0.2) {
+          ctx.fillRect(canvas.width / 2 - 120 + i, 565, 3, 50);
+        }
+      }
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.needsUpdate = true;
+      return texture;
     }
 
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.needsUpdate = true;
-    return tex;
-  }, [activeModel, codeTheme, activeFileTab, customCode, uploadedImage]);
+    // Default Code / Terminal Screen Texture
+    const isDarkTheme = codeTheme !== "light";
+    ctx.fillStyle = isDarkTheme ? "#0e0c12" : "#fdf8fa";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // ── Construct 3D Geometries & Textures ──
-  const build3DModel = useCallback((type, group) => {
-    while (group.children.length > 0) {
-      group.remove(group.children[0]);
-    }
+    // Window Header Bar
+    ctx.fillStyle = isDarkTheme ? "#18131d" : "#f1e4e9";
+    ctx.fillRect(0, 0, canvas.width, 54);
 
-    const texture = generateTextureCanvas();
+    // Traffic light dots
+    ctx.fillStyle = "#ff5f56"; ctx.beginPath(); ctx.arc(28, 27, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffbd2e"; ctx.beginPath(); ctx.arc(52, 27, 8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#27c93f"; ctx.beginPath(); ctx.arc(76, 27, 8, 0, Math.PI * 2); ctx.fill();
 
-    if (type === "terminal" || type === "glass_card") {
-      const chassisMat = new THREE.MeshPhysicalMaterial({
-        color: 0x140614,
-        metalness: metalness,
-        roughness: roughness,
-        transmission: type === "glass_card" ? glassTransmission : 0.4,
-        ior: 1.5,
-        reflectivity: 0.9,
-        clearcoat: 1.0,
-      });
+    // Window Title
+    ctx.font = "bold 17px 'JetBrains Mono', monospace";
+    ctx.fillStyle = isDarkTheme ? "#9ca3af" : "#6a2135";
+    ctx.textAlign = "center";
+    ctx.fillText(activeModel === "browser" ? urlBarText : windowTitle, canvas.width / 2, 34);
 
-      const cardGeo = new THREE.BoxGeometry(6.4, 4.2, 0.18);
-      const cardMesh = new THREE.Mesh(cardGeo, chassisMat);
-      cardMesh.castShadow = true;
-      group.add(cardMesh);
+    // Code Lines
+    const lines = customCode.split("\n");
+    ctx.font = "19px 'JetBrains Mono', monospace";
+    ctx.textAlign = "left";
+    let lineY = 100;
 
-      const screenGeo = new THREE.PlaneGeometry(6.25, 4.05);
-      const screenMat = new THREE.MeshBasicMaterial({ map: texture });
-      const screenMesh = new THREE.Mesh(screenGeo, screenMat);
-      screenMesh.position.z = 0.1;
-      group.add(screenMesh);
-      screenMeshRef.current = screenMesh;
-    } else if (type === "macbook") {
-      const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a24, metalness: 0.9, roughness: 0.2 });
-      const baseGeo = new THREE.BoxGeometry(6.8, 0.2, 4.6);
-      const baseMesh = new THREE.Mesh(baseGeo, bodyMat);
-      baseMesh.position.y = -1.2;
-      group.add(baseMesh);
+    lines.forEach((line, index) => {
+      if (lineY > canvas.height - 30) return;
+      // Line number
+      ctx.fillStyle = isDarkTheme ? "#4b5563" : "#a8818f";
+      ctx.fillText(String(index + 1).padStart(2, " "), 28, lineY);
 
-      const lidGeo = new THREE.BoxGeometry(6.8, 4.4, 0.12);
-      const lidMesh = new THREE.Mesh(lidGeo, bodyMat);
-      lidMesh.position.set(0, 1.0, -2.1);
-      lidMesh.rotation.x = -0.15;
-      group.add(lidMesh);
+      // Syntax color parser
+      if (line.trim().startsWith("//") || line.trim().startsWith("#")) {
+        ctx.fillStyle = "#6b7280"; // Comment
+      } else if (line.includes("import") || line.includes("export") || line.includes("function") || line.includes("return") || line.includes("pub fn")) {
+        ctx.fillStyle = isDarkTheme ? "#f43f5e" : "#be123c"; // Keyword
+      } else if (line.includes("const") || line.includes("let") || line.includes("struct") || line.includes("class")) {
+        ctx.fillStyle = isDarkTheme ? "#38bdf8" : "#0369a1"; // Storage
+      } else if (line.includes('"') || line.includes("'") || line.includes("`")) {
+        ctx.fillStyle = isDarkTheme ? "#34d399" : "#047857"; // String
+      } else {
+        ctx.fillStyle = isDarkTheme ? "#e5e7eb" : "#1a040d"; // Default text
+      }
 
-      const screenGeo = new THREE.PlaneGeometry(6.5, 4.1);
-      const screenMat = new THREE.MeshBasicMaterial({ map: texture });
-      const screenMesh = new THREE.Mesh(screenGeo, screenMat);
-      screenMesh.position.set(0, 1.0, -2.03);
-      screenMesh.rotation.x = -0.15;
-      group.add(screenMesh);
-      screenMeshRef.current = screenMesh;
-    } else if (type === "iphone") {
-      const frameMat = new THREE.MeshStandardMaterial({ color: 0x2d242a, metalness: 0.92, roughness: 0.15 });
-      const phoneGeo = new THREE.BoxGeometry(2.8, 5.6, 0.24);
-      const phoneMesh = new THREE.Mesh(phoneGeo, frameMat);
-      phoneMesh.castShadow = true;
-      group.add(phoneMesh);
+      ctx.fillText(line, 75, lineY);
+      lineY += 27;
+    });
 
-      const screenGeo = new THREE.PlaneGeometry(2.65, 5.45);
-      const screenMat = new THREE.MeshBasicMaterial({ map: texture });
-      const screenMesh = new THREE.Mesh(screenGeo, screenMat);
-      screenMesh.position.z = 0.13;
-      group.add(screenMesh);
-      screenMeshRef.current = screenMesh;
-    } else if (type === "software_box") {
-      const boxGeo = new THREE.BoxGeometry(4.2, 5.6, 1.6);
-      const boxMat = new THREE.MeshStandardMaterial({
-        color: 0x942945,
-        metalness: 0.4,
-        roughness: 0.3,
-        map: texture,
-      });
-      const boxMesh = new THREE.Mesh(boxGeo, boxMat);
-      boxMesh.castShadow = true;
-      group.add(boxMesh);
-    } else {
-      // Default card
-      const geo = new THREE.BoxGeometry(6.0, 4.0, 0.2);
-      const mat = new THREE.MeshStandardMaterial({ map: texture });
-      const mesh = new THREE.Mesh(geo, mat);
-      group.add(mesh);
-    }
-  }, [generateTextureCanvas, metalness, roughness, glassTransmission]);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }, [uploadedImage, activeModel, boxBrandTitle, boxTagline, codeTheme, urlBarText, windowTitle, customCode]);
 
-  // ── Launch Studio View from Hub Card ──
-  const launchStageStudio = (modelId) => {
-    setActiveModel(modelId);
-    setViewMode("studio");
-  };
-
-  // ── Three.js Studio Scene Initialization ──
+  // ── Three.js Scene Setup & Loop ──
   useEffect(() => {
     if (viewMode !== "studio" || !mountRef.current) return;
 
-    const container = mountRef.current;
-    const width = container.clientWidth || 800;
-    const height = container.clientHeight || 600;
+    const width = mountRef.current.clientWidth;
+    const height = mountRef.current.clientHeight;
 
+    // 1. Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(bgColor);
     sceneRef.current = scene;
+    scene.background = new THREE.Color(bgColor);
 
+    // 2. Camera
     const camera = new THREE.PerspectiveCamera(focalLength, width / height, 0.1, 1000);
-    camera.position.set(0, 0.5, 7.5);
+    camera.position.set(0, 0.4, 3.8);
     cameraRef.current = camera;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    // 3. Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.shadowMap.enabled = true;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.1;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     rendererRef.current = renderer;
 
-    container.innerHTML = "";
-    container.appendChild(renderer.domElement);
+    mountRef.current.innerHTML = "";
+    mountRef.current.appendChild(renderer.domElement);
 
-    // Studio Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+    // 4. Lights Rig
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    const dirLight1 = new THREE.DirectionalLight(0xe1496d, 2.2);
-    dirLight1.position.set(6, 7, 5);
-    scene.add(dirLight1);
+    const keyLight = new THREE.DirectionalLight(activeLighting === "cyber" ? 0xff4081 : 0xffffff, 2.2);
+    keyLight.position.set(4, 5, 4);
+    keyLight.castShadow = true;
+    scene.add(keyLight);
 
-    const dirLight2 = new THREE.DirectionalLight(0x0284c7, 1.8);
-    dirLight2.position.set(-6, -4, 4);
-    scene.add(dirLight2);
+    const fillLight = new THREE.DirectionalLight(activeLighting === "cyber" ? 0x00e5ff : 0x88bbff, 1.6);
+    fillLight.position.set(-4, 3, -2);
+    scene.add(fillLight);
 
+    const rimLight = new THREE.PointLight(activeLighting === "matrix" ? 0x00ff66 : 0xa855f7, 2.5, 12);
+    rimLight.position.set(0, 4, -3);
+    scene.add(rimLight);
+
+    lightsRef.current = { ambientLight, keyLight, fillLight, rimLight };
+
+    // 5. Grid Floor
+    const grid = new THREE.GridHelper(12, 24, 0xe1496d, isDark ? 0x24111d : 0xe2d4dc);
+    grid.position.y = -1.35;
+    grid.visible = showGridFloor;
+    scene.add(grid);
+    gridHelperRef.current = grid;
+
+    // 6. Floating Ambient Particle Swarm
+    const particleCount = 180;
+    const particleGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    for (let i = 0; i < particleCount * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 8;
+      positions[i + 1] = (Math.random() - 0.5) * 5;
+      positions[i + 2] = (Math.random() - 0.5) * 6;
+    }
+    particleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    const particleMat = new THREE.PointsMaterial({
+      size: 0.035,
+      color: activeLighting === "cyber" ? 0xff4081 : 0x00e5ff,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const particles = new THREE.Points(particleGeo, particleMat);
+    particles.visible = showParticles;
+    scene.add(particles);
+    particlesRef.current = particles;
+
+    // 7. Dynamic 3D Model Group Generator
     const modelGroup = new THREE.Group();
     scene.add(modelGroup);
     modelGroupRef.current = modelGroup;
 
-    build3DModel(activeModel, modelGroup);
+    const screenTexture = generateDynamicTexture();
 
-    // Mouse Drag Orbit
-    let isDragging = false;
-    let prevMouse = { x: 0, y: 0 };
+    // Model Chassis Material
+    const chassisMat = new THREE.MeshPhysicalMaterial({
+      color: activeModel === "terminal" || activeModel === "glass_card" ? 0x160812 : 0x1e1e24,
+      metalness: metalness,
+      roughness: roughness,
+      transmission: activeModel === "terminal" || activeModel === "glass_card" ? glassTransmission : 0.0,
+      transparent: activeModel === "terminal" || activeModel === "glass_card",
+      opacity: activeModel === "terminal" || activeModel === "glass_card" ? 0.92 : 1.0,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.1,
+      wireframe: wireframeMode,
+    });
 
+    const screenMat = new THREE.MeshBasicMaterial({
+      map: screenTexture,
+      wireframe: wireframeMode,
+    });
+
+    if (activeModel === "terminal" || activeModel === "browser" || activeModel === "social_banner") {
+      // Floating Glass Terminal / Browser Plane
+      const isBanner = activeModel === "social_banner";
+      const w = isBanner ? 3.0 : 2.6;
+      const h = isBanner ? 1.58 : 1.8;
+      const chassisGeo = new THREE.BoxGeometry(w, h, 0.08);
+      const chassis = new THREE.Mesh(chassisGeo, chassisMat);
+      modelGroup.add(chassis);
+
+      const screenGeo = new THREE.PlaneGeometry(w * 0.97, h * 0.96);
+      const screen = new THREE.Mesh(screenGeo, screenMat);
+      screen.position.z = 0.042;
+      modelGroup.add(screen);
+      screenMeshRef.current = screen;
+    } else if (activeModel === "macbook") {
+      // Laptop Display + Base
+      const screenGeo = new THREE.BoxGeometry(2.7, 1.75, 0.05);
+      const screenMesh = new THREE.Mesh(screenGeo, chassisMat);
+      screenMesh.position.set(0, 0.45, -0.6);
+      screenMesh.rotation.x = -0.18;
+      modelGroup.add(screenMesh);
+
+      const screenDisplay = new THREE.Mesh(new THREE.PlaneGeometry(2.55, 1.62), screenMat);
+      screenDisplay.position.set(0, 0.45, -0.57);
+      screenDisplay.rotation.x = -0.18;
+      modelGroup.add(screenDisplay);
+
+      const baseGeo = new THREE.BoxGeometry(2.7, 0.05, 1.8);
+      const baseMesh = new THREE.Mesh(baseGeo, chassisMat);
+      baseMesh.position.set(0, -0.4, 0.25);
+      modelGroup.add(baseMesh);
+    } else if (activeModel === "iphone") {
+      // Smartphone Chassis
+      const phoneGeo = new THREE.BoxGeometry(1.2, 2.4, 0.1);
+      const phoneMesh = new THREE.Mesh(phoneGeo, chassisMat);
+      modelGroup.add(phoneMesh);
+
+      const phoneScreen = new THREE.Mesh(new THREE.PlaneGeometry(1.12, 2.3), screenMat);
+      phoneScreen.position.z = 0.052;
+      modelGroup.add(phoneScreen);
+    } else if (activeModel === "software_box") {
+      // 3D Retail Software Box
+      const boxGeo = new THREE.BoxGeometry(1.8, 2.4, 0.65);
+      const boxMesh = new THREE.Mesh(boxGeo, [
+        chassisMat, chassisMat, chassisMat, chassisMat, screenMat, chassisMat
+      ]);
+      modelGroup.add(boxMesh);
+    } else {
+      // Generic Refractive Glass Hologram Card
+      const cardGeo = new THREE.BoxGeometry(2.5, 1.6, 0.06);
+      const cardMesh = new THREE.Mesh(cardGeo, chassisMat);
+      modelGroup.add(cardMesh);
+
+      const cardDisplay = new THREE.Mesh(new THREE.PlaneGeometry(2.38, 1.48), screenMat);
+      cardDisplay.position.z = 0.032;
+      modelGroup.add(cardDisplay);
+    }
+
+    // 8. Mouse Drag Orbit Controls
     const onMouseDown = (e) => {
-      isDragging = true;
-      prevMouse = { x: e.clientX, y: e.clientY };
+      isDraggingRef.current = true;
+      previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
     };
 
     const onMouseMove = (e) => {
-      if (!isDragging || !modelGroupRef.current) return;
-      const dx = e.clientX - prevMouse.x;
-      const dy = e.clientY - prevMouse.y;
+      if (!isDraggingRef.current || !modelGroupRef.current) return;
+      const deltaX = e.clientX - previousMousePositionRef.current.x;
+      const deltaY = e.clientY - previousMousePositionRef.current.y;
 
-      modelGroupRef.current.rotation.y += dx * 0.007;
-      modelGroupRef.current.rotation.x += dy * 0.007;
-      prevMouse = { x: e.clientX, y: e.clientY };
+      modelGroupRef.current.rotation.y += deltaX * 0.008;
+      modelGroupRef.current.rotation.x += deltaY * 0.008;
+
+      previousMousePositionRef.current = { x: e.clientX, y: e.clientY };
     };
 
-    const onMouseUp = () => { isDragging = false; };
-    const onWheel = (e) => {
-      camera.position.z = Math.max(3, Math.min(15, camera.position.z + e.deltaY * 0.005));
+    const onMouseUp = () => {
+      isDraggingRef.current = false;
     };
 
-    container.addEventListener("mousedown", onMouseDown);
+    const dom = renderer.domElement;
+    dom.addEventListener("mousedown", onMouseDown);
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
-    container.addEventListener("wheel", onWheel);
 
-    let animId;
+    // 9. Render Animation Loop
+    let clock = new THREE.Clock();
     const animate = () => {
-      animId = requestAnimationFrame(animate);
-      if (isAutoRotating && modelGroupRef.current && !isDragging) {
-        modelGroupRef.current.rotation.y += 0.004;
+      animationFrameRef.current = requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+
+      if (isAutoRotating && modelGroupRef.current && !isDraggingRef.current) {
+        modelGroupRef.current.rotation.y += delta * 0.35;
       }
+
+      if (particlesRef.current) {
+        particlesRef.current.rotation.y += delta * 0.05;
+      }
+
       renderer.render(scene, camera);
     };
     animate();
 
+    // 10. Resize handler
     const handleResize = () => {
-      if (!container) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
+      if (!mountRef.current || !renderer || !camera) return;
+      const w = mountRef.current.clientWidth;
+      const h = mountRef.current.clientHeight;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -493,35 +646,90 @@ services:
     window.addEventListener("resize", handleResize);
 
     return () => {
-      cancelAnimationFrame(animId);
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
       window.removeEventListener("resize", handleResize);
-      container.removeEventListener("mousedown", onMouseDown);
+      dom.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
-      container.removeEventListener("wheel", onWheel);
       renderer.dispose();
     };
-  }, [viewMode, activeModel, bgColor, focalLength, build3DModel, isAutoRotating]);
+  }, [viewMode, activeModel, activeLighting, isAutoRotating, showGridFloor, showParticles, focalLength, roughness, metalness, glassTransmission, wireframeMode, bgColor, isDark, generateDynamicTexture]);
 
-  // Export 4K PNG
-  const handleExportPNG = () => {
-    if (!rendererRef.current) return;
-    const dataUrl = rendererRef.current.domElement.toDataURL("image/png");
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = `creatify-3d-${activeModel}-${Date.now()}.png`;
-    a.click();
+  // ── Camera View Angle Presets ──
+  const setCameraPreset = (preset) => {
+    if (!modelGroupRef.current || !cameraRef.current) return;
+    setCameraView(preset);
+    setIsAutoRotating(false);
+
+    if (preset === "perspective") {
+      modelGroupRef.current.rotation.set(0.1, -0.3, 0);
+      cameraRef.current.position.set(0, 0.3, 3.8);
+    } else if (preset === "front") {
+      modelGroupRef.current.rotation.set(0, 0, 0);
+      cameraRef.current.position.set(0, 0, 3.6);
+    } else if (preset === "isometric") {
+      modelGroupRef.current.rotation.set(0.4, 0.6, -0.2);
+      cameraRef.current.position.set(0, 0.5, 4.0);
+    } else if (preset === "top") {
+      modelGroupRef.current.rotation.set(1.2, 0, 0);
+      cameraRef.current.position.set(0, 1.2, 3.2);
+    }
   };
 
-  // Filtered stage cards in Hub
-  const filteredStages = STAGE_CARDS.filter(stg => {
-    const matchesCat = activeCategory === "all" || stg.category === activeCategory;
-    const matchesQuery = !searchQuery || stg.name.toLowerCase().includes(searchQuery.toLowerCase()) || stg.desc.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCat && matchesQuery;
-  });
+  // ── Snapshot Export 4K PNG ──
+  const handleCaptureSnapshot = () => {
+    if (!rendererRef.current) return;
+    setIsExporting(true);
+
+    setTimeout(() => {
+      const dataUrl = rendererRef.current.domElement.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `creatify-3d-${activeModel}-${Date.now()}.png`;
+      a.click();
+      setIsExporting(false);
+      setShowExportSuccess(true);
+      setTimeout(() => setShowExportSuccess(false), 3000);
+    }, 400);
+  };
+
+  // ── Copy React 3D Component Code ──
+  const handleCopyReactCode = () => {
+    const reactSnippet = `// 🚀 Next.js React 3D Mockup Component
+import { Canvas3D, ModelRig, OrbitControls } from "@creatify/react-3d";
+
+export function Product3DMockup() {
+  return (
+    <Canvas3D 
+      camera={{ fov: ${focalLength}, position: [0, 0.4, 3.8] }}
+      lighting="${activeLighting}"
+      background="${bgColor}"
+    >
+      <ModelRig 
+        model="${activeModel}" 
+        metalness={${metalness}} 
+        roughness={${roughness}} 
+        autoRotate={${isAutoRotating}} 
+      />
+      <OrbitControls enableZoom={true} />
+    </Canvas3D>
+  );
+}`;
+    navigator.clipboard.writeText(reactSnippet);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  // ── Copy CLI Command ──
+  const handleCopySdkCli = () => {
+    const cli = `npx @creatify/mockup --rig=${activeModel} --lighting=${activeLighting} --code=server.ts --export=4k.png`;
+    navigator.clipboard.writeText(cli);
+    setCopiedSdk(true);
+    setTimeout(() => setCopiedSdk(false), 2000);
+  };
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // VIEW 1: 3D MOCKUPS STAGES HUB (Pure Classy Light / Dark Theme)
+  // VIEW 1: 3D MOCKUP STAGES & MARKETPLACE HUB (Matches WorkflowPipelines.jsx)
   // ══════════════════════════════════════════════════════════════════════════════
   if (viewMode === "hub") {
     return (
@@ -530,509 +738,862 @@ services:
         background: isDark ? "#0c040a" : "#fdf8fa",
         color: isDark ? "#ffffff" : "#1a040d",
         fontFamily: "'Plus Jakarta Sans', sans-serif",
-        padding: "40px 48px 80px",
+        padding: "32px 0 0",
         boxSizing: "border-box",
+        position: "relative",
+        overflowX: "hidden",
       }}>
-        {/* Top Hub Navigation Bar */}
+        {/* Ambient Background Auras */}
         <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 36,
-          flexWrap: "wrap",
-          gap: 16,
-        }}>
-          <div>
-            <div style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "4px 12px",
-              borderRadius: 99,
-              background: isDark ? "rgba(2, 132, 199, 0.15)" : "rgba(2, 132, 199, 0.08)",
-              border: `1px solid ${isDark ? "rgba(2, 132, 199, 0.3)" : "rgba(2, 132, 199, 0.2)"}`,
-              marginBottom: 10,
-            }}>
-              <Box size={13} color="#0284c7" />
-              <span style={{
-                fontSize: 11,
-                fontWeight: 800,
-                fontFamily: "Syne, sans-serif",
-                color: "#0284c7",
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-              }}>
-                WebGL 3D Stages Hub
-              </span>
-            </div>
-
-            <h1 style={{
-              margin: "0 0 6px",
-              fontSize: "clamp(28px, 3.5vw, 42px)",
-              fontWeight: 900,
-              fontFamily: "Syne, sans-serif",
-              letterSpacing: "-0.03em",
-              color: isDark ? "#ffffff" : "#4a0e22",
-            }}>
-              3D Mockup Studio
-            </h1>
-            <p style={{
-              margin: 0,
-              fontSize: "14.5px",
-              color: isDark ? "rgba(255,255,255,0.7)" : "#6a2135",
-              maxWidth: 640,
-              lineHeight: 1.45,
-            }}>
-              Real-time Three.js WebGL stages for developer code syntax, terminal shaders, and software packaging.
-            </p>
-          </div>
-
-          {/* Quick Launch Terminal Stage Button */}
-          <button
-            onClick={() => launchStageStudio("terminal")}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "12px 24px",
-              borderRadius: 12,
-              background: "linear-gradient(135deg, #0284c7, #942945)",
-              border: "none",
-              color: "#ffffff",
-              fontSize: "13.5px",
-              fontWeight: 800,
-              fontFamily: "Syne, sans-serif",
-              cursor: "pointer",
-              boxShadow: "0 6px 20px rgba(2, 132, 199, 0.35)",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = "0 10px 28px rgba(2, 132, 199, 0.5)";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 6px 20px rgba(2, 132, 199, 0.35)";
-            }}
-          >
-            <Box size={16} />
-            <span>Launch Ray.so 3D Stage</span>
-          </button>
-        </div>
-
-        {/* Filter Chips & Search Bar */}
+          position: "absolute", top: "-150px", left: "25%", width: 550, height: 550,
+          borderRadius: "50%", background: "radial-gradient(circle, rgba(225,73,109,0.16) 0%, transparent 70%)",
+          filter: "blur(80px)", pointerEvents: "none", zIndex: 0
+        }} />
         <div style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 32,
-          flexWrap: "wrap",
-          gap: 16,
+          position: "absolute", top: "400px", right: "10%", width: 450, height: 450,
+          borderRadius: "50%", background: "radial-gradient(circle, rgba(168,85,247,0.14) 0%, transparent 70%)",
+          filter: "blur(90px)", pointerEvents: "none", zIndex: 0
+        }} />
+
+        {/* ── TOP HERO CENTERPIECE: OPEN UNBOXED LAYOUT WITH ART ── */}
+        <section style={{
+          position: "relative",
+          zIndex: 1,
+          maxWidth: 1200,
+          margin: "0 auto 52px",
+          padding: "24px 24px 0",
+          textAlign: "center",
         }}>
-          {/* Category Tabs */}
+          {/* Majestic Hero Headline */}
+          <h1 style={{
+            margin: "0 auto 14px",
+            fontSize: "clamp(32px, 4.5vw, 58px)",
+            fontWeight: 900,
+            fontFamily: "Syne, sans-serif",
+            letterSpacing: "-0.03em",
+            lineHeight: 1.1,
+            color: isDark ? "#ffffff" : "#4a0e22",
+            maxWidth: 920
+          }}>
+            Raytrace 3D Device & Code Mockups with <span style={{
+              color: isDark ? "#ff8da7" : "#e1496d"
+            }}>Physical WebGL Shaders</span>.
+          </h1>
+
+          <p style={{
+            margin: "0 auto 36px",
+            fontSize: "clamp(14.5px, 1.7vw, 17px)",
+            color: isDark ? "rgba(255,255,255,0.7)" : "#6a2135",
+            maxWidth: 720,
+            lineHeight: 1.6,
+          }}>
+            Bake floating Ray.so glass terminals, MacBook M3 displays, titanium smartphones, and 4K OpenGraph social assets with real-time dielectric PBR materials.
+          </p>
+
+          {/* ── INTERACTIVE VISUAL ARTWORK: PROCEDURAL 3D PIPELINE MATRIX ── */}
           <div style={{
+            position: "relative",
+            maxWidth: 960,
+            height: 180,
+            margin: "0 auto 36px",
+            borderRadius: 20,
+            background: isDark ? "rgba(10, 2, 8, 0.8)" : "rgba(255, 255, 255, 0.75)",
+            border: `1.5px solid ${isDark ? "rgba(225, 73, 109, 0.2)" : "rgba(148, 41, 69, 0.12)"}`,
+            overflow: "hidden",
             display: "flex",
             alignItems: "center",
-            gap: 6,
-            background: isDark ? "rgba(255,255,255,0.04)" : "rgba(148, 41, 69, 0.05)",
-            padding: "4px 8px",
-            borderRadius: 12,
-            border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(148, 41, 69, 0.1)"}`,
+            justifyContent: "space-around",
+            padding: "0 24px",
+            boxShadow: isDark ? "inset 0 0 30px rgba(0,0,0,0.6)" : "inset 0 0 20px rgba(148,41,69,0.03)"
           }}>
-            {[
-              { id: "all", label: "All Stages" },
-              { id: "terminals", label: "Developer Terminals" },
-              { id: "hardware", label: "Hardware & Devices" },
-              { id: "packaging", label: "Packaging & Print" },
-              { id: "glass", label: "Frosted Glass" },
-            ].map(cat => {
-              const active = activeCategory === cat.id;
-              return (
+            {/* SVG Connecting Bezier Cable Stream */}
+            <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
+              <path
+                d="M 120 90 C 260 40, 340 140, 460 90 S 660 40, 840 90"
+                fill="none"
+                stroke={isDark ? "rgba(225,73,109,0.4)" : "rgba(225,73,109,0.3)"}
+                strokeWidth="2.5"
+                strokeDasharray="6 6"
+              />
+            </svg>
+
+            {/* Stage 1: Source Code & Image Texture Ingest */}
+            <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 16,
+                background: "linear-gradient(135deg, #0284c7, #0369a1)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", boxShadow: "0 6px 18px rgba(2, 132, 199, 0.45)",
+                border: "2px solid rgba(255,255,255,0.2)"
+              }}>
+                <Code size={22} />
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 800, fontFamily: "Syne, sans-serif", color: isDark ? "#fff" : "#1a040d" }}>
+                  Code / Screenshot
+                </span>
+                <div style={{ fontSize: 9.5, color: "#0284c7", fontWeight: 700 }}>AST Ingest</div>
+              </div>
+            </div>
+
+            {/* Stage 2: WebGL Dielectric PBR Shading */}
+            <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 16,
+                background: "linear-gradient(135deg, #e1496d, #942945)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", boxShadow: "0 6px 18px rgba(225, 73, 109, 0.45)",
+                border: "2px solid rgba(255,255,255,0.2)"
+              }}>
+                <Box size={22} />
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 800, fontFamily: "Syne, sans-serif", color: isDark ? "#fff" : "#1a040d" }}>
+                  PBR Normal Maps
+                </span>
+                <div style={{ fontSize: 9.5, color: "#e1496d", fontWeight: 700 }}>Metal / Glass 0.88</div>
+              </div>
+            </div>
+
+            {/* Stage 3: Studio Multi-Point Lighting */}
+            <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 16,
+                background: "linear-gradient(135deg, #a855f7, #7e22ce)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", boxShadow: "0 6px 18px rgba(168, 85, 247, 0.45)",
+                border: "2px solid rgba(255,255,255,0.2)"
+              }}>
+                <Sparkles size={22} />
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 800, fontFamily: "Syne, sans-serif", color: isDark ? "#fff" : "#1a040d" }}>
+                  Cyber Studio Rig
+                </span>
+                <div style={{ fontSize: 9.5, color: "#a855f7", fontWeight: 700 }}>HDR 60 FPS</div>
+              </div>
+            </div>
+
+            {/* Stage 4: 4K Lossless PNG Export */}
+            <div style={{ position: "relative", zIndex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: 16,
+                background: "linear-gradient(135deg, #10b981, #047857)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", boxShadow: "0 6px 18px rgba(16, 185, 129, 0.45)",
+                border: "2px solid rgba(255,255,255,0.2)"
+              }}>
+                <CheckCircle2 size={22} />
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 800, fontFamily: "Syne, sans-serif", color: isDark ? "#fff" : "#1a040d" }}>
+                  4K Lossless PNG
+                </span>
+                <div style={{ fontSize: 9.5, color: "#10b981", fontWeight: 700 }}>Instant CDN</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action CTAs */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, flexWrap: "wrap" }}>
+            <button
+              onClick={() => openModelInStudio("terminal")}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 10,
+                padding: "14px 28px", borderRadius: 14,
+                background: "linear-gradient(135deg, #e1496d, #942945)",
+                color: "#ffffff", border: "none",
+                fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: 15,
+                boxShadow: "0 8px 24px rgba(225,73,109,0.35)",
+                cursor: "pointer", transition: "transform 0.18s, box-shadow 0.18s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
+            >
+              <Box size={18} /> Launch 3D Studio Engine
+            </button>
+
+            <button
+              onClick={handleCopySdkCli}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "14px 22px", borderRadius: 14,
+                background: isDark ? "rgba(255,255,255,0.06)" : "#ffffff",
+                color: isDark ? "#ffffff" : "#4a0e22",
+                border: `1.5px solid ${isDark ? "rgba(225,73,109,0.25)" : "rgba(148,41,69,0.18)"}`,
+                fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, fontSize: 13,
+                cursor: "pointer", transition: "all 0.18s",
+              }}
+            >
+              {copiedSdk ? <Check size={16} color="#10b981" /> : <Terminal size={16} color="#e1496d" />}
+              {copiedSdk ? "CLI Command Copied!" : "npx @creatify/mockup"}
+            </button>
+          </div>
+        </section>
+
+        {/* ── INTERACTIVE 3D STAGE DECK SHOWCASE (STACK / GRID MODES) ── */}
+        <section 
+          style={{ maxWidth: 1200, margin: "0 auto 48px", padding: "0 24px", position: "relative", zIndex: 1 }}
+          onMouseEnter={() => setIsDeckHovered(true)}
+          onMouseLeave={() => setIsDeckHovered(false)}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <Sparkles size={16} color="#e1496d" />
+                <span style={{ fontSize: 11.5, fontWeight: 800, color: "#e1496d", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                  Interactive 3D Stages Showcase
+                </span>
+              </div>
+              <h2 style={{ margin: 0, fontSize: "clamp(22px, 2.5vw, 32px)", fontWeight: 900, fontFamily: "Syne, sans-serif", color: isDark ? "#ffffff" : "#4a0e22" }}>
+                Featured Developer Rigs & Viewports
+              </h2>
+            </div>
+
+            {/* Layout Mode Switcher */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: 4,
+              padding: 4, borderRadius: 12,
+              background: isDark ? "rgba(255,255,255,0.06)" : "#ffffff",
+              border: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.12)"}`,
+            }}>
+              {[
+                { id: "stack", label: "3D Stack Deck", icon: Layers },
+                { id: "grid", label: "Grid Matrix", icon: Grid },
+              ].map(m => (
+                <button
+                  key={m.id}
+                  onClick={() => setBlueprintLayoutMode(m.id)}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    padding: "6px 12px", borderRadius: 8,
+                    background: blueprintLayoutMode === m.id ? (isDark ? "rgba(225,73,109,0.25)" : "#e1496d") : "transparent",
+                    color: blueprintLayoutMode === m.id ? "#ffffff" : (isDark ? "#ffffff" : "#6a2135"),
+                    border: "none", fontSize: 11.5, fontWeight: 700,
+                    cursor: "pointer", transition: "all 0.15s",
+                  }}
+                >
+                  <m.icon size={13} /> {m.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 3D Stack Deck View */}
+          {blueprintLayoutMode === "stack" && (
+            <div style={{ position: "relative", minHeight: 380, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {filteredStages.map((stage, idx) => {
+                const total = filteredStages.length;
+                const offset = (idx - activeDeckIndex + total) % total;
+                const isTop = offset === 0;
+                const isSecond = offset === 1;
+                const isThird = offset === 2;
+
+                if (!isTop && !isSecond && !isThird) return null;
+
+                const translateY = offset * 22;
+                const scale = 1 - offset * 0.05;
+                const zIndex = 10 - offset;
+                const opacity = 1 - offset * 0.22;
+
+                return (
+                  <div
+                    key={stage.id}
+                    onClick={() => isTop ? openModelInStudio(stage.id) : setActiveDeckIndex(idx)}
+                    style={{
+                      position: isTop ? "relative" : "absolute",
+                      width: "100%", maxWidth: 940,
+                      borderRadius: 24,
+                      background: isDark ? "rgba(18, 6, 15, 0.95)" : "#ffffff",
+                      border: `1.5px solid ${isTop ? "#e1496d" : (isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.12)")}`,
+                      padding: "28px 32px",
+                      boxShadow: isTop ? (isDark ? "0 24px 60px rgba(0,0,0,0.8), 0 0 40px rgba(225,73,109,0.18)" : "0 20px 50px rgba(148,41,69,0.12)") : "none",
+                      transform: `translateY(${translateY}px) scale(${scale})`,
+                      zIndex, opacity,
+                      cursor: "pointer",
+                      transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{
+                          width: 48, height: 48, borderRadius: 14,
+                          background: `linear-gradient(135deg, ${stage.color}, #942945)`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          color: "#ffffff", boxShadow: `0 6px 16px ${stage.color}40`,
+                        }}>
+                          <stage.icon size={24} />
+                        </div>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <h3 style={{ margin: 0, fontSize: 20, fontWeight: 900, fontFamily: "Syne, sans-serif", color: isDark ? "#ffffff" : "#4a0e22" }}>
+                              {stage.name}
+                            </h3>
+                            <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 12, background: "rgba(225,73,109,0.15)", color: "#e1496d", border: "1px solid rgba(225,73,109,0.3)" }}>
+                              {stage.previewBadge}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 12, color: isDark ? "rgba(255,255,255,0.6)" : "#6a2135", marginTop: 2 }}>
+                            {stage.categoryLabel} • {stage.tag}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openModelInStudio(stage.id); }}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 6,
+                          padding: "10px 18px", borderRadius: 10,
+                          background: "#e1496d", color: "#ffffff",
+                          border: "none", fontWeight: 700, fontSize: 13,
+                          fontFamily: "Syne, sans-serif", cursor: "pointer",
+                        }}
+                      >
+                        Launch 3D Studio <ArrowRight size={14} />
+                      </button>
+                    </div>
+
+                    <p style={{ margin: "0 0 20px", fontSize: 14, lineHeight: 1.5, color: isDark ? "rgba(255,255,255,0.75)" : "#4a0e22" }}>
+                      {stage.desc}
+                    </p>
+
+                    {/* Specs badges */}
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                      {stage.specs.map((sp, i) => (
+                        <span key={i} style={{
+                          fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 8,
+                          background: isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.06)",
+                          color: isDark ? "#ff8da7" : "#942945", border: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.12)"}`
+                        }}>
+                          ✓ {sp}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Grid Matrix Mode */}
+          {blueprintLayoutMode === "grid" && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
+              {filteredStages.map((stage) => (
+                <div
+                  key={stage.id}
+                  onClick={() => openModelInStudio(stage.id)}
+                  style={{
+                    borderRadius: 20,
+                    background: isDark ? "rgba(18, 6, 15, 0.9)" : "#ffffff",
+                    border: `1.5px solid ${isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)"}`,
+                    padding: 24,
+                    cursor: "pointer",
+                    transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                    display: "flex", flexDirection: "column", justifyContent: "space-between"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-4px)";
+                    e.currentTarget.style.borderColor = "#e1496d";
+                    e.currentTarget.style.boxShadow = isDark ? "0 16px 36px rgba(0,0,0,0.6)" : "0 14px 30px rgba(148,41,69,0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.borderColor = isDark ? "rgba(225,73,109,0.18)" : "rgba(148,41,69,0.12)";
+                    e.currentTarget.style.boxShadow = "none";
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                      <div style={{
+                        width: 42, height: 42, borderRadius: 12,
+                        background: `linear-gradient(135deg, ${stage.color}, #942945)`,
+                        display: "flex", alignItems: "center", justifyContent: "center", color: "#fff"
+                      }}>
+                        <stage.icon size={20} />
+                      </div>
+                      <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 10, background: "rgba(225,73,109,0.12)", color: "#e1496d" }}>
+                        {stage.previewBadge}
+                      </span>
+                    </div>
+
+                    <h3 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 900, fontFamily: "Syne, sans-serif", color: isDark ? "#ffffff" : "#4a0e22" }}>
+                      {stage.name}
+                    </h3>
+                    <p style={{ margin: "0 0 16px", fontSize: 12.5, color: isDark ? "rgba(255,255,255,0.65)" : "#6a2135", lineHeight: 1.5 }}>
+                      {stage.desc}
+                    </p>
+                  </div>
+
+                  <div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+                      {stage.specs.slice(0, 2).map((sp, idx) => (
+                        <span key={idx} style={{ fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 6, background: isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.06)", color: isDark ? "#ff8da7" : "#942945" }}>
+                          ✓ {sp}
+                        </span>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openModelInStudio(stage.id); }}
+                      style={{
+                        width: "100%", padding: "10px", borderRadius: 10,
+                        background: isDark ? "rgba(225,73,109,0.15)" : "#fdf2f4",
+                        color: "#e1496d", border: "1px solid rgba(225,73,109,0.3)",
+                        fontWeight: 800, fontSize: 12.5, fontFamily: "Syne, sans-serif",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                        cursor: "pointer", transition: "all 0.15s"
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = "#e1496d"; e.currentTarget.style.color = "#ffffff"; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = isDark ? "rgba(225,73,109,0.15)" : "#fdf2f4"; e.currentTarget.style.color = "#e1496d"; }}
+                    >
+                      Open in 3D Viewport <ArrowRight size={13} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* ── SEARCH & CATEGORY FILTER MATRIX ── */}
+        <section style={{ maxWidth: 1200, margin: "0 auto 60px", padding: "0 24px", position: "relative", zIndex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, flexWrap: "wrap", gap: 14 }}>
+            {/* Search Input */}
+            <div style={{ position: "relative", width: "100%", maxWidth: 360 }}>
+              <Search size={16} color={isDark ? "#8c8780" : "#a8818f"} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)" }} />
+              <input
+                type="text"
+                placeholder="Search 3D Rigs, PBR Shaders, Devices..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: "100%", padding: "11px 14px 11px 38px",
+                  borderRadius: 12,
+                  background: isDark ? "rgba(255,255,255,0.06)" : "#ffffff",
+                  border: `1.5px solid ${isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.14)"}`,
+                  color: isDark ? "#ffffff" : "#1a040d",
+                  fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  outline: "none", boxSizing: "border-box"
+                }}
+              />
+            </div>
+
+            {/* Category Pills */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {[
+                { id: "all", label: "All Rigs" },
+                { id: "terminals", label: "Terminals & Code" },
+                { id: "hardware", label: "Hardware & Devices" },
+                { id: "packaging", label: "Packaging & Retail" },
+                { id: "retro", label: "Retro & Holographic" },
+                { id: "social", label: "Social & OpenGraph" },
+              ].map(cat => (
                 <button
                   key={cat.id}
                   onClick={() => setActiveCategory(cat.id)}
                   style={{
-                    padding: "7px 16px",
-                    borderRadius: 9,
-                    background: active 
-                      ? (isDark ? "linear-gradient(135deg, #0284c7, #942945)" : "#ffffff") 
-                      : "transparent",
-                    border: active && !isDark ? "1px solid rgba(148, 41, 69, 0.15)" : "none",
-                    color: active ? (isDark ? "#ffffff" : "#0284c7") : (isDark ? "rgba(255,255,255,0.7)" : "#6a2135"),
-                    fontSize: "12.5px",
-                    fontWeight: active ? 800 : 600,
-                    fontFamily: "Syne, sans-serif",
-                    cursor: "pointer",
-                    boxShadow: active && !isDark ? "0 2px 8px rgba(148,41,69,0.08)" : "none",
-                    transition: "all 0.15s ease",
+                    padding: "8px 16px", borderRadius: 10,
+                    background: activeCategory === cat.id ? "#e1496d" : (isDark ? "rgba(255,255,255,0.06)" : "#ffffff"),
+                    color: activeCategory === cat.id ? "#ffffff" : (isDark ? "#ffffff" : "#6a2135"),
+                    border: `1px solid ${activeCategory === cat.id ? "#e1496d" : (isDark ? "rgba(225,73,109,0.2)" : "rgba(148,41,69,0.12)")}`,
+                    fontWeight: 700, fontSize: 12, fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    cursor: "pointer", transition: "all 0.15s",
                   }}
                 >
                   {cat.label}
                 </button>
-              );
-            })}
-          </div>
-
-          {/* Search Input */}
-          <div style={{ position: "relative", minWidth: 260 }}>
-            <Search size={15} style={{
-              position: "absolute", left: 12, top: "50%",
-              transform: "translateY(-50%)",
-              color: isDark ? "rgba(255,255,255,0.4)" : "rgba(148,41,69,0.4)",
-            }} />
-            <input
-              type="text"
-              placeholder="Search 3D stages..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px 14px 8px 36px",
-                borderRadius: 10,
-                background: isDark ? "rgba(255,255,255,0.05)" : "#ffffff",
-                border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(148, 41, 69, 0.18)"}`,
-                color: "inherit",
-                fontSize: "12.5px",
-                outline: "none",
-                boxSizing: "border-box",
-                boxShadow: !isDark ? "0 2px 6px rgba(148,41,69,0.04)" : "none",
-              }}
-            />
-          </div>
-        </div>
-
-        {/* 3D Stage Cards Grid */}
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))",
-          gap: 24,
-        }}>
-          {filteredStages.map((stg) => (
-            <div
-              key={stg.id}
-              style={{
-                borderRadius: 18,
-                background: isDark ? "rgba(18, 5, 14, 0.88)" : "#ffffff",
-                border: `1.5px solid ${isDark ? "rgba(2, 132, 199, 0.22)" : "rgba(148, 41, 69, 0.12)"}`,
-                boxShadow: isDark 
-                  ? "0 10px 30px rgba(0,0,0,0.5)" 
-                  : "0 8px 24px rgba(148, 41, 69, 0.06)",
-                padding: "24px",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                transition: "all 0.25s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-4px)";
-                e.currentTarget.style.borderColor = stg.color;
-                e.currentTarget.style.boxShadow = isDark 
-                  ? `0 16px 40px ${stg.color}35` 
-                  : "0 14px 36px rgba(148, 41, 69, 0.12)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.borderColor = isDark ? "rgba(2, 132, 199, 0.22)" : "rgba(148, 41, 69, 0.12)";
-                e.currentTarget.style.boxShadow = isDark 
-                  ? "0 10px 30px rgba(0,0,0,0.5)" 
-                  : "0 8px 24px rgba(148, 41, 69, 0.06)";
-              }}
-            >
-              <div>
-                {/* Card Header */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                  <span style={{
-                    fontSize: "10.5px",
-                    fontWeight: 800,
-                    fontFamily: "Syne, sans-serif",
-                    padding: "3px 10px",
-                    borderRadius: 99,
-                    background: `${stg.color}15`,
-                    color: stg.color,
-                    border: `1px solid ${stg.color}35`,
-                    textTransform: "uppercase",
-                  }}>
-                    {stg.tag}
-                  </span>
-                  
-                  <span style={{
-                    fontSize: "11px",
-                    fontFamily: "Syne, sans-serif",
-                    fontWeight: 700,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "#831843",
-                  }}>
-                    {stg.categoryLabel}
-                  </span>
-                </div>
-
-                {/* Title & Description */}
-                <h3 style={{
-                  margin: "0 0 8px",
-                  fontSize: "18px",
-                  fontWeight: 800,
-                  fontFamily: "Syne, sans-serif",
-                  color: isDark ? "#ffffff" : "#1a040d",
-                  lineHeight: 1.25,
-                }}>
-                  {stg.name}
-                </h3>
-
-                <p style={{
-                  margin: "0 0 20px",
-                  fontSize: "13px",
-                  color: isDark ? "rgba(255,255,255,0.7)" : "#5a1827",
-                  lineHeight: 1.45,
-                }}>
-                  {stg.desc}
-                </p>
-
-                {/* Specs Chips */}
-                <div style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "6px",
-                  marginBottom: 22,
-                }}>
-                  {stg.specs.map((sp, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        fontSize: "10.5px",
-                        fontWeight: 600,
-                        fontFamily: "'JetBrains Mono', monospace",
-                        padding: "3px 8px",
-                        borderRadius: 6,
-                        background: isDark ? "rgba(255,255,255,0.05)" : "rgba(148, 41, 69, 0.04)",
-                        color: isDark ? "rgba(255,255,255,0.8)" : "#4a0e22",
-                        border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(148, 41, 69, 0.08)"}`,
-                      }}
-                    >
-                      • {sp}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* Launch in Studio Button */}
-              <button
-                onClick={() => launchStageStudio(stg.id)}
-                style={{
-                  width: "100%",
-                  padding: "11px",
-                  borderRadius: 10,
-                  background: `linear-gradient(135deg, ${stg.color}, #942945)`,
-                  border: "none",
-                  color: "#ffffff",
-                  fontSize: "13px",
-                  fontWeight: 800,
-                  fontFamily: "Syne, sans-serif",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  boxShadow: `0 4px 14px ${stg.color}35`,
-                }}
-              >
-                <span>Launch 3D WebGL Stage</span>
-                <ArrowUpRight size={15} />
-              </button>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        </section>
+
+        {/* ── PARALLAX COMMUNITY FOOTER BANNER (Matches Pipelines page) ── */}
+        <CommunityLandscapeBanner isDark={isDark} onNavigate={onNavigate} themeShade="pipeline" />
       </div>
     );
   }
 
   // ══════════════════════════════════════════════════════════════════════════════
-  // VIEW 2: 3D THREE.JS WEBGL VIEWPORT STUDIO
+  // VIEW 2: 3D THREE.JS PBR VIEWPORT & STUDIO ENGINE
   // ══════════════════════════════════════════════════════════════════════════════
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: isEmbedded ? "calc(100vh - 72px)" : "100vh",
-        width: "100%",
-        background: isDark ? "#0c040a" : "#fdf8fa",
-        color: isDark ? "#ffffff" : "#1a040d",
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
-        overflow: "hidden",
-      }}
-    >
-      {/* ── TOP STUDIO TOOLBAR ── */}
+    <div style={{
+      width: "100vw", height: "100vh",
+      background: isDark ? "#080206" : "#f8fafc",
+      color: isDark ? "#ffffff" : "#0f172a",
+      fontFamily: "'Plus Jakarta Sans', sans-serif",
+      display: "flex", flexDirection: "column",
+      overflow: "hidden", userSelect: "none"
+    }}>
+      {/* ── Top Studio Navigation Bar ── */}
       <header style={{
-        height: 56,
-        background: isDark ? "rgba(16, 5, 14, 0.96)" : "rgba(255, 255, 255, 0.98)",
-        borderBottom: `1px solid ${isDark ? "rgba(225, 73, 109, 0.2)" : "rgba(148, 41, 69, 0.12)"}`,
-        backdropFilter: "blur(16px)",
-        padding: "0 20px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        zIndex: 25,
-        gap: 12,
+        height: 52,
+        background: isDark ? "#12050e" : "#ffffff",
+        borderBottom: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0"}`,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 16px", zIndex: 30, flexShrink: 0
       }}>
-        {/* Left: Back to Hub + Active Stage Model */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        {/* Left: Back to Hub + Rig Title */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button
             onClick={() => setViewMode("hub")}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "6px 12px",
-              borderRadius: 8,
-              background: isDark ? "rgba(255,255,255,0.06)" : "rgba(148,41,69,0.06)",
-              border: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(148,41,69,0.12)"}`,
-              color: isDark ? "#ffffff" : "#831843",
-              fontSize: "12px",
-              fontWeight: 700,
-              fontFamily: "Syne, sans-serif",
-              cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+              background: isDark ? "rgba(225,73,109,0.12)" : "#f1f5f9",
+              border: `1px solid ${isDark ? "rgba(225,73,109,0.25)" : "#e2e8f0"}`,
+              color: isDark ? "#ff8da7" : "#475569",
+              padding: "5px 12px", borderRadius: 8, fontSize: 12,
+              fontWeight: 700, cursor: "pointer"
             }}
           >
-            <ArrowLeft size={14} />
-            <span>Mockups Hub</span>
+            <ArrowLeft size={14} /> Back to Hub
           </button>
 
+          <div style={{ height: 18, width: 1, background: isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0" }} />
+
+          {/* Active Model Switcher */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{
-              width: 28, height: 28, borderRadius: 8,
-              background: "linear-gradient(135deg, #0284c7, #e1496d)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff",
-            }}>
-              <Box size={15} />
-            </div>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 13.5, fontWeight: 800, fontFamily: "Syne, sans-serif" }}>
-                  {STAGE_CARDS.find(s => s.id === activeModel)?.name || "3D Stage Viewport"}
-                </span>
-                <span style={{
-                  fontSize: 9, padding: "2px 6px", borderRadius: 4,
-                  background: "rgba(2, 132, 199, 0.15)", color: "#0284c7",
-                  border: "1px solid rgba(2, 132, 199, 0.3)", fontWeight: 800,
-                }}>
-                  THREE.JS WEBGL
-                </span>
-              </div>
-            </div>
+            <Box size={16} color="#e1496d" />
+            <select
+              value={activeModel}
+              onChange={(e) => setActiveModel(e.target.value)}
+              style={{
+                background: "transparent", border: "none",
+                color: isDark ? "#ffffff" : "#0f172a",
+                fontSize: 13, fontWeight: 800, fontFamily: "Syne, sans-serif",
+                outline: "none", cursor: "pointer"
+              }}
+            >
+              {STAGE_CARDS.map(s => (
+                <option key={s.id} value={s.id} style={{ background: isDark ? "#160512" : "#ffffff", color: isDark ? "#fff" : "#000" }}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
-        {/* Center Stage Selector */}
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-          background: isDark ? "rgba(255,255,255,0.04)" : "rgba(148,41,69,0.05)",
-          padding: "3px 6px",
-          borderRadius: 10,
-          border: `1px solid ${isDark ? "rgba(225,73,109,0.15)" : "rgba(148,41,69,0.12)"}`,
-        }}>
-          {[
-            { id: "terminal", label: "Ray.so Glass" },
-            { id: "macbook", label: "MacBook Pro" },
-            { id: "iphone", label: "iPhone 16 Pro" },
-            { id: "software_box", label: "Software Box" },
-          ].map(m => {
-            const active = activeModel === m.id;
-            return (
+        {/* Center: Camera Angles & Lighting */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          {/* Camera Angles */}
+          <div style={{ display: "flex", background: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9", borderRadius: 8, padding: 2 }}>
+            {[
+              { id: "perspective", label: "Perspective" },
+              { id: "front", label: "Front" },
+              { id: "isometric", label: "Isometric" },
+              { id: "top", label: "Top" },
+            ].map(cam => (
               <button
-                key={m.id}
-                onClick={() => setActiveModel(m.id)}
+                key={cam.id}
+                onClick={() => setCameraPreset(cam.id)}
                 style={{
-                  padding: "5px 12px",
-                  borderRadius: 7,
-                  background: active ? "linear-gradient(135deg, #0284c7, #942945)" : "transparent",
-                  border: "none",
-                  color: active ? "#ffffff" : (isDark ? "rgba(255,255,255,0.7)" : "#4a0e22"),
-                  fontSize: 11.5,
-                  fontWeight: active ? 800 : 600,
-                  fontFamily: "Syne, sans-serif",
-                  cursor: "pointer",
+                  background: cameraView === cam.id ? "#e1496d" : "transparent",
+                  color: cameraView === cam.id ? "#ffffff" : (isDark ? "#ffffff" : "#64748b"),
+                  border: "none", borderRadius: 6,
+                  padding: "4px 10px", fontSize: 11, fontWeight: 700,
+                  cursor: "pointer", transition: "all 0.15s"
                 }}
               >
-                {m.label}
+                {cam.label}
               </button>
-            );
-          })}
-        </div>
+            ))}
+          </div>
 
-        {/* Right Actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Auto Rotate Toggle */}
           <button
-            onClick={() => setIsAutoRotating(!isAutoRotating)}
+            onClick={() => setIsAutoRotating(prev => !prev)}
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "6px 13px",
-              borderRadius: 8,
-              background: isAutoRotating ? "rgba(2, 132, 199, 0.2)" : (isDark ? "rgba(255,255,255,0.06)" : "#ffffff"),
-              border: `1px solid ${isAutoRotating ? "#0284c7" : (isDark ? "rgba(225,73,109,0.25)" : "rgba(148,41,69,0.18)")}`,
-              color: isAutoRotating ? "#0284c7" : "inherit",
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 5,
+              background: isAutoRotating ? "rgba(225,73,109,0.18)" : (isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9"),
+              border: `1px solid ${isAutoRotating ? "#e1496d" : (isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0")}`,
+              color: isAutoRotating ? "#e1496d" : (isDark ? "#ffffff" : "#64748b"),
+              padding: "5px 10px", borderRadius: 8, fontSize: 11.5,
+              fontWeight: 700, cursor: "pointer"
             }}
           >
-            <RotateCw size={13} className={isAutoRotating ? "mascot-anim-spin" : ""} />
-            <span>360° Spin</span>
+            <RotateCw size={13} className={isAutoRotating ? "animate-spin" : ""} /> {isAutoRotating ? "Rotating" : "Static"}
+          </button>
+        </div>
+
+        {/* Right: Snapshot & Code Copy */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button
+            onClick={handleCopyReactCode}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              background: isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9",
+              border: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0"}`,
+              color: isDark ? "#ffffff" : "#0f172a",
+              padding: "6px 12px", borderRadius: 8, fontSize: 12,
+              fontWeight: 700, cursor: "pointer"
+            }}
+          >
+            {copiedCode ? <Check size={14} color="#10b981" /> : <Code size={14} />}
+            {copiedCode ? "React Code Copied!" : "React 3D"}
           </button>
 
           <button
-            onClick={handleExportPNG}
+            onClick={handleCaptureSnapshot}
+            disabled={isExporting}
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "7px 18px",
-              borderRadius: 99,
-              background: "linear-gradient(135deg, #0284c7, #942945)",
-              border: "none",
-              color: "#ffffff",
-              fontSize: 12.5,
-              fontWeight: 800,
-              fontFamily: "Syne, sans-serif",
-              cursor: "pointer",
-              boxShadow: "0 6px 18px rgba(2, 132, 199, 0.4)",
+              display: "flex", alignItems: "center", gap: 6,
+              background: "linear-gradient(135deg, #e1496d, #942945)",
+              color: "#ffffff", border: "none",
+              padding: "7px 16px", borderRadius: 8, fontSize: 12.5,
+              fontWeight: 800, fontFamily: "Syne, sans-serif",
+              cursor: "pointer", boxShadow: "0 4px 12px rgba(225,73,109,0.35)"
             }}
           >
-            <Download size={13} />
-            <span>Export 4K PNG</span>
+            <Camera size={14} /> {isExporting ? "Baking 4K..." : "Bake 4K PNG"}
           </button>
         </div>
       </header>
 
-      {/* ── MAIN STUDIO 3D VIEWPORT CANVAS ── */}
-      <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
-        <div
-          ref={mountRef}
-          style={{ width: "100%", height: "100%", cursor: "grab" }}
+      {/* ── Main Viewport Area + Right Property Inspector ── */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", position: "relative" }}>
+        
+        {/* 3D WebGL Canvas Stage */}
+        <div 
+          ref={mountRef} 
+          style={{ flex: 1, height: "100%", position: "relative", cursor: "grab" }} 
         />
 
-        {/* Orbit Helper */}
+        {/* Floating Viewport Controls (Bottom Left of Canvas) */}
         <div style={{
-          position: "absolute", bottom: 20, left: 24,
-          background: isDark ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.9)",
-          backdropFilter: "blur(10px)",
-          border: `1px solid ${isDark ? "rgba(255,255,255,0.12)" : "rgba(148,41,69,0.15)"}`,
-          borderRadius: 8,
-          padding: "6px 14px",
-          fontSize: 11.5,
-          color: isDark ? "rgba(255,255,255,0.75)" : "#4a0e22",
-          pointerEvents: "none",
-          display: "flex",
-          alignItems: "center",
-          gap: 7,
+          position: "absolute", bottom: 20, left: 20, zIndex: 20,
+          display: "flex", alignItems: "center", gap: 10,
+          background: isDark ? "rgba(14, 5, 12, 0.85)" : "rgba(255, 255, 255, 0.9)",
+          backdropFilter: "blur(12px)", padding: "6px 14px", borderRadius: 14,
+          border: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0"}`
         }}>
-          <Eye size={13} color="#e1496d" />
-          <span>Click & Drag to rotate 3D model • Scroll to Zoom</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#e1496d" }}>FOV Zoom</span>
+            <input
+              type="range" min="25" max="75" value={focalLength}
+              onChange={(e) => setFocalLength(parseInt(e.target.value))}
+              style={{ width: 80, accentColor: "#e1496d", cursor: "pointer" }}
+            />
+            <span style={{ fontSize: 10.5, fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{focalLength}°</span>
+          </div>
+
+          <div style={{ height: 14, width: 1, background: isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0" }} />
+
+          <button
+            onClick={() => setShowGridFloor(prev => !prev)}
+            style={{ background: "none", border: "none", color: showGridFloor ? "#e1496d" : "#8c8780", fontSize: 11, fontWeight: 700, cursor: "pointer" }}
+          >
+            Grid {showGridFloor ? "ON" : "OFF"}
+          </button>
         </div>
+
+        {/* Right Inspector Panel */}
+        <aside style={{
+          width: 380, minWidth: 380,
+          background: isDark ? "#12050e" : "#ffffff",
+          borderLeft: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0"}`,
+          display: "flex", flexDirection: "column",
+          height: "100%", zIndex: 25
+        }}>
+          {/* Tab Navigation */}
+          <div style={{ display: "flex", borderBottom: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0"}` }}>
+            {[
+              { id: "code", label: "Code & Text", icon: Code },
+              { id: "materials", label: "PBR Shaders", icon: Sliders },
+              { id: "lighting", label: "Lighting", icon: Sparkles },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveSidebarTab(tab.id)}
+                style={{
+                  flex: 1, padding: "12px 6px",
+                  background: activeSidebarTab === tab.id ? (isDark ? "rgba(225,73,109,0.14)" : "#fdf2f4") : "transparent",
+                  color: activeSidebarTab === tab.id ? "#e1496d" : (isDark ? "#ffffff" : "#64748b"),
+                  border: "none", borderBottom: activeSidebarTab === tab.id ? "2px solid #e1496d" : "2px solid transparent",
+                  fontSize: 11.5, fontWeight: 700, fontFamily: "Syne, sans-serif",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  cursor: "pointer", transition: "all 0.15s"
+                }}
+              >
+                <tab.icon size={13} /> {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tab 1: Code & Content */}
+          {activeSidebarTab === "code" && (
+            <div style={{ flex: 1, overflowY: "auto", padding: 18, display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 800, color: "#e1496d", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  Template Files
+                </label>
+                <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                  {Object.keys(SAMPLE_CODE_SNIPPETS).map(file => (
+                    <button
+                      key={file}
+                      onClick={() => {
+                        setActiveFileTab(file);
+                        setCustomCode(SAMPLE_CODE_SNIPPETS[file]);
+                        setWindowTitle(`${file} — Creatify Engine`);
+                      }}
+                      style={{
+                        padding: "5px 10px", borderRadius: 6,
+                        background: activeFileTab === file ? "#e1496d" : (isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9"),
+                        color: activeFileTab === file ? "#fff" : (isDark ? "#fff" : "#475569"),
+                        border: "none", fontSize: 11, fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: 700, cursor: "pointer"
+                      }}
+                    >
+                      {file}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Code Editor Area */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 220 }}>
+                <label style={{ fontSize: 11, fontWeight: 800, color: "#e1496d", textTransform: "uppercase", marginBottom: 6 }}>
+                  Live Code Content (Real-time Projected)
+                </label>
+                <textarea
+                  value={customCode}
+                  onChange={(e) => setCustomCode(e.target.value)}
+                  style={{
+                    flex: 1, width: "100%",
+                    background: isDark ? "#090207" : "#f8fafc",
+                    border: `1px solid ${isDark ? "rgba(225,73,109,0.25)" : "#cbd5e1"}`,
+                    borderRadius: 10, padding: 12,
+                    color: isDark ? "#f3f4f6" : "#0f172a",
+                    fontFamily: "'JetBrains Mono', monospace", fontSize: 11.5,
+                    lineHeight: 1.5, outline: "none", resize: "none", boxSizing: "border-box"
+                  }}
+                />
+              </div>
+
+              {/* Custom Image Upload */}
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 800, color: "#e1496d", textTransform: "uppercase", marginBottom: 6, display: "block" }}>
+                  Or Upload Custom Screenshot Image
+                </label>
+                <input
+                  type="file" accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const url = URL.createObjectURL(file);
+                      setUploadedImage(url);
+                    }
+                  }}
+                  style={{ fontSize: 12 }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab 2: Materials & Physical Shaders */}
+          {activeSidebarTab === "materials" && (
+            <div style={{ flex: 1, overflowY: "auto", padding: 18, display: "flex", flexDirection: "column", gap: 18 }}>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+                  <span>PBR Metalness</span>
+                  <span style={{ color: "#e1496d" }}>{Math.round(metalness * 100)}%</span>
+                </div>
+                <input
+                  type="range" min="0" max="1" step="0.05" value={metalness}
+                  onChange={(e) => setMetalness(parseFloat(e.target.value))}
+                  style={{ width: "100%", accentColor: "#e1496d" }}
+                />
+              </div>
+
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+                  <span>Surface Roughness</span>
+                  <span style={{ color: "#e1496d" }}>{Math.round(roughness * 100)}%</span>
+                </div>
+                <input
+                  type="range" min="0" max="1" step="0.05" value={roughness}
+                  onChange={(e) => setRoughness(parseFloat(e.target.value))}
+                  style={{ width: "100%", accentColor: "#e1496d" }}
+                />
+              </div>
+
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+                  <span>Glass Optical Transmission</span>
+                  <span style={{ color: "#e1496d" }}>{Math.round(glassTransmission * 100)}%</span>
+                </div>
+                <input
+                  type="range" min="0" max="1" step="0.05" value={glassTransmission}
+                  onChange={(e) => setGlassTransmission(parseFloat(e.target.value))}
+                  style={{ width: "100%", accentColor: "#e1496d" }}
+                />
+              </div>
+
+              {/* Wireframe Toggle */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 10, borderTop: `1px solid ${isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0"}` }}>
+                <span style={{ fontSize: 12.5, fontWeight: 700 }}>Wireframe Geometry Mode</span>
+                <button
+                  onClick={() => setWireframeMode(prev => !prev)}
+                  style={{
+                    padding: "4px 12px", borderRadius: 8,
+                    background: wireframeMode ? "#e1496d" : (isDark ? "rgba(255,255,255,0.06)" : "#f1f5f9"),
+                    color: wireframeMode ? "#fff" : (isDark ? "#fff" : "#475569"),
+                    border: "none", fontWeight: 700, fontSize: 11, cursor: "pointer"
+                  }}
+                >
+                  {wireframeMode ? "ON" : "OFF"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Tab 3: Lighting Rig */}
+          {activeSidebarTab === "lighting" && (
+            <div style={{ flex: 1, overflowY: "auto", padding: 18, display: "flex", flexDirection: "column", gap: 12 }}>
+              <label style={{ fontSize: 11, fontWeight: 800, color: "#e1496d", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                Studio Lighting Rigs
+              </label>
+
+              {[
+                { id: "cyber", name: "Cyberpunk Neon (Magenta / Cyan)", color: "#e1496d" },
+                { id: "studio", name: "Studio Softbox (Neutral 5600K)", color: "#0284c7" },
+                { id: "matrix", name: "Matrix Emerald Terminal", color: "#10b981" },
+                { id: "sunset", name: "Sunset Amber & Rose Gold", color: "#f59e0b" },
+                { id: "neon_tokyo", name: "Tokyo Midnight Purple", color: "#9333ea" },
+                { id: "clean_white", name: "Clean Minimalist Daylight", color: "#64748b" },
+              ].map(lit => (
+                <div
+                  key={lit.id}
+                  onClick={() => setActiveLighting(lit.id)}
+                  style={{
+                    padding: "12px 14px", borderRadius: 10,
+                    background: activeLighting === lit.id ? (isDark ? "rgba(225,73,109,0.18)" : "#fdf2f4") : (isDark ? "rgba(255,255,255,0.04)" : "#f8fafc"),
+                    border: `1.5px solid ${activeLighting === lit.id ? "#e1496d" : (isDark ? "rgba(225,73,109,0.2)" : "#e2e8f0")}`,
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    cursor: "pointer", transition: "all 0.15s"
+                  }}
+                >
+                  <span style={{ fontSize: 12, fontWeight: 700 }}>{lit.name}</span>
+                  {activeLighting === lit.id && <Check size={14} color="#e1496d" />}
+                </div>
+              ))}
+            </div>
+          )}
+        </aside>
       </div>
+
+      {/* Success Toast for 4K Export */}
+      {showExportSuccess && (
+        <div style={{
+          position: "fixed", bottom: 24, right: 24, zIndex: 100,
+          background: "#10b981", color: "#ffffff",
+          padding: "12px 20px", borderRadius: 12,
+          fontWeight: 700, fontSize: 13, fontFamily: "Syne, sans-serif",
+          boxShadow: "0 10px 30px rgba(16,185,129,0.4)",
+          display: "flex", alignItems: "center", gap: 8
+        }}>
+          <CheckCircle2 size={18} /> 4K Lossless 3D Render Saved!
+        </div>
+      )}
     </div>
   );
 }

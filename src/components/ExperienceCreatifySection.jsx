@@ -12,33 +12,33 @@ export default function ExperienceCreatifySection({ onNavigate, user, isDark, TH
   const cards = [
     {
       id: 0,
-      title: "Instant WOW Effect",
-      tagline: "Neural Speed",
-      desc: "Turn rough thoughts into 4K trailers, vector logos, and 3D mockups in seconds with GPU-accelerated generation.",
+      title: "System Design Velocity",
+      tagline: "Architecture Speed",
+      desc: "Model complex cloud topologies, Kafka event buses, and database schemas 10x faster with drag-and-drop developer nodes.",
       icon: Sparkles,
       color: "#e1496d",
-      stat: "< 3.2s",
-      statLabel: "Average Render Time",
+      stat: "< 1.8ms",
+      statLabel: "AST & Graph Parse Speed",
     },
     {
       id: 1,
-      title: "10x Creation Velocity",
-      tagline: "Unified Architecture",
-      desc: "Eliminate tool switching forever. Write prompts, edit multi-track timelines, and project 3D shaders in one unified workspace.",
+      title: "Bi-Directional Code Sync",
+      tagline: "Code-Aware Modeling",
+      desc: "Generate TypeScript interfaces, Go structs, Prisma models, and SQL DDL directly from visual UML & ERD diagrams.",
       icon: Zap,
       color: "#ff8da7",
       stat: "100%",
-      statLabel: "Browser-Native & Real-time",
+      statLabel: "Type-Safe Code Export",
     },
     {
       id: 2,
-      title: "Studio-Grade Fidelity",
-      tagline: "Zero Compromise",
-      desc: "10-bit HDR color grading, lossless vector SVG export, physical dielectric PBR glass, and encrypted vault storage.",
+      title: "Production Tech Specs",
+      tagline: "RFC & Design Reviews",
+      desc: "Compile interactive Architecture Decision Records (ADRs), system design review slide decks, and lossless SVG blueprints.",
       icon: Trophy,
       color: "#f59e0b",
-      stat: "4K 60FPS",
-      statLabel: "Master Export Standard",
+      stat: "4K SVG",
+      statLabel: "Lossless Blueprint Standard",
     },
   ];
 
@@ -222,7 +222,7 @@ export default function ExperienceCreatifySection({ onNavigate, user, isDark, TH
               lineHeight: 1.55,
             }}
           >
-            Unleash your creative potential with ultra-fast neural generation, multi-modal spatial blueprints, and studio-grade master exports.
+            Architect, document, and review distributed systems, microservices, and database schemas with visual engineering blueprints.
           </p>
 
           {/* ── 3D ORBITAL CLOCKWISE & ANTICLOCKWISE CAROUSEL ── */}

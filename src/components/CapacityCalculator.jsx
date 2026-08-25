@@ -365,6 +365,9 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
     inputBg: isDark ? "rgba(14, 4, 12, 0.85)" : "rgba(245, 240, 245, 0.85)",
   };
 
+  const fontSans = "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  const fontMono = "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace";
+
   const NAV_ITEMS = [
     { id: "traffic", label: "Traffic & QPS", icon: Zap, stat: `${fmt(math.peakTotalQps)} QPS` },
     { id: "bandwidth", label: "Bandwidth & CDN", icon: Globe, stat: `${math.originEgressGbps} Gbps` },
@@ -384,7 +387,7 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
           ? "linear-gradient(180deg, #090207 0%, #150512 35%, #0c0309 100%)"
           : "linear-gradient(180deg, #f8f6fb 0%, #fdf2f7 35%, #f8f6fb 100%)",
         color: colors.text,
-        fontFamily: "'Instrument Sans', -apple-system, sans-serif",
+        fontFamily: fontSans,
         padding: "32px 24px 80px",
         overflowX: "hidden",
       }}
@@ -427,11 +430,11 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 14 }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: colors.accent, fontFamily: "Syne, sans-serif" }}>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: colors.accent, fontFamily: fontSans }}>
                 ✦ Capacity Engineering Studio
               </span>
             </div>
-            <h1 style={{ fontFamily: "Syne, sans-serif", fontSize: "clamp(24px, 3.2vw, 36px)", fontWeight: 800, letterSpacing: "-0.03em", margin: 0, lineHeight: 1.15 }}>
+            <h1 style={{ fontFamily: fontSans, fontSize: "clamp(24px, 3vw, 34px)", fontWeight: 700, letterSpacing: "-0.02em", margin: 0, lineHeight: 1.2 }}>
               System Design Capacity Calculator<span style={{ color: colors.accent }}>.</span>
             </h1>
           </div>
@@ -448,9 +451,9 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                 background: isDark ? "rgba(225, 73, 109, 0.14)" : "rgba(225, 73, 109, 0.08)",
                 border: `1.5px solid ${colors.accent}40`,
                 color: isDark ? "#ff8da7" : "#9f1239",
-                fontFamily: "Syne, sans-serif",
-                fontSize: 12.5,
-                fontWeight: 700,
+                fontFamily: fontSans,
+                fontSize: 13,
+                fontWeight: 600,
                 cursor: "pointer",
               }}
             >
@@ -469,9 +472,9 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                 background: "linear-gradient(135deg, #e1496d, #be123c)",
                 border: "none",
                 color: "#ffffff",
-                fontFamily: "Syne, sans-serif",
-                fontSize: 12.5,
-                fontWeight: 700,
+                fontFamily: fontSans,
+                fontSize: 13,
+                fontWeight: 600,
                 cursor: "pointer",
                 boxShadow: "0 4px 14px rgba(225, 73, 109, 0.35)",
               }}
@@ -500,7 +503,7 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             <div>
               {/* Preset Selector */}
               <div style={{ marginBottom: 18 }}>
-                <label style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: colors.textMuted, fontFamily: "Syne, sans-serif", display: "block", marginBottom: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: colors.textMuted, fontFamily: fontSans, display: "block", marginBottom: 8 }}>
                   Reference Preset
                 </label>
                 <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
@@ -514,7 +517,7 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
-                          padding: "7px 10px",
+                          padding: "8px 10px",
                           borderRadius: 8,
                           background: isSelected ? colors.activeNavBg : "transparent",
                           border: isSelected ? `1.5px solid ${colors.accent}` : "1.5px solid transparent",
@@ -522,15 +525,16 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                           cursor: "pointer",
                           textAlign: "left",
                           transition: "all 0.15s ease",
+                          fontFamily: fontSans,
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                           <span style={{ fontSize: 14 }}>{p.icon}</span>
-                          <span style={{ fontSize: 12, fontWeight: isSelected ? 800 : 600, fontFamily: "Syne, sans-serif" }}>
+                          <span style={{ fontSize: 12.5, fontWeight: isSelected ? 700 : 500 }}>
                             {p.name.split(" ")[0]}
                           </span>
                         </div>
-                        <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: `${p.color}20`, color: p.color }}>
+                        <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 4, background: `${p.color}20`, color: p.color }}>
                           {p.badge.split(" ")[0]}
                         </span>
                       </button>
@@ -541,7 +545,7 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
 
               {/* Sizing Module Nav Links */}
               <div>
-                <label style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: colors.textMuted, fontFamily: "Syne, sans-serif", display: "block", marginBottom: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: colors.textMuted, fontFamily: fontSans, display: "block", marginBottom: 8 }}>
                   Sizing Modules
                 </label>
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -564,15 +568,16 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                           cursor: "pointer",
                           textAlign: "left",
                           transition: "all 0.15s ease",
+                          fontFamily: fontSans,
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <Icon size={14} color={isSelected ? colors.accent : colors.textMuted} />
-                          <span style={{ fontSize: 12.5, fontWeight: isSelected ? 800 : 600, fontFamily: "Syne, sans-serif" }}>
+                          <span style={{ fontSize: 13, fontWeight: isSelected ? 700 : 500 }}>
                             {item.label}
                           </span>
                         </div>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: isSelected ? colors.accent : colors.textMuted }}>
+                        <span style={{ fontSize: 10.5, fontWeight: 600, color: isSelected ? colors.accent : colors.textMuted, fontVariantNumeric: "tabular-nums" }}>
                           {item.stat}
                         </span>
                       </button>
@@ -583,12 +588,12 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             </div>
 
             {/* Quick Stat Pill */}
-            <div style={{ padding: "10px", borderRadius: 10, background: isDark ? "rgba(225,73,109,0.08)" : "rgba(225,73,109,0.05)", border: `1px solid ${colors.border}` }}>
-              <div style={{ fontSize: 10, fontWeight: 800, color: colors.accent, textTransform: "uppercase", fontFamily: "Syne, sans-serif" }}>
+            <div style={{ padding: "12px", borderRadius: 10, background: isDark ? "rgba(225,73,109,0.08)" : "rgba(225,73,109,0.05)", border: `1px solid ${colors.border}` }}>
+              <div style={{ fontSize: 10.5, fontWeight: 700, color: colors.accent, textTransform: "uppercase", fontFamily: fontSans }}>
                 Target Throughput
               </div>
-              <div style={{ fontSize: 14, fontWeight: 900, fontFamily: "Syne, sans-serif", color: colors.text, marginTop: 2 }}>
-                {fmt(math.peakTotalQps)} <span style={{ fontSize: 11, fontWeight: 600, color: colors.textMuted }}>Peak QPS</span>
+              <div style={{ fontSize: 15, fontWeight: 700, fontFamily: fontSans, color: colors.text, marginTop: 2 }}>
+                {fmt(math.peakTotalQps)} <span style={{ fontSize: 11.5, fontWeight: 500, color: colors.textMuted }}>Peak QPS</span>
               </div>
             </div>
           </div>
@@ -600,18 +605,18 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             {activeSection === "traffic" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                 <div>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 800, margin: "0 0 4px" }}>
+                  <h3 style={{ fontFamily: fontSans, fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>
                     1. Traffic &amp; QPS Throughput
                   </h3>
-                  <p style={{ fontSize: 13, color: colors.textMuted, margin: 0 }}>
+                  <p style={{ fontSize: 13.5, color: colors.textMuted, margin: 0 }}>
                     Configure daily active users, actions per user, and peak surge multipliers.
                   </p>
                 </div>
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <label style={{ fontSize: 13, fontWeight: 700 }}>Daily Active Users (DAU)</label>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: colors.accent }}>{fmt(dau)}</span>
+                    <label style={{ fontSize: 13, fontWeight: 600 }}>Daily Active Users (DAU)</label>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: colors.accent }}>{fmt(dau)}</span>
                   </div>
                   <input
                     type="range"
@@ -628,13 +633,15 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                         key={v}
                         onClick={() => setDau(v)}
                         style={{
-                          fontSize: 11,
-                          padding: "3px 8px",
+                          fontSize: 11.5,
+                          padding: "4px 9px",
                           borderRadius: 6,
                           background: dau === v ? colors.accent : colors.inputBg,
                           color: dau === v ? "#fff" : colors.textMuted,
                           border: "none",
                           cursor: "pointer",
+                          fontFamily: fontSans,
+                          fontWeight: 500,
                         }}
                       >
                         {fmt(v)}
@@ -646,8 +653,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <label style={{ fontSize: 12.5, fontWeight: 700 }}>Reads / User / Day</label>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: "#38bdf8" }}>{readsPerUser}</span>
+                      <label style={{ fontSize: 13, fontWeight: 600 }}>Reads / User / Day</label>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "#38bdf8" }}>{readsPerUser}</span>
                     </div>
                     <input
                       type="range"
@@ -661,8 +668,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
 
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <label style={{ fontSize: 12.5, fontWeight: 700 }}>Writes / User / Day</label>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: "#10b981" }}>{writesPerUser}</span>
+                      <label style={{ fontSize: 13, fontWeight: 600 }}>Writes / User / Day</label>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "#10b981" }}>{writesPerUser}</span>
                     </div>
                     <input
                       type="range"
@@ -678,8 +685,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <label style={{ fontSize: 12.5, fontWeight: 700 }}>Peak Traffic Surge Multiplier</label>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: "#f59e0b" }}>{peakMultiplier}×</span>
+                    <label style={{ fontSize: 13, fontWeight: 600 }}>Peak Traffic Surge Multiplier</label>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: "#f59e0b" }}>{peakMultiplier}×</span>
                   </div>
                   <input
                     type="range"
@@ -690,8 +697,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                     onChange={(e) => setPeakMultiplier(Number(e.target.value))}
                     style={{ width: "100%", accentColor: "#f59e0b" }}
                   />
-                  <span style={{ fontSize: 11, color: colors.textMuted, marginTop: 4, display: "block" }}>
-                    Standard daily peak: 2×–3× • Flash Sales / Live Stream Events: 6×–10×
+                  <span style={{ fontSize: 12, color: colors.textMuted, marginTop: 4, display: "block" }}>
+                    Standard daily peak: 2×–3× • Flash Sales / Live Events: 6×–10×
                   </span>
                 </div>
               </div>
@@ -701,10 +708,10 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             {activeSection === "bandwidth" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                 <div>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 800, margin: "0 0 4px" }}>
+                  <h3 style={{ fontFamily: fontSans, fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>
                     2. Bandwidth &amp; CDN Offload
                   </h3>
-                  <p style={{ fontSize: 13, color: colors.textMuted, margin: 0 }}>
+                  <p style={{ fontSize: 13.5, color: colors.textMuted, margin: 0 }}>
                     Payload sizes, origin network egress, and edge CDN cache offload.
                   </p>
                 </div>
@@ -712,8 +719,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <label style={{ fontSize: 12.5, fontWeight: 700 }}>Read Payload</label>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: "#38bdf8" }}>{readPayloadKb} KB</span>
+                      <label style={{ fontSize: 13, fontWeight: 600 }}>Read Payload</label>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "#38bdf8" }}>{readPayloadKb} KB</span>
                     </div>
                     <input
                       type="range"
@@ -728,8 +735,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
 
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <label style={{ fontSize: 12.5, fontWeight: 700 }}>Write Payload</label>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: "#10b981" }}>{writePayloadKb} KB</span>
+                      <label style={{ fontSize: 13, fontWeight: 600 }}>Write Payload</label>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "#10b981" }}>{writePayloadKb} KB</span>
                     </div>
                     <input
                       type="range"
@@ -745,8 +752,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <label style={{ fontSize: 12.5, fontWeight: 700 }}>Edge CDN Cache Offload</label>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: colors.accent }}>{cdnOffloadPct}%</span>
+                    <label style={{ fontSize: 13, fontWeight: 600 }}>Edge CDN Cache Offload</label>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: colors.accent }}>{cdnOffloadPct}%</span>
                   </div>
                   <input
                     type="range"
@@ -756,7 +763,7 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                     onChange={(e) => setCdnOffloadPct(Number(e.target.value))}
                     style={{ width: "100%", accentColor: colors.accent }}
                   />
-                  <span style={{ fontSize: 11, color: colors.textMuted, marginTop: 4, display: "block" }}>
+                  <span style={{ fontSize: 12, color: colors.textMuted, marginTop: 4, display: "block" }}>
                     Origin servers only process {100 - cdnOffloadPct}% of read egress traffic.
                   </span>
                 </div>
@@ -767,10 +774,10 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             {activeSection === "storage" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                 <div>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 800, margin: "0 0 4px" }}>
+                  <h3 style={{ fontFamily: fontSans, fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>
                     3. Storage Growth &amp; Sharding
                   </h3>
-                  <p style={{ fontSize: 13, color: colors.textMuted, margin: 0 }}>
+                  <p style={{ fontSize: 13.5, color: colors.textMuted, margin: 0 }}>
                     Multi-year retention, replica replication, and database shard sizing.
                   </p>
                 </div>
@@ -778,8 +785,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <label style={{ fontSize: 12.5, fontWeight: 700 }}>Retention Period</label>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: "#10b981" }}>{retentionYears} Years</span>
+                      <label style={{ fontSize: 13, fontWeight: 600 }}>Retention Period</label>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "#10b981" }}>{retentionYears} Years</span>
                     </div>
                     <input
                       type="range"
@@ -793,8 +800,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
 
                   <div>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                      <label style={{ fontSize: 12.5, fontWeight: 700 }}>HA Replication Factor</label>
-                      <span style={{ fontSize: 13, fontWeight: 800, color: "#a855f7" }}>{replicationFactor}× Replicas</span>
+                      <label style={{ fontSize: 13, fontWeight: 600 }}>HA Replication Factor</label>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: "#a855f7" }}>{replicationFactor}× Replicas</span>
                     </div>
                     <input
                       type="range"
@@ -809,8 +816,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <label style={{ fontSize: 12.5, fontWeight: 700 }}>DB Indexing &amp; Log Overhead</label>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: "#f59e0b" }}>{storageOverheadPct}%</span>
+                    <label style={{ fontSize: 13, fontWeight: 600 }}>DB Indexing &amp; Log Overhead</label>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: "#f59e0b" }}>{storageOverheadPct}%</span>
                   </div>
                   <input
                     type="range"
@@ -828,18 +835,18 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             {activeSection === "cache" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                 <div>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 800, margin: "0 0 4px" }}>
+                  <h3 style={{ fontFamily: fontSans, fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>
                     4. Memory &amp; Redis Cache Sizing
                   </h3>
-                  <p style={{ fontSize: 13, color: colors.textMuted, margin: 0 }}>
+                  <p style={{ fontSize: 13.5, color: colors.textMuted, margin: 0 }}>
                     Pareto 80/20 rule, working set TTL, and cluster node sizing.
                   </p>
                 </div>
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <label style={{ fontSize: 12.5, fontWeight: 700 }}>Hot Data Working Set (Pareto 80/20)</label>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: "#a855f7" }}>{cachePct}%</span>
+                    <label style={{ fontSize: 13, fontWeight: 600 }}>Hot Data Working Set (Pareto 80/20)</label>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: "#a855f7" }}>{cachePct}%</span>
                   </div>
                   <input
                     type="range"
@@ -853,8 +860,8 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <label style={{ fontSize: 12.5, fontWeight: 700 }}>Cache Time-To-Live (TTL)</label>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: "#38bdf8" }}>{cacheTtlHours} Hours</span>
+                    <label style={{ fontSize: 13, fontWeight: 600 }}>Cache Time-To-Live (TTL)</label>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: "#38bdf8" }}>{cacheTtlHours} Hours</span>
                   </div>
                   <input
                     type="range"
@@ -872,18 +879,18 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             {activeSection === "compute" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
                 <div>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 800, margin: "0 0 4px" }}>
+                  <h3 style={{ fontFamily: fontSans, fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>
                     5. Compute Cluster &amp; Cost Estimation
                   </h3>
-                  <p style={{ fontSize: 13, color: colors.textMuted, margin: 0 }}>
+                  <p style={{ fontSize: 13.5, color: colors.textMuted, margin: 0 }}>
                     CPU core capacity, HA instances, and cloud bill breakdown.
                   </p>
                 </div>
 
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                    <label style={{ fontSize: 12.5, fontWeight: 700 }}>Throughput Capacity per CPU Core</label>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: "#f59e0b" }}>{qpsPerCore} QPS / Core</span>
+                    <label style={{ fontSize: 13, fontWeight: 600 }}>Throughput Capacity per CPU Core</label>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: "#f59e0b" }}>{qpsPerCore} QPS / Core</span>
                   </div>
                   <input
                     type="range"
@@ -902,23 +909,24 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             {activeSection === "rfc" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <h3 style={{ fontFamily: "Syne, sans-serif", fontSize: 18, fontWeight: 800, margin: 0 }}>
+                  <h3 style={{ fontFamily: fontSans, fontSize: 18, fontWeight: 700, margin: 0 }}>
                     6. RFC Specification Document
                   </h3>
                   <button
                     onClick={handleCopyRfc}
                     style={{
-                      padding: "6px 12px",
+                      padding: "7px 14px",
                       borderRadius: 8,
                       background: colors.accent,
                       color: "#fff",
                       border: "none",
-                      fontSize: 12,
-                      fontWeight: 800,
+                      fontSize: 12.5,
+                      fontWeight: 600,
                       cursor: "pointer",
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: 4,
+                      gap: 5,
+                      fontFamily: fontSans,
                     }}
                   >
                     {copiedRfc ? <Check size={13} /> : <Copy size={13} />}
@@ -936,9 +944,9 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
                     borderRadius: 12,
                     padding: "14px",
                     color: colors.text,
-                    fontSize: 12,
-                    fontFamily: "monospace",
-                    lineHeight: 1.5,
+                    fontSize: 12.5,
+                    fontFamily: fontMono,
+                    lineHeight: 1.55,
                     resize: "none",
                     boxSizing: "border-box",
                   }}
@@ -962,60 +970,60 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${colors.border}`, paddingBottom: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 <Activity size={15} color={colors.accent} />
-                <span style={{ fontFamily: "Syne, sans-serif", fontSize: 13.5, fontWeight: 800 }}>
+                <span style={{ fontFamily: fontSans, fontSize: 13.5, fontWeight: 700 }}>
                   Mathematical Proof
                 </span>
               </div>
-              <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 6px", borderRadius: 99, background: "rgba(16, 185, 129, 0.15)", color: "#10b981" }}>
+              <span style={{ fontSize: 10.5, fontWeight: 600, padding: "2px 7px", borderRadius: 99, background: "rgba(16, 185, 129, 0.15)", color: "#10b981" }}>
                 Auto-Calibrated
               </span>
             </div>
 
             {/* Metric 1: QPS */}
             <div style={{ padding: "10px 12px", borderRadius: 10, background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${colors.border}` }}>
-              <div style={{ fontSize: 10.5, fontWeight: 800, color: colors.accent, marginBottom: 2, fontFamily: "Syne, sans-serif" }}>
-                ⚡ QPS THROUGHPUT
+              <div style={{ fontSize: 11, fontWeight: 700, color: colors.accent, marginBottom: 2, fontFamily: fontSans }}>
+                ⚡ QPS Throughput
               </div>
-              <div style={{ fontSize: 11.5, fontFamily: "monospace", color: colors.text }}>
+              <div style={{ fontSize: 12, fontFamily: fontMono, color: colors.text }}>
                 Avg QPS = <strong>{fmt(math.avgTotalQps)} QPS</strong>
               </div>
-              <div style={{ fontSize: 11.5, fontFamily: "monospace", color: colors.accent }}>
+              <div style={{ fontSize: 12, fontFamily: fontMono, color: colors.accent }}>
                 Peak ({peakMultiplier}×) = <strong>{fmt(math.peakTotalQps)} Peak QPS</strong>
               </div>
             </div>
 
             {/* Metric 2: Bandwidth */}
             <div style={{ padding: "10px 12px", borderRadius: 10, background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${colors.border}` }}>
-              <div style={{ fontSize: 10.5, fontWeight: 800, color: "#38bdf8", marginBottom: 2, fontFamily: "Syne, sans-serif" }}>
-                🌐 NETWORK EGRESS
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#38bdf8", marginBottom: 2, fontFamily: fontSans }}>
+                🌐 Network Egress
               </div>
-              <div style={{ fontSize: 11.5, fontFamily: "monospace", color: colors.text }}>
+              <div style={{ fontSize: 12, fontFamily: fontMono, color: colors.text }}>
                 Ingress = <strong>{math.ingressMbps} Mbps</strong>
               </div>
-              <div style={{ fontSize: 11.5, fontFamily: "monospace", color: "#38bdf8" }}>
+              <div style={{ fontSize: 12, fontFamily: fontMono, color: "#38bdf8" }}>
                 Origin Egress = <strong>{math.originEgressGbps} Gbps</strong>
               </div>
             </div>
 
             {/* Metric 3: Storage */}
             <div style={{ padding: "10px 12px", borderRadius: 10, background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${colors.border}` }}>
-              <div style={{ fontSize: 10.5, fontWeight: 800, color: "#10b981", marginBottom: 2, fontFamily: "Syne, sans-serif" }}>
-                💾 5-YEAR STORAGE
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#10b981", marginBottom: 2, fontFamily: fontSans }}>
+                💾 5-Year Storage
               </div>
-              <div style={{ fontSize: 11.5, fontFamily: "monospace", color: colors.text }}>
+              <div style={{ fontSize: 12, fontFamily: fontMono, color: colors.text }}>
                 Daily = <strong>{fmtBytes(parseFloat(math.dailyRawStorageGb))} / day</strong>
               </div>
-              <div style={{ fontSize: 11.5, fontFamily: "monospace", color: "#10b981" }}>
+              <div style={{ fontSize: 12, fontFamily: fontMono, color: "#10b981" }}>
                 5-Yr Usable = <strong>{fmtBytes(math.year5UsableStorageGb)}</strong> ({fmt(math.recommendedDbShards)} Shards)
               </div>
             </div>
 
             {/* Metric 4: Cache */}
             <div style={{ padding: "10px 12px", borderRadius: 10, background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)", border: `1px solid ${colors.border}` }}>
-              <div style={{ fontSize: 10.5, fontWeight: 800, color: "#a855f7", marginBottom: 2, fontFamily: "Syne, sans-serif" }}>
-                🧠 MEMORY CACHE (80/20)
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#a855f7", marginBottom: 2, fontFamily: fontSans }}>
+                🧠 Memory Cache (80/20)
               </div>
-              <div style={{ fontSize: 11.5, fontFamily: "monospace", color: "#a855f7" }}>
+              <div style={{ fontSize: 12, fontFamily: fontMono, color: "#a855f7" }}>
                 Target RAM = <strong>{fmtBytes(math.safeCacheRamGb)}</strong> ({fmt(math.redisNodeCount)} × Redis Nodes)
               </div>
             </div>
@@ -1023,14 +1031,14 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
             {/* Metric 5: Estimated Monthly Cloud Bill */}
             <div style={{ padding: "12px 14px", borderRadius: 12, background: isDark ? "rgba(225,73,109,0.12)" : "rgba(225,73,109,0.06)", border: `1.5px solid ${colors.accent}40`, marginTop: "auto" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                <span style={{ fontSize: 10.5, fontWeight: 800, fontFamily: "Syne, sans-serif", color: colors.accent }}>
+                <span style={{ fontSize: 11, fontWeight: 700, fontFamily: fontSans, color: colors.accent }}>
                   EST. CLOUD BILL
                 </span>
-                <span style={{ fontSize: 15, fontWeight: 900, fontFamily: "Syne, sans-serif", color: colors.accent }}>
+                <span style={{ fontSize: 15, fontWeight: 700, fontFamily: fontSans, color: colors.accent }}>
                   {fmtCurrency(math.totalMonthlyCost)}/mo
                 </span>
               </div>
-              <div style={{ fontSize: 10.5, color: colors.textMuted }}>
+              <div style={{ fontSize: 11, color: colors.textMuted }}>
                 Compute, Storage, Redis &amp; Egress
               </div>
             </div>

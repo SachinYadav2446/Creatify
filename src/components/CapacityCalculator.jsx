@@ -383,9 +383,7 @@ export default function CapacityCalculator({ onNavigate, isDark = true, THEME })
         minHeight: "100vh",
         width: "100%",
         boxSizing: "border-box",
-        background: isDark
-          ? "linear-gradient(180deg, #090207 0%, #150512 35%, #0c0309 100%)"
-          : "linear-gradient(180deg, #f8f6fb 0%, #fdf2f7 35%, #f8f6fb 100%)",
+        background: "transparent",
         color: colors.text,
         fontFamily: fontSans,
         padding: "32px 24px 80px",

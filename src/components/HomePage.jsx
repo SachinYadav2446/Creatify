@@ -1213,7 +1213,9 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
   return (
     <div style={{
       margin: 0, padding: 0, width: "100%",
-      background: isDark ? "#0e060b" : "#f7f6fb",
+      background: isDark
+        ? "linear-gradient(180deg, #090207 0%, #150512 35%, #0c0309 100%)"
+        : "linear-gradient(180deg, #f8f6fb 0%, #fdf2f7 35%, #f8f6fb 100%)",
       color: colors.text,
       fontFamily: "'Instrument Sans',sans-serif", overflowX: "clip",
       transition: "background 0.3s, color 0.3s", minHeight: "100vh",
@@ -1253,19 +1255,32 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
       `}</style>
       <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Instrument+Sans:wght@300;400;500;600&family=Syne:wght@700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
 
-      {/* ─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢ CANVA-STYLE VERTICAL SIDEBAR ─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢─¢ */}
+      {/* ────────────────── FLOATING ISLAND DOCK SIDEBAR ────────────────── */}
       <aside style={{
-        position: "fixed", top: 0, left: 0, bottom: 0, width: sidebarW,
+        position: "fixed",
+        top: "16px",
+        bottom: "16px",
+        left: "14px",
+        width: sidebarW,
+        maxHeight: "calc(100vh - 32px)",
+        borderRadius: "24px",
         background: isDark
-          ? "rgba(12, 4, 10, 0.88)"
-          : "rgba(255, 245, 248, 0.92)",
-        borderRight: "1px solid rgba(225, 73, 109, 0.22)",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.35)",
+          ? "rgba(18, 6, 16, 0.65)"
+          : "rgba(255, 255, 255, 0.70)",
+        border: isDark
+          ? "1.5px solid rgba(225, 73, 109, 0.24)"
+          : "1.5px solid rgba(148, 41, 69, 0.16)",
+        boxShadow: isDark
+          ? "0 20px 50px rgba(0, 0, 0, 0.5), 0 0 24px rgba(225, 73, 109, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.1)"
+          : "0 16px 40px rgba(148, 41, 69, 0.12), 0 0 20px rgba(225, 73, 109, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.9)",
         zIndex: 200,
-        display: "flex", flexDirection: "column", alignItems: "center",
-        padding: "16px 0 12px",
-        backdropFilter: "blur(28px) saturate(180%)",
-        WebkitBackdropFilter: "blur(28px) saturate(180%)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "16px 0 14px",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+        transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
       }}>
         {/* ── STUNNING ATTRACTIVE CREATOR AVATAR IN SIDEBAR ── */}
         <div 
@@ -1471,7 +1486,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
       </aside>
 
       {/* ────────────────── MAIN CONTENT (full width with sidebar padding) ────────────────── */}
-      <main style={{ width: "100%", position: "relative", overflowX: "clip", paddingLeft: `${sidebarW}px` }}>
+      <main style={{ width: "100%", position: "relative", overflowX: "clip", paddingLeft: `${sidebarW + 24}px` }}>
 
         {/* Conditional rendering based on activeNav */}
         {(activeNav === "projects" || activeNav === "vault") ? (

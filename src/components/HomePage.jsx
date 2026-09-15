@@ -9,7 +9,7 @@ import {
   Search, Trash2, Plus, ArrowRight, Check, X,
   Palette, Box, Compass, ChevronLeft, ChevronRight,
   Send, MessageSquare, Copy, CheckCheck, Bug, Lightbulb, Briefcase, Mail, Clock, ShieldCheck,
-  Calculator, Database
+  Calculator, Database, Network
 } from "lucide-react";
 
 // Import generated preview images
@@ -24,7 +24,7 @@ import whiteboardPrev from "../assets/images/whiteboard_preview.png";
 
 import TemplatesMarketplace from "./TemplatesMarketplace";
 import WorkflowPipelines from "./WorkflowPipelines";
-import CapacityCalculator from "./CapacityCalculator";
+import ArchitectureIntelligence from "./ArchitectureIntelligence";
 import CreativeCityscapeArt from "./CreativeCityscapeArt";
 import ExperienceCreatifySection from "./ExperienceCreatifySection";
 import EcosystemStrip from "./EcosystemStrip";
@@ -1448,14 +1448,14 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
           />
           <SidebarIcon
             THEME={THEME}
-            active={activeNav === "capacity"}
-            label="Capacity Math"
+            active={activeNav === "arch_forge"}
+            label="ArchForge"
             onClick={() => {
-              setActiveNav("capacity");
+              setActiveNav("arch_forge");
               window.scrollTo({ top: 0, behavior: "instant" });
             }}
-            icon={Calculator}
-            animationType="scale"
+            icon={Network}
+            animationType="pulse"
           />
           <SidebarIcon
             THEME={THEME}
@@ -1515,12 +1515,13 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
               colors={colors}
             />
           </div>
-        ) : activeNav === "capacity" ? (
-          /* ── CAPACITY & TRAFFIC ESTIMATION CALCULATOR ── */
+        ) : activeNav === "arch_forge" ? (
+          /* ── ARCHFORGE · ARCHITECTURE INTELLIGENCE & CODE SYNTHESIS STUDIO ── */
           <div style={{ minHeight: "100vh" }}>
-            <CapacityCalculator
+            <ArchitectureIntelligence
               onBack={() => { setActiveNav("home"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
               onNavigate={onNavigate}
+              user={user}
               isDark={isDark}
               THEME={THEME}
             />

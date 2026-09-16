@@ -245,23 +245,30 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
   const [liveData, setLiveData] = useState(null);
 
   // Fetch synthesis from backend API
-  const fetchSynthesis = async (mode = activeMode, preset = selectedPreset) => {
+  const fetchSynthesis = async (mode = activeMode, preset = selectedPreset, customFile = null) => {
     setIsAnalyzing(true);
     try {
       const apiUrl = window.API_URL || "http://localhost:3001";
+      const activeFile = customFile || (mode === "code_to_arch" ? codeFile : docFile);
+      const docName = activeFile?.name || (preset ? DEMO_SANDBOXES[preset]?.docName : "Custom Architecture Spec");
+
       const res = await fetch(`${apiUrl}/api/arch/synthesize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode,
-          presetId: preset,
-          docName: docFile?.name || DEMO_SANDBOXES[preset]?.docName,
+          presetId: activeFile ? null : preset, // If custom file is present, ignore preset!
+          docName: docName,
         }),
       });
+
       if (res.ok) {
         const data = await res.json();
         setLiveData(data);
         setApiConnected(true);
+        if (data.hld?.nodes?.[0]?.id) {
+          setSelectedNodeId(data.hld.nodes[0].id);
+        }
       }
     } catch (err) {
       console.warn("Backend synthesis fallback to local data:", err.message);
@@ -270,24 +277,41 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
     }
   };
 
-  // Initial load & preset synchronization
+  // Initial load
   React.useEffect(() => {
     fetchSynthesis(activeMode, selectedPreset);
-  }, [activeMode, selectedPreset]);
+  }, []);
 
+  // Compute current active architecture data
   const currentData = useMemo(() => {
     if (liveData && liveData.hld) {
+      if (!selectedPreset) {
+        // Custom uploaded file active: use 100% dynamic liveData!
+        return {
+          id: "custom_synthesis",
+          title: liveData.systemTitle || docFile?.name || codeFile?.name || "Custom Architecture",
+          category: activeMode === "code_to_arch" ? "Code to Architecture" : activeMode === "dual_audit" ? "Dual Cross-Audit" : "PRD to Architecture",
+          type: activeMode === "code_to_arch" ? "CODE" : activeMode === "dual_audit" ? "AUDIT" : "PRD",
+          badge: "Synthesized",
+          tag: liveData.domain || "Custom Architecture Engine",
+          color: "#e1496d",
+          docName: docFile?.name || codeFile?.name || "Custom File",
+          ...liveData,
+        };
+      }
       return {
         ...DEMO_SANDBOXES[selectedPreset],
         ...liveData,
       };
     }
     return DEMO_SANDBOXES[selectedPreset] || DEMO_SANDBOXES.prd_uber;
-  }, [selectedPreset, liveData]);
+  }, [selectedPreset, liveData, docFile, codeFile, activeMode]);
 
   const handleModeChange = (mode) => {
     setActiveMode(mode);
-    let nextPreset = selectedPreset;
+    setDocFile(null);
+    setCodeFile(null);
+    let nextPreset = "prd_uber";
     if (mode === "doc_to_arch") {
       nextPreset = "prd_uber";
       setSelectedPreset("prd_uber");
@@ -301,11 +325,25 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
       setSelectedPreset("audit_flashsale");
       setActiveTab("audit");
     }
-    fetchSynthesis(mode, nextPreset);
+    fetchSynthesis(mode, nextPreset, null);
+  };
+
+  const handleSelectPreset = (presetKey) => {
+    setSelectedPreset(presetKey);
+    setDocFile(null);
+    setCodeFile(null);
+    const sb = DEMO_SANDBOXES[presetKey];
+    if (sb) {
+      if (sb.type === "PRD") setActiveMode("doc_to_arch");
+      else if (sb.type === "CODE") setActiveMode("code_to_arch");
+      else setActiveMode("dual_audit");
+    }
+    fetchSynthesis(activeMode, presetKey, null);
   };
 
   const handleRunAnalysis = () => {
-    fetchSynthesis(activeMode, selectedPreset);
+    const activeFile = activeMode === "code_to_arch" ? codeFile : docFile;
+    fetchSynthesis(activeMode, selectedPreset, activeFile);
   };
 
   const colors = {
@@ -443,12 +481,7 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                     return (
                       <button
                         key={sb.id}
-                        onClick={() => {
-                          setSelectedPreset(sb.id);
-                          if (sb.type === "PRD") setActiveMode("doc_to_arch");
-                          else if (sb.type === "CODE") setActiveMode("code_to_arch");
-                          else setActiveMode("dual_audit");
-                        }}
+                        onClick={() => handleSelectPreset(sb.id)}
                         style={{
                           display: "flex",
                           alignItems: "center",
@@ -493,10 +526,25 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                     padding: "16px 12px",
                     textAlign: "center",
                     background: isDark ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.02)",
+                    overflow: "hidden",
+                    maxWidth: "100%",
+                    boxSizing: "border-box",
                   }}
                 >
                   <Upload size={18} color={colors.accent} style={{ margin: "0 auto 6px" }} />
-                  <div style={{ fontSize: 11.5, fontWeight: 600, color: colors.text }}>
+                  <div
+                    title={activeMode === "code_to_arch" ? codeFile?.name : docFile?.name}
+                    style={{
+                      fontSize: 11.5,
+                      fontWeight: 600,
+                      color: colors.text,
+                      maxWidth: "100%",
+                      wordBreak: "break-all",
+                      overflowWrap: "anywhere",
+                      lineHeight: 1.35,
+                      padding: "0 4px",
+                    }}
+                  >
                     {activeMode === "code_to_arch"
                       ? (codeFile?.name || "Drop Codebase .zip")
                       : (docFile?.name || "Drop PRD (.pdf, .md)")}
@@ -504,29 +552,58 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                   <div style={{ fontSize: 10, color: colors.textMuted, marginTop: 2 }}>
                     Drag &amp; drop or browse
                   </div>
-                  <label
-                    style={{
-                      display: "inline-block",
-                      marginTop: 8,
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: colors.accent,
-                      cursor: "pointer",
-                      textDecoration: "underline",
-                    }}
-                  >
-                    Select file
-                    <input
-                      type="file"
-                      style={{ display: "none" }}
-                      onChange={(e) => {
-                        if (e.target.files?.[0]) {
-                          if (activeMode === "code_to_arch") setCodeFile(e.target.files[0]);
-                          else setDocFile(e.target.files[0]);
-                        }
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8 }}>
+                    <label
+                      style={{
+                        display: "inline-block",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: colors.accent,
+                        cursor: "pointer",
+                        textDecoration: "underline",
                       }}
-                    />
-                  </label>
+                    >
+                      Select file
+                      <input
+                        type="file"
+                        accept={activeMode === "code_to_arch" ? ".zip,.tar.gz,.gz" : ".pdf,.md,.docx,.txt"}
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            if (activeMode === "code_to_arch") {
+                              setCodeFile(file);
+                            } else {
+                              setDocFile(file);
+                            }
+                            setSelectedPreset(null);
+                            fetchSynthesis(activeMode, null, file);
+                          }
+                        }}
+                      />
+                    </label>
+
+                    {(docFile || codeFile) && (
+                      <button
+                        onClick={() => {
+                          setDocFile(null);
+                          setCodeFile(null);
+                          setSelectedPreset("prd_uber");
+                          fetchSynthesis(activeMode, "prd_uber", null);
+                        }}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          fontSize: 10.5,
+                          color: colors.textMuted,
+                          cursor: "pointer",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -650,9 +727,22 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                   
                   {/* Visual Node Flow Stream */}
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>
-                      System Architecture Flow
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: colors.text }}>
+                          {currentData.title || currentData.systemTitle || "System Architecture Flow"}
+                        </span>
+                        {(!selectedPreset && (docFile || codeFile)) && (
+                          <span style={{ fontSize: 9.5, padding: "1px 6px", borderRadius: 4, background: "rgba(16, 185, 129, 0.15)", color: "#10b981", fontWeight: 700 }}>
+                            Custom Source
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: 11, color: colors.textMuted }}>
+                        {currentData.metrics?.targetQps || "Verified Architecture"} · {currentData.metrics?.haSla || "Active"}
+                      </span>
                     </div>
+
                     <div
                       style={{
                         display: "grid",
@@ -673,18 +763,21 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                               border: isSelected ? `1.5px solid ${colors.accent}` : `1px solid ${colors.borderSubtle}`,
                               cursor: "pointer",
                               transition: "all 0.15s ease",
+                              minWidth: 0,
+                              overflow: "hidden",
+                              boxSizing: "border-box",
                             }}
                           >
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
-                              <span style={{ fontSize: 9.5, fontWeight: 700, color: colors.accent, textTransform: "uppercase" }}>
+                              <span style={{ fontSize: 9.5, fontWeight: 700, color: colors.accent, textTransform: "uppercase", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                 {node.role}
                               </span>
-                              <span style={{ fontSize: 9, color: "#10b981", fontWeight: 600 }}>{node.latency}</span>
+                              <span style={{ fontSize: 9, color: "#10b981", fontWeight: 600, flexShrink: 0 }}>{node.latency}</span>
                             </div>
-                            <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.text, marginBottom: 2 }}>
+                            <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.text, marginBottom: 2, overflowWrap: "anywhere" }}>
                               {node.name}
                             </div>
-                            <div style={{ fontSize: 10.5, color: colors.textMuted, fontFamily: fontMono }}>
+                            <div style={{ fontSize: 10.5, color: colors.textMuted, fontFamily: fontMono, overflowWrap: "anywhere" }}>
                               {node.tech}
                             </div>
                           </div>

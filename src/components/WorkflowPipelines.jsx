@@ -575,7 +575,7 @@ jobs:
     return (
       <div style={{
         minHeight: "100vh",
-        background: isDark ? "#0c040a" : "#fdf8fa",
+        background: isEmbedded ? "transparent" : (isDark ? "#0c040a" : "#fdf8fa"),
         color: isDark ? "#ffffff" : "#1a040d",
         fontFamily: "'Plus Jakarta Sans', sans-serif",
         padding: "32px 0 0",

@@ -189,7 +189,7 @@ export default function InfiniteStudioLanding({
     <div style={{
       width: "100%",
       minHeight: "100vh",
-      background: bg,
+      background: "transparent",
       color: textPrimary,
       fontFamily: "'Poppins', sans-serif",
       position: "relative",

@@ -57,8 +57,8 @@ export default function EcosystemStrip({ isDark }) {
 
   const strokeColor = isDark ? "rgba(225, 73, 109, 0.28)" : "rgba(148, 41, 69, 0.2)";
   const bgStrip = isDark
-    ? "linear-gradient(180deg, #170511 0%, #15040f 50%, #12030d 100%)"
-    : "linear-gradient(180deg, #fce7f3 0%, #fbe4ee 50%, #fae0ea 100%)";
+    ? "linear-gradient(180deg, rgba(23, 5, 17, 0.6) 0%, rgba(18, 3, 13, 0.8) 100%)"
+    : "linear-gradient(180deg, rgba(251, 242, 246, 0.6) 0%, rgba(253, 248, 250, 0.8) 100%)";
   const cardBg = isDark
     ? "linear-gradient(135deg, rgba(42, 12, 31, 0.78) 0%, rgba(24, 6, 18, 0.92) 100%)"
     : "linear-gradient(135deg, rgba(255, 255, 255, 0.97) 0%, rgba(254, 226, 236, 0.9) 100%)";
@@ -195,8 +195,8 @@ export default function EcosystemStrip({ isDark }) {
             width: "80px",
             height: "100%",
             background: isDark
-              ? "linear-gradient(90deg, #170511 0%, transparent 100%)"
-              : "linear-gradient(90deg, #fce7f3 0%, transparent 100%)",
+              ? "linear-gradient(90deg, #090207 0%, transparent 100%)"
+              : "linear-gradient(90deg, #fdf8fa 0%, transparent 100%)",
             pointerEvents: "none",
             zIndex: 3,
           }}
@@ -211,8 +211,8 @@ export default function EcosystemStrip({ isDark }) {
             width: "80px",
             height: "100%",
             background: isDark
-              ? "linear-gradient(270deg, #170511 0%, transparent 100%)"
-              : "linear-gradient(270deg, #fce7f3 0%, transparent 100%)",
+              ? "linear-gradient(270deg, #0c0309 0%, transparent 100%)"
+              : "linear-gradient(270deg, #fdf8fa 0%, transparent 100%)",
             pointerEvents: "none",
             zIndex: 3,
           }}

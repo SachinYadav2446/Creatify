@@ -1215,7 +1215,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
       margin: 0, padding: 0, width: "100%",
       background: isDark
         ? "linear-gradient(180deg, #090207 0%, #150512 35%, #0c0309 100%)"
-        : "linear-gradient(180deg, #f8f6fb 0%, #fdf2f7 35%, #f8f6fb 100%)",
+        : "linear-gradient(180deg, #fdf8fa 0%, #fbf2f6 35%, #fdf8fa 100%)",
       color: colors.text,
       fontFamily: "'Instrument Sans',sans-serif", overflowX: "clip",
       transition: "background 0.3s, color 0.3s", minHeight: "100vh",
@@ -1573,7 +1573,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
       <div style={{
         height: "120px",
         width: "100%",
-        background: isDark ? "#0e060b" : "#f7f6fb",
+        background: "transparent",
       }} />
 
       {/* ── INFINITE STUDIO DEDICATED STICKY 5-STEP SCROLL MEGA SECTION ── */}
@@ -1583,9 +1583,7 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         style={{
           position: "relative",
           height: "450vh", // Tall track for 5 scroll stages
-          background: isDark
-            ? "linear-gradient(180deg, #0e060b 0%, #1a0814 25%, #150610 50%, #1a0814 75%, #0e060b 100%)"
-            : "linear-gradient(180deg, #f7f6fb 0%, #fdf2f4 25%, #fae8ee 50%, #fdf2f4 75%, #f7f6fb 100%)",
+          background: "transparent",
         }}
       >
         {/* Sticky 100vh Viewport Stage */}
@@ -2539,8 +2537,8 @@ export default function HomePage({ onNavigate, user, onSignOut, theme = "light",
         overflow: "hidden",
         padding: "32px 0 36px",
         background: isDark
-          ? "linear-gradient(180deg, #170511 0%, #1c0817 35%, #160613 70%, #12030d 100%)"
-          : "linear-gradient(180deg, #fce7f3 0%, #fdeff4 35%, #fbe4ee 70%, #fae0ea 100%)",
+          ? "linear-gradient(180deg, rgba(23, 5, 17, 0.4) 0%, rgba(18, 3, 13, 0.6) 100%)"
+          : "linear-gradient(180deg, rgba(251, 242, 246, 0.5) 0%, rgba(253, 248, 250, 0.7) 100%)",
       }}>
         {/* Dynamic Animated Liquid River Current Streams in Background */}
         <div style={{

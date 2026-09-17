@@ -39,16 +39,16 @@ export default function App() {
     const root = document.documentElement;
     if (appTheme === "dark") {
       root.classList.add("dark");
-      root.style.setProperty("--app-bg",   "#120810");
+      root.style.setProperty("--app-bg",   "#090207");
       root.style.setProperty("--app-text", "#fdf2f4");
       root.style.setProperty("--app-border","rgba(225,73,109,0.18)");
-      document.body.style.background = "#0e060b";
+      document.body.style.background = "#090207";
     } else {
       root.classList.remove("dark");
-      root.style.setProperty("--app-bg",   "#f7f6fb");
+      root.style.setProperty("--app-bg",   "#fdf8fa");
       root.style.setProperty("--app-text", "#2d2d2d");
       root.style.setProperty("--app-border","rgba(148,41,69,0.10)");
-      document.body.style.background = "#f7f6fb";
+      document.body.style.background = "#fdf8fa";
     }
   }, [appTheme]);
 

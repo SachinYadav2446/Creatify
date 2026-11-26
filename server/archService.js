@@ -38,6 +38,114 @@ function synthesizeArchitecture({ mode, docText, docName, codeSnippet, presetId 
   const isPayment = (nameLower.includes('payment') || nameLower.includes('ledger') || nameLower.includes('stripe') || nameLower.includes('charge') || text.includes('payment') || presetId === 'code_stripe') && !isCycloneWeather;
   const isFlashSale = (nameLower.includes('flash') || nameLower.includes('inventory') || nameLower.includes('stock') || text.includes('inventory') || presetId === 'audit_flashsale' || (mode === 'dual_audit' && !isCycloneWeather));
 
+  // ─── DOMAIN 1: WEATHER / CYCLONE / RADAR PATTERN RECOGNITION ─────────────────
+  if (isCycloneWeather) {
+    return {
+      success: true,
+      domain: 'Meteorological Pattern Recognition & Telemetry',
+      title: systemTitle || 'Cyclone Pattern Intelligence',
+      systemTitle: systemTitle || 'Cyclone Pattern Intelligence',
+      mode,
+      metrics: {
+        targetQps: '48,000 telemetry reads/sec',
+        p99Latency: '< 45ms raster processing',
+        haSla: '99.999% Mission Critical',
+        servicesCount: 6,
+      },
+      hld: {
+        nodes: [
+          { id: 'satellite_ingress', name: 'Satellite & Radar Ingress', role: 'Telemetry Edge', tech: 'GeoTIFF / HDF5 Stream (HTTP/3)', latency: '< 50ms', status: 'Active' },
+          { id: 'raster_pipeline', name: 'Raster Normalization Core', role: 'Spatial Ingestion', tech: 'C++ GDAL / Go Tile Processor', latency: '12ms', status: 'Active' },
+          { id: 'pattern_engine', name: 'Cyclone Pattern AI Model', role: 'Inference Engine', tech: 'PyTorch TensorRT (GPU Cluster)', latency: '24ms', status: 'Active' },
+          { id: 'geo_cache', name: 'Spatial Geo-Grid Store', role: 'In-Memory Cache', tech: 'Redis Cluster (Spatial Index)', latency: '< 1ms', status: 'Active' },
+          { id: 'alert_stream', name: 'Disaster Warning Stream', role: 'Event Broker', tech: 'Apache Kafka (High Priority)', latency: '2ms', status: 'Active' },
+          { id: 'gis_db', name: 'PostGIS Time-Series Database', role: 'Spatial DB', tech: 'PostgreSQL 16 + PostGIS + Timescale', latency: '8ms', status: 'Active' }
+        ],
+        connections: [
+          { from: 'Satellite & Radar Ingress', to: 'Raster Normalization Core', protocol: 'HTTP/3 Streaming', throughput: '4K GeoTIFF 850 MB/s' },
+          { from: 'Raster Normalization Core', to: 'Cyclone Pattern AI Model', protocol: 'gRPC Batch Tensor', throughput: 'Zero-Copy Shared Memory' },
+          { from: 'Cyclone Pattern AI Model', to: 'Spatial Geo-Grid Store', protocol: 'RESP / Sub-millisecond', throughput: 'Real-Time Isobars' },
+          { from: 'Cyclone Pattern AI Model', to: 'Disaster Warning Stream', protocol: 'Kafka (acks=all)', throughput: 'Low-Latency Broadcast' },
+          { from: 'Disaster Warning Stream', to: 'PostGIS Time-Series Database', protocol: 'Batch Spatial Append', throughput: 'Vector Polygon Store' }
+        ]
+      },
+      lld: [
+        {
+          name: 'CyclonePatternDetector',
+          pattern: 'Pipeline + Strategy Pattern',
+          methods: [
+            'detectPressureGradient(rasterTile: GeoRaster): EyeFormationResult',
+            'predictTrajectoryPath(stormVector: Trajectory): ForecastCone'
+          ],
+          fields: [
+            'tensorModel: TensorRTInferenceEngine',
+            'spatialGrid: IH3HexagonalIndex',
+            'alertBus: IKafkaEmergencyProducer'
+          ]
+        },
+        {
+          name: 'RasterGridProcessor',
+          pattern: 'Worker Pool with Shared Memory',
+          methods: [
+            'normalizeTile(rawBand: byte[]): NormalizedMatrix',
+            'extractIsobaricContours(matrix: FloatMatrix): List<Contour>'
+          ],
+          fields: [
+            'tileCache: IRedisRasterStore',
+            'resolutionMeters: int = 250'
+          ]
+        }
+      ],
+      erd: [
+        {
+          table: 'storm_events',
+          pk: 'storm_id (UUID)',
+          sharding: 'basin_region (Geographic Hash)',
+          columns: [
+            'storm_id UUID NOT NULL',
+            'name VARCHAR(64)',
+            'category INT NOT NULL',
+            'central_pressure_hpa FLOAT',
+            'max_sustained_wind_knots INT',
+            'current_centroid GEOMETRY(POINT, 4326)',
+            'detected_at TIMESTAMPTZ'
+          ],
+          indexes: [
+            'idx_storms_centroid (current_centroid USING GIST)',
+            'idx_storms_detected (detected_at DESC)'
+          ]
+        },
+        {
+          table: 'radar_scan_slices',
+          pk: 'scan_id + timestamp',
+          sharding: 'Time-series (Hypertable)',
+          columns: [
+            'scan_id UUID NOT NULL',
+            'radar_station_id VARCHAR(32)',
+            'elevation_angle FLOAT',
+            'reflectivity_dbz BYTEA',
+            'timestamp TIMESTAMPTZ'
+          ],
+          indexes: [
+            'idx_scans_station_time (radar_station_id, timestamp DESC)'
+          ]
+        }
+      ],
+      driftIssues: [
+        {
+          id: 'drift-1',
+          severity: 'HIGH',
+          category: 'Throughput & GPU Backpressure',
+          title: 'PRD mandates 60FPS raster tile stream; code lacks GPU backpressure queue',
+          prdQuote: "PRD §3.4: 'Incoming high-resolution GeoTIFF satellite streams must be buffered with backpressure protection before GPU model inference.'",
+          codeEvidence: "ingestion_worker.py:64 — Synchronous GPU invocation without Redis buffer queue.",
+          impact: 'Sudden radar burst will cause out-of-memory GPU crash and dropped meteorological scans.',
+          remediation: 'Implement Redis Streams buffer with decoupled multi-worker asynchronous GPU batching.'
+        }
+      ]
+    };
+  }
+
   
   return {
     success: true,

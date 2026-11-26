@@ -340,6 +340,8 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [activeTab, setActiveTab] = useState("topology");
   const [selectedNodeId, setSelectedNodeId] = useState("dispatch_svc");
+  const [topologyView, setTopologyView] = useState("flow"); // "flow" | "grid"
+  const [flowAnimation, setFlowAnimation] = useState(true);
   const [apiConnected, setApiConnected] = useState(false);
   const [liveData, setLiveData] = useState(null);
   const [toastMsg, setToastMsg] = useState(null);
@@ -1304,9 +1306,314 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                       </span>
                     </div>
 
-                    {/* Nodes Interactive Grid */}
-                    <div
-                      style={{
+                    
+                    {/* View Switcher & Animation Toggle Bar */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, background: colors.surfaceElevated, padding: 3, borderRadius: 8, border: `1px solid ${colors.borderSubtle}` }}>
+                        <button
+                          onClick={() => setTopologyView("flow")}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 5,
+                            padding: "4px 10px",
+                            borderRadius: 6,
+                            background: topologyView === "flow" ? colors.accent : "transparent",
+                            color: topologyView === "flow" ? "#ffffff" : colors.textMuted,
+                            border: "none",
+                            fontSize: 11,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          <Network size={12} />
+                          <span>Interactive Flow Diagram</span>
+                        </button>
+                        <button
+                          onClick={() => setTopologyView("grid")}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 5,
+                            padding: "4px 10px",
+                            borderRadius: 6,
+                            background: topologyView === "grid" ? colors.accent : "transparent",
+                            color: topologyView === "grid" ? "#ffffff" : colors.textMuted,
+                            border: "none",
+                            fontSize: 11,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
+                          }}
+                        >
+                          <Layers size={12} />
+                          <span>Node Spec Cards</span>
+                        </button>
+                      </div>
+
+                      {topologyView === "flow" && (
+                        <button
+                          onClick={() => setFlowAnimation(!flowAnimation)}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 5,
+                            padding: "4px 9px",
+                            borderRadius: 6,
+                            background: flowAnimation ? "rgba(225, 73, 109, 0.12)" : "rgba(100, 116, 139, 0.1)",
+                            border: `1px solid ${flowAnimation ? "rgba(225, 73, 109, 0.3)" : colors.borderSubtle}`,
+                            color: flowAnimation ? colors.accent : colors.textMuted,
+                            fontSize: 10.5,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                          }}
+                        >
+                          <Zap size={11} color={flowAnimation ? colors.accent : colors.textMuted} />
+                          <span>Packet Flow Animation: {flowAnimation ? "ON" : "OFF"}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* ── 1A: INTERACTIVE ANIMATED SVG FLOW DIAGRAM ── */}
+                    {topologyView === "flow" && (
+                      <div
+                        style={{
+                          borderRadius: 12,
+                          background: isDark ? "rgba(14, 5, 12, 0.65)" : "#faf8fa",
+                          border: `1px solid ${colors.borderSubtle}`,
+                          padding: "16px 14px",
+                          position: "relative",
+                          overflow: "hidden",
+                          marginBottom: 16,
+                          boxShadow: "inset 0 1px 3px rgba(0,0,0,0.2)",
+                        }}
+                      >
+                        {/* Background Grid Accent */}
+                        <div
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            backgroundImage: isDark
+                              ? "radial-gradient(rgba(225, 73, 109, 0.08) 1px, transparent 1px)"
+                              : "radial-gradient(rgba(148, 41, 69, 0.06) 1px, transparent 1px)",
+                            backgroundSize: "16px 16px",
+                            pointerEvents: "none",
+                          }}
+                        />
+
+                        {(() => {
+                          const nodes = currentData.hld.nodes || [];
+                          const conns = currentData.hld.connections || [];
+                          const total = nodes.length;
+
+                          // Compute column stages (4 columns layout)
+                          const stages = [[], [], [], []];
+                          nodes.forEach((n, idx) => {
+                            const r = (n.role + " " + n.name).toLowerCase();
+                            if (idx === 0 || r.includes("client") || r.includes("edge") || r.includes("ingress")) {
+                              stages[0].push(n);
+                            } else if (r.includes("gateway") || r.includes("proxy") || r.includes("router") || r.includes("auth")) {
+                              stages[1].push(n);
+                            } else if (r.includes("db") || r.includes("database") || r.includes("store") || r.includes("postgres") || r.includes("citus") || r.includes("vector")) {
+                              stages[3].push(n);
+                            } else {
+                              stages[2].push(n);
+                            }
+                          });
+
+                          // Balance stages if any is empty
+                          stages.forEach((st, sIdx) => {
+                            if (st.length === 0 && sIdx > 0 && stages[sIdx - 1].length > 2) {
+                              st.push(stages[sIdx - 1].pop());
+                            }
+                          });
+
+                          const colX = [95, 290, 520, 745];
+                          const nodeCoords = new Map();
+
+                          stages.forEach((st, sIdx) => {
+                            const x = colX[sIdx];
+                            const count = st.length || 1;
+                            const spacing = 280 / (count + 1);
+                            st.forEach((n, nIdx) => {
+                              const y = 35 + spacing * (nIdx + 1);
+                              nodeCoords.set(n.name, { x, y, node: n });
+                              nodeCoords.set(n.id, { x, y, node: n });
+                            });
+                          });
+
+                          return (
+                            <svg
+                              viewBox="0 0 850 320"
+                              style={{ width: "100%", height: "auto", minHeight: 270, display: "block" }}
+                            >
+                              <defs>
+                                <linearGradient id="flowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stopColor="#e1496d" stopOpacity="0.4" />
+                                  <stop offset="50%" stopColor="#38bdf8" stopOpacity="0.8" />
+                                  <stop offset="100%" stopColor="#10b981" stopOpacity="0.5" />
+                                </linearGradient>
+                                <marker
+                                  id="arrowEnd"
+                                  viewBox="0 0 10 10"
+                                  refX="9"
+                                  refY="5"
+                                  markerWidth="6"
+                                  markerHeight="6"
+                                  orient="auto-start-reverse"
+                                >
+                                  <path d="M 0 1 L 9 5 L 0 9 z" fill={isDark ? "#e1496d" : "#c13b5a"} opacity="0.8" />
+                                </marker>
+                                <filter id="glowFilter" x="-20%" y="-20%" width="140%" height="140%">
+                                  <feGaussianBlur stdDeviation="3" result="blur" />
+                                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                </filter>
+                              </defs>
+
+                              {/* Stage Column Labels */}
+                              {["CLIENT / EDGE", "GATEWAY / ROUTING", "CORE COMPUTE / AI", "PERSISTENT STORES"].map((label, i) => (
+                                <text
+                                  key={i}
+                                  x={colX[i]}
+                                  y={18}
+                                  textAnchor="middle"
+                                  fill={colors.textMuted}
+                                  fontSize="9"
+                                  fontWeight="700"
+                                  letterSpacing="0.08em"
+                                  opacity="0.65"
+                                >
+                                  {label}
+                                </text>
+                              ))}
+
+                              {/* Connections & Animated Flow Particles */}
+                              {conns.map((c, cIdx) => {
+                                const from = nodeCoords.get(c.from) || { x: 100, y: 150 };
+                                const to = nodeCoords.get(c.to) || { x: 740, y: 150 };
+                                const isHighlighted = selectedNodeId === from.node?.id || selectedNodeId === to.node?.id;
+
+                                // Cubic Bezier Curve
+                                const dx = Math.abs(to.x - from.x) * 0.45;
+                                const pathD = `M ${from.x + 65} ${from.y} C ${from.x + 65 + dx} ${from.y}, ${to.x - 65 - dx} ${to.y}, ${to.x - 65} ${to.y}`;
+
+                                return (
+                                  <g key={cIdx}>
+                                    {/* Background glow path */}
+                                    <path
+                                      d={pathD}
+                                      fill="none"
+                                      stroke={isHighlighted ? colors.accent : (isDark ? "rgba(225, 73, 109, 0.22)" : "rgba(148, 41, 69, 0.16)")}
+                                      strokeWidth={isHighlighted ? 2.5 : 1.5}
+                                      strokeDasharray={isHighlighted ? "none" : "4 3"}
+                                      markerEnd="url(#arrowEnd)"
+                                      opacity={isHighlighted ? 1 : 0.75}
+                                    />
+
+                                    {/* Protocol badge on wire */}
+                                    <text
+                                      x={(from.x + to.x) / 2}
+                                      y={(from.y + to.y) / 2 - 5}
+                                      textAnchor="middle"
+                                      fill={isHighlighted ? colors.accent : colors.textMuted}
+                                      fontSize="8"
+                                      fontWeight="600"
+                                      fontFamily={fontMono}
+                                      opacity="0.85"
+                                    >
+                                      {c.protocol}
+                                    </text>
+
+                                    {/* Animated Flow Particle */}
+                                    {flowAnimation && (
+                                      <circle r={isHighlighted ? "3.5" : "2.5"} fill={isHighlighted ? "#ffffff" : colors.accent} filter="url(#glowFilter)">
+                                        <animateMotion
+                                          path={pathD}
+                                          dur={`${2.0 + (cIdx % 3) * 0.4}s`}
+                                          repeatCount="indefinite"
+                                        />
+                                      </circle>
+                                    )}
+                                  </g>
+                                );
+                              })}
+
+                              {/* Nodes Cards in SVG */}
+                              {nodes.map((node) => {
+                                const coord = nodeCoords.get(node.id) || nodeCoords.get(node.name) || { x: 100, y: 100 };
+                                const isSelected = selectedNodeId === node.id;
+
+                                return (
+                                  <g
+                                    key={node.id}
+                                    transform={`translate(${coord.x}, ${coord.y})`}
+                                    onClick={() => setSelectedNodeId(node.id)}
+                                    style={{ cursor: "pointer" }}
+                                  >
+                                    {/* Outer Card Body */}
+                                    <rect
+                                      x="-65"
+                                      y="-30"
+                                      width="130"
+                                      height="60"
+                                      rx="8"
+                                      fill={isSelected ? (isDark ? "#280b22" : "#ffffff") : (isDark ? "#160714" : "#ffffff")}
+                                      stroke={isSelected ? colors.accent : colors.borderSubtle}
+                                      strokeWidth={isSelected ? "2" : "1"}
+                                      filter={isSelected ? "url(#glowFilter)" : "none"}
+                                      style={{ transition: "all 0.2s ease" }}
+                                    />
+
+                                    {/* Node Role Badge */}
+                                    <text
+                                      x="0"
+                                      y="-14"
+                                      textAnchor="middle"
+                                      fill={colors.accent}
+                                      fontSize="8"
+                                      fontWeight="700"
+                                      letterSpacing="0.04em"
+                                    >
+                                      {node.role.slice(0, 20)}
+                                    </text>
+
+                                    {/* Node Name */}
+                                    <text
+                                      x="0"
+                                      y="3"
+                                      textAnchor="middle"
+                                      fill={colors.text}
+                                      fontSize="10"
+                                      fontWeight="700"
+                                    >
+                                      {node.name.length > 18 ? node.name.slice(0, 16) + "…" : node.name}
+                                    </text>
+
+                                    {/* Latency & Status pill */}
+                                    <text
+                                      x="0"
+                                      y="19"
+                                      textAnchor="middle"
+                                      fill="#10b981"
+                                      fontSize="8"
+                                      fontWeight="600"
+                                      fontFamily={fontMono}
+                                    >
+                                      ⚡ {node.latency}
+                                    </text>
+                                  </g>
+                                );
+                              })}
+                            </svg>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    {topologyView === "grid" && (
+                      <div
+                        style={{
                         display: "grid",
                         gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
                         gap: 10,
@@ -1347,6 +1654,7 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                         );
                       })}
                     </div>
+                  )}
                   </div>
 
                   {/* ── INTERACTIVE NODE INSPECTOR PANEL ── */}

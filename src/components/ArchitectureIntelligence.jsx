@@ -1356,6 +1356,75 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                 </div>
               )}
 
+              {/* ── TAB 3: DATA SCHEMA (ERD) ── */}
+              {activeTab === "schema" && currentData.erd && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  {currentData.erd.map((t, ti) => (
+                    <div
+                      key={ti}
+                      style={{
+                        borderRadius: 10,
+                        background: colors.surfaceElevated,
+                        border: `1px solid ${colors.borderSubtle}`,
+                        padding: 14,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, borderBottom: `1px solid ${colors.borderSubtle}`, paddingBottom: 6 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, fontFamily: fontMono }}>
+                          table {t.table}
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 9.5, color: colors.textMuted }}>
+                            PK: {t.pk}
+                          </span>
+                          <button
+                            onClick={() => handleCopyDDL(t)}
+                            title="Generate and copy SQL DDL table definition"
+                            style={{
+                              background: "transparent",
+                              border: `1px solid ${colors.borderSubtle}`,
+                              borderRadius: 4,
+                              padding: "2px 6px",
+                              cursor: "pointer",
+                              color: colors.textMuted,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 3,
+                              fontSize: 10,
+                            }}
+                          >
+                            <Copy size={10} />
+                            <span>Copy DDL</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{ marginBottom: 8 }}>
+                        {t.columns.map((col, ci) => (
+                          <div key={ci} style={{ fontSize: 11, fontFamily: fontMono, color: colors.text, padding: "2px 0" }}>
+                            {col}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ borderTop: `1px solid ${colors.borderSubtle}`, paddingTop: 6 }}>
+                        <div style={{ fontSize: 9.5, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", marginBottom: 3 }}>
+                          Indexes &amp; Partitioning
+                        </div>
+                        <div style={{ fontSize: 10.5, fontFamily: fontMono, color: "#38bdf8", marginBottom: 2 }}>
+                          Shard Key: {t.sharding}
+                        </div>
+                        {t.indexes.map((idx, ii) => (
+                          <div key={ii} style={{ fontSize: 10.5, fontFamily: fontMono, color: "#10b981", padding: "1px 0" }}>
+                            ⚡ {idx}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               
             </div>
           </div>

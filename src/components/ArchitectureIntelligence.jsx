@@ -693,6 +693,99 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
     showToast("Downloaded Architecture JSON");
   };
 
+  // 8. Generate Docker Compose YAML
+  const generateDockerCompose = () => {
+    const nodes = currentData.hld?.nodes || [];
+    let yaml = `version: "3.8"\n\n`;
+    yaml += `networks:\n  arch_net:\n    driver: bridge\n\n`;
+    yaml += `volumes:\n  db_data:\n  redis_data:\n  broker_data:\n\n`;
+    yaml += `services:\n`;
+
+    nodes.forEach((n, idx) => {
+      const safeId = (n.id || `service_${idx}`).replace(/[^a-zA-Z0-9_]/g, "_");
+      const r = (n.role + " " + n.name + " " + n.tech).toLowerCase();
+
+      yaml += `  # [${n.role}] ${n.name}\n`;
+      yaml += `  ${safeId}:\n`;
+
+      if (r.includes("redis") || r.includes("cache")) {
+        yaml += `    image: redis:7-alpine\n`;
+        yaml += `    command: redis-server --appendonly yes\n`;
+        yaml += `    ports:\n      - "6379:6379"\n`;
+        yaml += `    volumes:\n      - redis_data:/data\n`;
+      } else if (r.includes("postgres") || r.includes("sql") || r.includes("citus") || r.includes("db") || r.includes("database")) {
+        yaml += `    image: pgvector/pgvector:pg16\n`;
+        yaml += `    environment:\n      - POSTGRES_USER=postgres\n      - POSTGRES_PASSWORD=postgres\n      - POSTGRES_DB=app_db\n`;
+        yaml += `    ports:\n      - "5432:5432"\n`;
+        yaml += `    volumes:\n      - db_data:/var/lib/postgresql/data\n`;
+      } else if (r.includes("kafka") || r.includes("stream") || r.includes("broker")) {
+        yaml += `    image: apache/kafka:latest\n`;
+        yaml += `    environment:\n      - KAFKA_NODE_ID=1\n      - KAFKA_PROCESS_ROLES=broker,controller\n      - KAFKA_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093\n      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://${safeId}:9092\n      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@localhost:9093\n`;
+        yaml += `    ports:\n      - "9092:9092"\n`;
+        yaml += `    volumes:\n      - broker_data:/var/lib/kafka/data\n`;
+      } else if (r.includes("qdrant") || r.includes("vector")) {
+        yaml += `    image: qdrant/qdrant:latest\n`;
+        yaml += `    ports:\n      - "6333:6333"\n`;
+      } else if (r.includes("gateway") || r.includes("ingress") || r.includes("proxy") || idx === 0) {
+        yaml += `    image: envoyproxy/envoy:v1.28-latest\n`;
+        yaml += `    ports:\n      - "8080:8080"\n`;
+      } else {
+        const port = 8000 + idx;
+        yaml += `    build:\n      context: ./${safeId}\n      dockerfile: Dockerfile\n`;
+        yaml += `    environment:\n      - PORT=${port}\n      - NODE_ENV=production\n`;
+        yaml += `    ports:\n      - "${port}:${port}"\n`;
+      }
+
+      yaml += `    networks:\n      - arch_net\n`;
+      yaml += `    restart: unless-stopped\n\n`;
+    });
+
+    return yaml;
+  };
+
+  const handleDownloadDockerCompose = () => {
+    const yaml = generateDockerCompose();
+    const blob = new Blob([yaml], { type: "text/yaml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "docker-compose.yml";
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Downloaded docker-compose.yml!");
+  };
+
+  // 9. Generate Terraform AWS Infrastructure (main.tf)
+  const generateTerraform = () => {
+    const title = (currentData.title || "architecture").toLowerCase().replace(/[^a-z0-9]/g, "_");
+    let tf = `terraform {\n  required_version = ">= 1.5.0"\n  required_providers {\n    aws = {\n      source  = "hashicorp/aws"\n      version = "~> 5.0"\n    }\n  }\n}\n\n`;
+    tf += `provider "aws" {\n  region = var.aws_region\n}\n\n`;
+    tf += `variable "aws_region" {\n  default = "us-east-1"\n}\n\n`;
+    tf += `variable "project_name" {\n  default = "${title}"\n}\n\n`;
+    tf += `# 1. VPC & High-Availability Network Topology\n`;
+    tf += `resource "aws_vpc" "main" {\n  cidr_block           = "10.0.0.0/16"\n  enable_dns_hostnames = true\n  enable_dns_support   = true\n  tags = { Name = "\${var.project_name}-vpc" }\n}\n\n`;
+    tf += `# 2. ECS Fargate Cluster for Core Microservices\n`;
+    tf += `resource "aws_ecs_cluster" "main" {\n  name = "\${var.project_name}-cluster"\n}\n\n`;
+    tf += `# 3. Elasticache Redis Cluster (Low-Latency Cache)\n`;
+    tf += `resource "aws_elasticache_cluster" "redis" {\n  cluster_id           = "\${var.project_name}-redis"\n  engine               = "redis"\n  node_type            = "cache.t4g.medium"\n  num_cache_nodes      = 1\n  parameter_group_name = "default.redis7"\n  port                 = 6379\n}\n\n`;
+    tf += `# 4. Multi-AZ PostgreSQL RDS Instance\n`;
+    tf += `resource "aws_db_instance" "primary" {\n  allocated_storage   = 50\n  engine              = "postgres"\n  engine_version      = "16.1"\n  instance_class      = "db.t4g.large"
+  db_name             = "\${var.project_name}_db"\n  username            = "app_admin"\n  password            = "ChangeMeInProd123!"\n  skip_final_snapshot = true\n  multi_az            = true\n}\n`;
+    return tf;
+  };
+
+  const handleDownloadTerraform = () => {
+    const tf = generateTerraform();
+    const blob = new Blob([tf], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "main.tf";
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Downloaded main.tf (Terraform)!");
+  };
+
   // 5. Copy Class Interface
   const handleCopyClassContract = (cls) => {
     let code = `// Contract for ${cls.name} (${cls.pattern})\n`;
@@ -1256,7 +1349,53 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                   <span>Mermaid</span>
                 </button>
 
-                {/* Open in Canvas */}
+                
+                {/* Download Docker Compose */}
+                <button
+                  onClick={handleDownloadDockerCompose}
+                  title="Generate &amp; Download runnable docker-compose.yml"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "5px 9px",
+                    borderRadius: 6,
+                    background: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
+                    border: `1px solid ${colors.borderSubtle}`,
+                    color: colors.text,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontFamily: fontSans,
+                  }}
+                >
+                  <Server size={11} />
+                  <span>Docker Compose</span>
+                </button>
+
+                {/* Download Terraform */}
+                <button
+                  onClick={handleDownloadTerraform}
+                  title="Generate &amp; Download AWS Terraform main.tf"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "5px 9px",
+                    borderRadius: 6,
+                    background: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
+                    border: `1px solid ${colors.borderSubtle}`,
+                    color: colors.text,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontFamily: fontSans,
+                  }}
+                >
+                  <Database size={11} />
+                  <span>Terraform</span>
+                </button>
+{/* Open in Canvas */}
                 <button
                   onClick={handleOpenInCanvas}
                   title="Open live interactive DAG inside Creatify Whiteboard Canvas"

@@ -414,6 +414,20 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
         }
       }
 
+      let zipBase64 = null;
+      if (activeCode && activeCode.name?.toLowerCase().endsWith(".zip")) {
+        try {
+          zipBase64 = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(activeCode);
+          });
+        } catch (err) {
+          console.warn("Could not convert zip file to base64:", err);
+        }
+      }
+
       const res = await fetch(`${apiUrl}/api/arch/synthesize`, {
         method: "POST",
         headers: {
@@ -426,6 +440,8 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
           docName: docName,
           docText: docText || undefined,
           codeSnippet: activeCode?.name || undefined,
+          zipBase64: zipBase64 || undefined,
+          archiveName: activeCode?.name || undefined,
           apiKey: aiKey ? aiKey.trim() : undefined,
           provider: aiProvider,
           model: aiModel,
@@ -439,6 +455,9 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
         setApiConnected(true);
         if (data.hld?.nodes?.[0]?.id) {
           setSelectedNodeId(data.hld.nodes[0].id);
+        }
+        if (data.manifest) {
+          showToast(`📦 Ingested ${data.manifest.totalFiles} files from ${data.manifest.archiveName || "repository"}!`);
         }
       }
     } catch (err) {
@@ -1155,7 +1174,8 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                   { id: "topology", label: "Topology (HLD)", icon: Network },
                   { id: "components", label: "Components (LLD)", icon: Layers },
                   { id: "schema", label: "Data Schema (ERD)", icon: Database },
-                  ...(currentData.driftIssues ? [{ id: "audit", label: "Audit Scorecard", icon: ShieldAlert }] : [])
+                  ...(currentData.driftIssues ? [{ id: "audit", label: "Audit Scorecard", icon: ShieldAlert }] : []),
+                  ...(currentData.manifest ? [{ id: "ast", label: "Repo AST Explorer", icon: FileArchive }] : [])
                 ].map((t) => {
                   const Icon = t.icon;
                   const isSelected = activeTab === t.id;
@@ -1630,6 +1650,171 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                   ))}
                 </div>
               )}
+              {/* ── TAB 5: REPO AST EXPLORER (CODEBASE ZIP) ── */}
+              {activeTab === "ast" && currentData.manifest && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {/* Summary Bar */}
+                  <div
+                    style={{
+                      borderRadius: 10,
+                      background: colors.surfaceElevated,
+                      border: `1px solid ${colors.borderSubtle}`,
+                      padding: "16px 20px",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 20,
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: colors.accent, letterSpacing: "0.06em" }}>
+                        Scanned Codebase Archive
+                      </div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: colors.text, marginTop: 2 }}>
+                        {currentData.manifest.archiveName || "Repository"}
+                      </div>
+                      <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 3 }}>
+                        {currentData.manifest.totalFiles} files · {currentData.manifest.totalLinesOfCode?.toLocaleString() || "N/A"} lines of analyzed source code
+                      </div>
+                    </div>
+
+                    {/* Languages Breakdown */}
+                    {currentData.manifest.languages && Object.keys(currentData.manifest.languages).length > 0 && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 200 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: colors.textMuted }}>
+                          Language Distribution
+                        </div>
+                        <div style={{ display: "flex", height: 6, borderRadius: 3, overflow: "hidden", background: colors.borderSubtle, gap: 1 }}>
+                          {Object.entries(currentData.manifest.languages).map(([lang, pct], idx) => {
+                            const langColors = ["#38bdf8", "#10b981", "#f59e0b", "#a855f7", "#e1496d"];
+                            return (
+                              <div
+                                key={lang}
+                                style={{
+                                  width: `${pct}%`,
+                                  background: langColors[idx % langColors.length],
+                                }}
+                                title={`${lang}: ${pct}%`}
+                              />
+                            );
+                          })}
+                        </div>
+                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                          {Object.entries(currentData.manifest.languages).map(([lang, pct], idx) => {
+                            const langColors = ["#38bdf8", "#10b981", "#f59e0b", "#a855f7", "#e1496d"];
+                            return (
+                              <div key={lang} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10.5, color: colors.textMuted }}>
+                                <span style={{ width: 6, height: 6, borderRadius: "50%", background: langColors[idx % langColors.length] }} />
+                                <span>{lang} ({pct}%)</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Detected Stack Badges */}
+                  {currentData.manifest.detectedStack && currentData.manifest.detectedStack.length > 0 && (
+                    <div style={{ borderRadius: 10, background: colors.surfaceElevated, border: `1px solid ${colors.borderSubtle}`, padding: "14px 18px" }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: colors.textMuted, marginBottom: 8 }}>
+                        Detected Architecture Stack &amp; Frameworks
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                        {currentData.manifest.detectedStack.map((tech, i) => (
+                          <span
+                            key={i}
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 600,
+                              padding: "4px 10px",
+                              borderRadius: 6,
+                              background: "rgba(225, 73, 109, 0.1)",
+                              border: "1px solid rgba(225, 73, 109, 0.25)",
+                              color: colors.accent,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 5,
+                            }}
+                          >
+                            <Cpu size={11} />
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Discovered API Endpoints & Routes */}
+                  {currentData.manifest.routes && currentData.manifest.routes.length > 0 && (
+                    <div style={{ borderRadius: 10, background: colors.surfaceElevated, border: `1px solid ${colors.borderSubtle}`, padding: "14px 18px" }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: colors.textMuted, marginBottom: 10 }}>
+                        Discovered API Endpoints ({currentData.manifest.routes.length})
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 240, overflowY: "auto" }}>
+                        {currentData.manifest.routes.map((r, i) => {
+                          const methodColor = r.method === "GET" ? "#10b981" : r.method === "POST" ? "#38bdf8" : r.method === "DELETE" ? "#ef4444" : "#f59e0b";
+                          return (
+                            <div
+                              key={i}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                padding: "6px 10px",
+                                borderRadius: 6,
+                                background: "rgba(0, 0, 0, 0.15)",
+                                border: `1px solid ${colors.borderSubtle}`,
+                                fontSize: 11.5,
+                              }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 6px", borderRadius: 4, background: `${methodColor}20`, color: methodColor, fontFamily: fontMono }}>
+                                  {r.method}
+                                </span>
+                                <span style={{ fontFamily: fontMono, color: colors.text, fontWeight: 600 }}>{r.path}</span>
+                              </div>
+                              <span style={{ fontSize: 10.5, color: colors.textMuted, fontFamily: fontMono }}>{r.file}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Discovered Database Models */}
+                  {currentData.manifest.models && currentData.manifest.models.length > 0 && (
+                    <div style={{ borderRadius: 10, background: colors.surfaceElevated, border: `1px solid ${colors.borderSubtle}`, padding: "14px 18px" }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: colors.textMuted, marginBottom: 10 }}>
+                        Discovered Entity Contracts &amp; Models ({currentData.manifest.models.length})
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
+                        {currentData.manifest.models.map((m, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              padding: "10px 12px",
+                              borderRadius: 7,
+                              background: "rgba(0, 0, 0, 0.15)",
+                              border: `1px solid ${colors.borderSubtle}`,
+                            }}
+                          >
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <span style={{ fontSize: 12, fontWeight: 700, color: "#38bdf8", fontFamily: fontMono }}>{m.name}</span>
+                              <span style={{ fontSize: 9.5, padding: "1px 5px", borderRadius: 3, background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8" }}>{m.kind}</span>
+                            </div>
+                            <div style={{ fontSize: 10, color: colors.textMuted, marginTop: 4, fontFamily: fontMono }}>
+                              {m.file}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
 
             </div>
           </div>

@@ -1122,7 +1122,78 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
             {/* Content Body */}
             <div style={{ padding: "20px 22px 28px", flex: 1 }}>
               
-              
+              {/* ── TAB 1: TOPOLOGY (HLD) ── */}
+              {activeTab === "topology" && currentData.hld && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                  
+                  {/* System Header Info */}
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 13.5, fontWeight: 700, color: colors.text }}>
+                          {currentData.title || currentData.systemTitle || "System Architecture Flow"}
+                        </span>
+                        {(!selectedPreset && (docFile || codeFile)) && (
+                          <span style={{ fontSize: 9.5, padding: "1px 6px", borderRadius: 4, background: "rgba(16, 185, 129, 0.15)", color: "#10b981", fontWeight: 700 }}>
+                            Live Synthesized
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: 11, color: colors.textMuted }}>
+                        {currentData.metrics?.targetQps || "Verified Architecture"} · {currentData.metrics?.haSla || "Active"}
+                      </span>
+                    </div>
+
+                    {/* Nodes Interactive Grid */}
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
+                        gap: 10,
+                      }}
+                    >
+                      {currentData.hld.nodes.map((node) => {
+                        const isSelected = selectedNodeId === node.id;
+                        return (
+                          <div
+                            key={node.id}
+                            onClick={() => setSelectedNodeId(node.id)}
+                            style={{
+                              padding: "12px",
+                              borderRadius: 10,
+                              background: isSelected ? (isDark ? "rgba(225, 73, 109, 0.12)" : "rgba(225, 73, 109, 0.06)") : colors.surfaceElevated,
+                              border: isSelected ? `1.5px solid ${colors.accent}` : `1px solid ${colors.borderSubtle}`,
+                              cursor: "pointer",
+                              transition: "all 0.15s ease",
+                              minWidth: 0,
+                              overflow: "hidden",
+                              boxSizing: "border-box",
+                              boxShadow: isSelected ? "0 4px 14px rgba(225, 73, 109, 0.15)" : "none",
+                            }}
+                          >
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+                              <span style={{ fontSize: 9.5, fontWeight: 700, color: colors.accent, textTransform: "uppercase", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                {node.role}
+                              </span>
+                              <span style={{ fontSize: 9, color: "#10b981", fontWeight: 600, flexShrink: 0 }}>{node.latency}</span>
+                            </div>
+                            <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.text, marginBottom: 2, overflowWrap: "anywhere" }}>
+                              {node.name}
+                            </div>
+                            <div style={{ fontSize: 10.5, color: colors.textMuted, fontFamily: fontMono, overflowWrap: "anywhere" }}>
+                              {node.tech}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  
+            </div>
+          </div>
+        </div>
+
           </div>
         </div>
       </div>

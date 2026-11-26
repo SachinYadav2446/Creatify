@@ -499,6 +499,20 @@ app.post('/api/contact', async (req, res) => {
   }
 });
 
+// ─── ArchForge Architecture Intelligence Routes ─────────────────────────────
+const { synthesizeArchitecture } = require('./archService');
+
+app.post('/api/arch/synthesize', async (req, res) => {
+  try {
+    const { mode, docText, docName, codeSnippet, presetId } = req.body || {};
+    const result = synthesizeArchitecture({ mode, docText, docName, codeSnippet, presetId });
+    res.json(result);
+  } catch (err) {
+    console.error('ArchForge synthesis error:', err.message);
+    res.status(500).json({ error: 'Failed to synthesize architecture: ' + err.message });
+  }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'Creatify API' });

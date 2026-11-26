@@ -345,6 +345,7 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
   const [apiConnected, setApiConnected] = useState(false);
   const [liveData, setLiveData] = useState(null);
   const [toastMsg, setToastMsg] = useState(null);
+  const [activeDiffIssue, setActiveDiffIssue] = useState(null);
 
   // AI Integration State
   const [showAiModal, setShowAiModal] = useState(false);
@@ -818,6 +819,41 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
   const handleCopyRemediation = (issue) => {
     navigator.clipboard.writeText(issue.remediation);
     showToast("Copied remediation fix to clipboard!");
+  };
+
+  // 10. Generate Unified Git Diff Patch
+  const generateUnifiedPatch = (issue) => {
+    const rawFile = (issue.codeEvidence?.split("—")[0] || issue.category || "service.py").trim().split(" ")[0].replace(/:[0-9]+$/, "");
+    const fileName = rawFile.includes(".") ? rawFile : "architecture_fix.py";
+    let patch = `diff --git a/${fileName} b/${fileName}\n`;
+    patch += `--- a/${fileName}\n`;
+    patch += `+++ b/${fileName}\n`;
+    patch += `@@ -1,5 +1,12 @@\n`;
+    patch += `- // VIOLATION: ${issue.title}\n`;
+    patch += `- // OBSERVED: ${issue.codeEvidence}\n`;
+    patch += `+ // REMEDIATION PATCH: ${issue.title}\n`;
+    patch += `+ // PRD COMPLIANCE: ${issue.prdQuote}\n`;
+    patch += `+ ${issue.remediation}\n`;
+    return patch;
+  };
+
+  const handleDownloadFullPatch = () => {
+    let fullPatch = `# ArchForge Architecture Compliance Remediation Patch\n`;
+    fullPatch += `# Generated on ${new Date().toISOString()}\n`;
+    fullPatch += `# Target System: ${currentData.title || "Architecture"}\n\n`;
+    (currentData.driftIssues || []).forEach((issue, idx) => {
+      fullPatch += `\n# --- Issue #${idx + 1}: [${issue.severity}] ${issue.title} ---\n`;
+      fullPatch += generateUnifiedPatch(issue);
+      fullPatch += `\n`;
+    });
+    const blob = new Blob([fullPatch], { type: "text/x-diff;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(currentData.title || "architecture").replace(/\s+/g, "_")}_remediation.patch`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Downloaded unified remediation .patch file!");
   };
 
   const colors = {
@@ -2034,14 +2070,60 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
 
               {/* ── TAB 4: AUDIT SCORECARD (MODE C) ── */}
               {activeTab === "audit" && currentData.driftIssues && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 8, background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.text }}>
-                      Alignment Score: {currentData.complianceScore || 78}% · {currentData.driftIssues.length} Architectural Discrepancies Found
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {/* Compliance Scorecard Banner */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      padding: "14px 18px",
+                      borderRadius: 10,
+                      background: isDark ? "rgba(239, 68, 68, 0.08)" : "rgba(254, 242, 242, 0.8)",
+                      border: "1px solid rgba(239, 68, 68, 0.25)",
+                      flexWrap: "wrap",
+                      gap: 12,
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: colors.text }}>
+                          Architecture Compliance Score: {currentData.complianceScore || 78}%
+                        </span>
+                        <span style={{ fontSize: 9.5, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: "rgba(239, 68, 68, 0.15)", color: "#ef4444" }}>
+                          {currentData.driftIssues.filter(d => d.severity === "CRITICAL").length} Critical Drift
+                        </span>
+                        <span style={{ fontSize: 9.5, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: "rgba(16, 185, 129, 0.15)", color: "#10b981" }}>
+                          → 100% Projected Post-PR
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 11, color: colors.textMuted, marginTop: 4 }}>
+                        Cross-analyzed PRD commitments against real code AST. {currentData.driftIssues.length} remediation patches available.
+                      </div>
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#ef4444" }}>
-                      ACTION REQUIRED
-                    </span>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <button
+                        onClick={handleDownloadFullPatch}
+                        title="Download all fixes as a unified Git .patch file"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 5,
+                          padding: "6px 12px",
+                          borderRadius: 6,
+                          background: colors.accent,
+                          color: "#ffffff",
+                          border: "none",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <Download size={11} />
+                        <span>Download Remediation PR Patch (.patch)</span>
+                      </button>
+                    </div>
                   </div>
 
                   {currentData.driftIssues.map((issue) => (
@@ -2062,6 +2144,26 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                           <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: issue.severity === "CRITICAL" ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)", color: issue.severity === "CRITICAL" ? "#ef4444" : "#f59e0b" }}>
                             {issue.severity}
                           </span>
+                          <button
+                            onClick={() => setActiveDiffIssue(issue)}
+                            title="View unified side-by-side Git Diff patch"
+                            style={{
+                              background: "rgba(56, 189, 248, 0.12)",
+                              border: "1px solid rgba(56, 189, 248, 0.3)",
+                              borderRadius: 4,
+                              padding: "2px 8px",
+                              cursor: "pointer",
+                              color: "#38bdf8",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                              fontSize: 10,
+                              fontWeight: 600,
+                            }}
+                          >
+                            <GitBranch size={10} />
+                            <span>Inspect PR Diff</span>
+                          </button>
                           <button
                             onClick={() => handleCopyRemediation(issue)}
                             title="Copy remediation patch code"
@@ -2268,6 +2370,157 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
         </div>
       </div>
 
+
+      {/* ── UNIFIED GIT DIFF / PR REMEDIATION MODAL ── */}
+      {activeDiffIssue && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: 20,
+          }}
+          onClick={() => setActiveDiffIssue(null)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 680,
+              background: isDark ? "#160714" : "#ffffff",
+              borderRadius: 12,
+              border: `1px solid ${colors.border}`,
+              boxShadow: "0 24px 48px rgba(0,0,0,0.5)",
+              padding: 22,
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              color: colors.text,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${colors.borderSubtle}`, paddingBottom: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 6, background: "rgba(56, 189, 248, 0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <GitBranch size={15} color="#38bdf8" />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>
+                    PR Remediation: {activeDiffIssue.title}
+                  </h3>
+                  <div style={{ fontSize: 11, color: colors.textMuted, fontFamily: fontMono, marginTop: 2 }}>
+                    git checkout -b fix/arch-{activeDiffIssue.id}
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveDiffIssue(null)}
+                style={{ background: "transparent", border: "none", color: colors.textMuted, cursor: "pointer", padding: 4 }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Spec Promise vs Code Reality */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div style={{ padding: "10px 12px", borderRadius: 7, background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
+                <div style={{ fontSize: 9.5, fontWeight: 700, color: "#ef4444", textTransform: "uppercase", marginBottom: 3 }}>
+                  Observed Code Reality
+                </div>
+                <div style={{ fontSize: 11, fontFamily: fontMono, color: "#f59e0b" }}>
+                  {activeDiffIssue.codeEvidence}
+                </div>
+              </div>
+              <div style={{ padding: "10px 12px", borderRadius: 7, background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.2)" }}>
+                <div style={{ fontSize: 9.5, fontWeight: 700, color: "#10b981", textTransform: "uppercase", marginBottom: 3 }}>
+                  PRD Contract Commitment
+                </div>
+                <div style={{ fontSize: 11, color: colors.textMuted, fontStyle: "italic" }}>
+                  "{activeDiffIssue.prdQuote}"
+                </div>
+              </div>
+            </div>
+
+            {/* Unified Git Diff View */}
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", marginBottom: 6 }}>
+                Unified Patch Diff
+              </div>
+              <pre
+                style={{
+                  margin: 0,
+                  padding: 14,
+                  borderRadius: 8,
+                  background: isDark ? "#090208" : "#f1f0f2",
+                  border: `1px solid ${colors.borderSubtle}`,
+                  fontSize: 11,
+                  fontFamily: fontMono,
+                  lineHeight: 1.5,
+                  overflowX: "auto",
+                  maxHeight: 220,
+                  color: colors.text,
+                }}
+              >
+                <div style={{ color: colors.textMuted }}>--- a/service.py</div>
+                <div style={{ color: colors.textMuted }}>+++ b/service.py</div>
+                <div style={{ color: "#38bdf8" }}>@@ -1,5 +1,12 @@</div>
+                <div style={{ color: "#ef4444", background: "rgba(239, 68, 68, 0.1)" }}>- // VIOLATION: {activeDiffIssue.codeEvidence}</div>
+                <div style={{ color: "#10b981", background: "rgba(16, 185, 129, 0.1)" }}>+ // REMEDIATION: {activeDiffIssue.title}</div>
+                <div style={{ color: "#10b981", background: "rgba(16, 185, 129, 0.1)" }}>+ {activeDiffIssue.remediation}</div>
+              </pre>
+            </div>
+
+            {/* Modal Actions */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, borderTop: `1px solid ${colors.borderSubtle}`, paddingTop: 12 }}>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(generateUnifiedPatch(activeDiffIssue));
+                  showToast("Copied unified Git diff patch!");
+                }}
+                style={{
+                  padding: "7px 12px",
+                  borderRadius: 6,
+                  background: colors.surfaceElevated,
+                  border: `1px solid ${colors.borderSubtle}`,
+                  color: colors.text,
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                }}
+              >
+                <Copy size={11} />
+                <span>Copy Diff Patch</span>
+              </button>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(activeDiffIssue.remediation);
+                  showToast("Copied remediation code!");
+                  setActiveDiffIssue(null);
+                }}
+                style={{
+                  padding: "7px 16px",
+                  borderRadius: 6,
+                  background: colors.accent,
+                  border: "none",
+                  color: "#ffffff",
+                  fontSize: 11.5,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Apply Fix
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* ── AI ENGINE CONFIGURATION MODAL ── */}
       {showAiModal && (
         <div

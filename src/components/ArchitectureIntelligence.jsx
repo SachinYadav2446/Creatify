@@ -1287,6 +1287,75 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                 </div>
               )}
 
+              {/* ── TAB 2: COMPONENTS (LLD) ── */}
+              {activeTab === "components" && currentData.lld && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  {currentData.lld.map((cls, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        borderRadius: 10,
+                        background: colors.surfaceElevated,
+                        border: `1px solid ${colors.borderSubtle}`,
+                        padding: 14,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, fontFamily: fontMono, color: colors.accent }}>
+                          class {cls.name}
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 9.5, fontWeight: 600, padding: "2px 6px", borderRadius: 4, background: "rgba(56, 189, 248, 0.12)", color: "#38bdf8" }}>
+                            {cls.pattern}
+                          </span>
+                          <button
+                            onClick={() => handleCopyClassContract(cls)}
+                            title="Copy TypeScript / Python interface contract"
+                            style={{
+                              background: "transparent",
+                              border: `1px solid ${colors.borderSubtle}`,
+                              borderRadius: 4,
+                              padding: "2px 6px",
+                              cursor: "pointer",
+                              color: colors.textMuted,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 3,
+                              fontSize: 10,
+                            }}
+                          >
+                            <Copy size={10} />
+                            <span>Copy Contract</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div style={{ marginBottom: 8 }}>
+                        <div style={{ fontSize: 9.5, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", marginBottom: 3 }}>
+                          Dependencies &amp; State
+                        </div>
+                        {cls.fields.map((f, fi) => (
+                          <div key={fi} style={{ fontSize: 11, fontFamily: fontMono, color: colors.text, padding: "1px 0" }}>
+                            • {f}
+                          </div>
+                        ))}
+                      </div>
+
+                      <div>
+                        <div style={{ fontSize: 9.5, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", marginBottom: 3 }}>
+                          Public Interface
+                        </div>
+                        {cls.methods.map((m, mi) => (
+                          <div key={mi} style={{ fontSize: 11, fontFamily: fontMono, color: "#10b981", padding: "1px 0" }}>
+                            + {m}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               
             </div>
           </div>

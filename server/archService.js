@@ -1,3 +1,5 @@
+const { synthesizeWithLLM, verifyKey } = require('./llmService');
+
 // server/archService.js
 // Autonomous Architecture & Code Synthesis Engine for ArchForge
 
@@ -7,7 +9,7 @@
  * and dynamically synthesizes High-Level Design (HLD), Low-Level Design (LLD),
  * Database Schema (ERD), and Cross-Audit findings tailored to the input.
  */
-function synthesizeArchitecture({ mode, docText, docName, codeSnippet, presetId }) {
+function synthesizeDeterministic({ mode, docText, docName, codeSnippet, presetId }) {
   const text = (docText || '').toLowerCase();
   const rawName = (docName || '').trim();
   const nameLower = rawName.toLowerCase();
@@ -467,6 +469,7 @@ function synthesizeArchitecture({ mode, docText, docName, codeSnippet, presetId 
   return {
     success: true,
     domain: `${systemTitle} Engine`,
+    title: systemTitle,
     systemTitle: systemTitle,
     mode,
     metrics: {
@@ -569,6 +572,57 @@ function synthesizeArchitecture({ mode, docText, docName, codeSnippet, presetId 
   };
 }
 
+/**
+ * Master synthesis entrypoint
+ * Automatically calls Live AI (Gemini / OpenAI) when credentials are provided,
+ * and falls back seamlessly to the deterministic domain engine.
+ */
+async function synthesizeArchitecture({
+  mode = 'prd',
+  docText = '',
+  docName = '',
+  codeSnippet = '',
+  codeTree = null,
+  presetId = null,
+  apiKey = null,
+  provider = null,
+  model = null,
+  customBaseUrl = null
+}) {
+  const activeKey = apiKey || process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY;
+  const activeProvider = provider || (apiKey && apiKey.startsWith('sk-') ? 'openai' : (process.env.OPENAI_API_KEY ? 'openai' : 'gemini'));
+
+  // Attempt real AI generation if API key is present and user is synthesizing custom doc/code
+  if (activeKey && !presetId) {
+    try {
+      const aiResult = await synthesizeWithLLM({
+        mode,
+        docText,
+        docName,
+        codeSnippet,
+        codeTree,
+        apiKey: activeKey,
+        provider: activeProvider,
+        model,
+        customBaseUrl
+      });
+      if (aiResult && aiResult.hld && aiResult.hld.nodes && aiResult.hld.nodes.length > 0) {
+        return aiResult;
+      }
+    } catch (err) {
+      console.warn('[archService] AI synthesis failed, engaging deterministic fallback:', err.message);
+    }
+  }
+
+  // Fallback to high-fidelity deterministic domain synthesis
+  const result = synthesizeDeterministic({ mode, docText, docName, codeSnippet, presetId });
+  result.aiGenerated = false;
+  result.provider = 'Deterministic Architecture Engine';
+  return result;
+}
+
 module.exports = {
-  synthesizeArchitecture
+  synthesizeArchitecture,
+  synthesizeDeterministic,
+  verifyKey
 };

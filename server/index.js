@@ -500,16 +500,41 @@ app.post('/api/contact', async (req, res) => {
 });
 
 // ─── ArchForge Architecture Intelligence Routes ─────────────────────────────
-const { synthesizeArchitecture } = require('./archService');
+const { synthesizeArchitecture, verifyKey } = require('./archService');
 
 app.post('/api/arch/synthesize', async (req, res) => {
   try {
-    const { mode, docText, docName, codeSnippet, presetId } = req.body || {};
-    const result = synthesizeArchitecture({ mode, docText, docName, codeSnippet, presetId });
+    const { mode, docText, docName, codeSnippet, codeTree, presetId, apiKey, provider, model, customBaseUrl } = req.body || {};
+    const headerKey = req.headers['x-api-key'] || req.headers['x-gemini-key'] || req.headers['x-openai-key'];
+    const activeKey = apiKey || headerKey;
+    const result = await synthesizeArchitecture({
+      mode,
+      docText,
+      docName,
+      codeSnippet,
+      codeTree,
+      presetId,
+      apiKey: activeKey,
+      provider,
+      model,
+      customBaseUrl
+    });
     res.json(result);
   } catch (err) {
     console.error('ArchForge synthesis error:', err.message);
     res.status(500).json({ error: 'Failed to synthesize architecture: ' + err.message });
+  }
+});
+
+app.post('/api/arch/verify-key', async (req, res) => {
+  try {
+    const { provider, apiKey, customBaseUrl } = req.body || {};
+    const headerKey = req.headers['x-api-key'] || req.headers['x-gemini-key'] || req.headers['x-openai-key'];
+    const activeKey = apiKey || headerKey;
+    const result = await verifyKey({ provider, apiKey: activeKey, customBaseUrl });
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ valid: false, error: err.message });
   }
 });
 

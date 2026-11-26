@@ -273,6 +273,100 @@ function synthesizeArchitecture({ mode, docText, docName, codeSnippet, presetId 
     };
   }
 
+  // ─── DOMAIN 2: DISPATCH & GEO TELEMETRY ─────────────────────────────────────
+  if (isDispatch) {
+    return {
+      success: true,
+      domain: 'Geo-Spatial Telemetry & Dispatch',
+      title: systemTitle || 'Real-Time Dispatch Engine',
+      systemTitle: systemTitle || 'Real-Time Dispatch Engine',
+      mode,
+      metrics: {
+        targetQps: '120,000 pings/sec',
+        p99Latency: '< 35ms',
+        haSla: '99.999% Multi-AZ',
+        servicesCount: 6,
+      },
+      hld: {
+        nodes: [
+          { id: 'client', name: 'Rider & Driver Apps', role: 'Client Edge', tech: 'iOS / Android WebSocket', latency: '< 35ms', status: 'Active' },
+          { id: 'gateway', name: 'Geo WebSocket Gateway', role: 'Edge Proxy', tech: 'Envoy (gRPC / WSS)', latency: '4ms', status: 'Active' },
+          { id: 'dispatch_svc', name: 'Dispatch & Match Core', role: 'Compute Engine', tech: 'Go Spatial Indexer', latency: '18ms', status: 'Active' },
+          { id: 'geo_cache', name: 'H3 Hex Spatial Cache', role: 'In-Memory Store', tech: 'Redis Cluster (Geospatial)', latency: '< 1ms', status: 'Active' },
+          { id: 'event_bus', name: 'Trip Lifecycle Stream', role: 'Message Bus', tech: 'Apache Kafka (3x Multi-AZ)', latency: '2ms', status: 'Active' },
+          { id: 'trip_db', name: 'Trips & Ledger Database', role: 'Persistent Store', tech: 'PostgreSQL 16 + Citus', latency: '8ms', status: 'Active' }
+        ],
+        connections: [
+          { from: 'Rider & Driver Apps', to: 'Geo WebSocket Gateway', protocol: 'WSS (Dual Channel)', throughput: '120,000 pings/sec' },
+          { from: 'Geo WebSocket Gateway', to: 'Dispatch & Match Core', protocol: 'gRPC Streaming', throughput: 'Bidirectional' },
+          { from: 'Dispatch & Match Core', to: 'H3 Hex Spatial Cache', protocol: 'RESP / Sub-millisecond', throughput: '99.9% Hit Ratio' },
+          { from: 'Dispatch & Match Core', to: 'Trip Lifecycle Stream', protocol: 'Kafka (acks=all)', throughput: 'Ordered Events' },
+          { from: 'Trip Lifecycle Stream', to: 'Trips & Ledger Database', protocol: 'Idempotent Worker', throughput: 'Batch Ingestion' }
+        ]
+      },
+      lld: [
+        {
+          name: 'DispatchService',
+          pattern: 'Strategy + Observer',
+          methods: [
+            'findEligibleDrivers(h3Index, radiusKm): List<Driver>',
+            'lockDriverForTrip(driverId, tripId): Result<Lock>'
+          ],
+          fields: [
+            'geoSpatialIndex: H3SpatialIndex',
+            'driverCache: IRedisDriverStore',
+            'eventPublisher: IKafkaProducer'
+          ]
+        },
+        {
+          name: 'H3SpatialIndex',
+          pattern: 'Hexagonal Spatial Grid',
+          methods: [
+            'kRing(originHex, radiusStep): Set<HexIndex>',
+            'updateLocation(driverId, lat, lon): void'
+          ],
+          fields: [
+            'resolutionLevel: int = 8',
+            'hexMap: ConcurrentHashMap<Long, Set<DriverId>>'
+          ]
+        }
+      ],
+      erd: [
+        {
+          table: 'trips',
+          pk: 'trip_id (UUID)',
+          sharding: 'rider_id (Hash Partitioned)',
+          columns: [
+            'rider_id UUID NOT NULL',
+            'driver_id UUID',
+            'status VARCHAR(24)',
+            'pickup_point GEOMETRY',
+            'created_at TIMESTAMPTZ'
+          ],
+          indexes: [
+            'idx_trips_rider_status (rider_id, status)',
+            'idx_trips_created (created_at DESC)'
+          ]
+        },
+        {
+          table: 'driver_telemetry',
+          pk: 'driver_id + timestamp',
+          sharding: 'Time-series (TimescaleDB)',
+          columns: [
+            'driver_id UUID NOT NULL',
+            'h3_index BIGINT',
+            'latitude DOUBLE PRECISION',
+            'longitude DOUBLE PRECISION',
+            'speed_kmh FLOAT'
+          ],
+          indexes: [
+            'idx_telemetry_h3 (h3_index, timestamp DESC)'
+          ]
+        }
+      ]
+    };
+  }
+
   
   return {
     success: true,

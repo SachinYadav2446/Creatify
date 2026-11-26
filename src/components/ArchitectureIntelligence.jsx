@@ -98,6 +98,105 @@ const DEMO_SANDBOXES = {
     ]
   },
 
+  ai_rag: {
+    id: "ai_rag",
+    title: "Enterprise Agentic RAG Platform",
+    category: "Data Science & LLMs",
+    type: "PRD",
+    badge: "15k Tokens/s",
+    tag: "Vector Search & Agentic Loop",
+    color: "#38bdf8",
+    docName: "Agentic_RAG_Enterprise_Spec.md",
+    docSize: "52 KB · 2,400 words",
+    hld: {
+      nodes: [
+        { id: "query_gateway", name: "Prompt & Multimodal Gateway", role: "Ingress & Guardrails", tech: "FastAPI / Envoy + LlamaGuard", latency: "< 15ms", status: "Active" },
+        { id: "semantic_cache", name: "Semantic Embedding Cache", role: "Cost Reducer", tech: "Redis (Cosine Sim Cache)", latency: "< 2ms", status: "Active" },
+        { id: "retriever_core", name: "Hybrid RAG Retriever", role: "Context Aggregation", tech: "Dense (E5) + Sparse (BM25) Reranker", latency: "28ms", status: "Active" },
+        { id: "vector_store", name: "Distributed Vector DB", role: "Embedding Index", tech: "Qdrant / Milvus (HNSW Graphs)", latency: "12ms", status: "Active" },
+        { id: "agent_orchestrator", name: "Multi-Agent Task Executor", role: "Agentic Core", tech: "LangGraph / Async Worker Mesh", latency: "45ms", status: "Active" },
+        { id: "llm_inference", name: "TensorRT-LLM Inference Engine", role: "Model Serving", tech: "vLLM / Triton (A100 Tensor Parallel)", latency: "< 75ms", status: "Active" }
+      ],
+      connections: [
+        { from: "Prompt & Multimodal Gateway", to: "Semantic Embedding Cache", protocol: "HTTP POST /v1/chat", throughput: "Token Rate-Limited" },
+        { from: "Semantic Embedding Cache", to: "Hybrid RAG Retriever", protocol: "Cache-Miss Fallthrough", throughput: "94.2% Context Recall" },
+        { from: "Hybrid RAG Retriever", to: "Distributed Vector DB", protocol: "gRPC Vector Search", throughput: "HNSW top_k=20" },
+        { from: "Hybrid RAG Retriever", to: "Multi-Agent Task Executor", protocol: "Grounding Payload", throughput: "Context Window Bound" },
+        { from: "Multi-Agent Task Executor", to: "TensorRT-LLM Inference Engine", protocol: "HTTP/2 SSE Streaming", throughput: "Continuous Batching" }
+      ]
+    },
+    lld: [
+      {
+        name: "RAGRetrievalPipeline",
+        pattern: "Pipeline + Strategy (Hybrid Search)",
+        methods: [
+          "embedQuery(text: string): FloatVector",
+          "retrieveContext(vector: FloatVector, filter: MetadataFilter): List<Chunk>",
+          "crossEncodeRerank(query: string, candidates: List<Chunk>): List<GroundingChunk>"
+        ],
+        fields: [
+          "embeddingModel: IEmbeddingClient",
+          "vectorIndex: IQdrantCluster",
+          "reranker: CohereRerankService"
+        ]
+      },
+      {
+        name: "AgentExecutionOrchestrator",
+        pattern: "ReAct Loop + Tool Invocation Proxy",
+        methods: [
+          "executePlan(goal: AgentGoal, memory: AgentMemory): ExecutionTrace",
+          "invokeToolSafely(toolName: string, args: JsonMap): ToolResult"
+        ],
+        fields: [
+          "llmClient: IVllmClient",
+          "toolRegistry: AgentToolRegistry",
+          "safetyGuardrail: INeMoSafetyChecker"
+        ]
+      }
+    ],
+    erd: [
+      {
+        table: "document_chunks",
+        pk: "chunk_id (UUID)",
+        sharding: "collection_id (Hash Partitioned)",
+        columns: [
+          "chunk_id UUID NOT NULL",
+          "collection_id UUID NOT NULL",
+          "document_id UUID NOT NULL",
+          "content TEXT NOT NULL",
+          "embedding VECTOR(1536) NOT NULL",
+          "token_count INT",
+          "metadata JSONB",
+          "created_at TIMESTAMPTZ"
+        ],
+        indexes: [
+          "idx_chunks_hnsw (embedding vector_cosine_ops USING hnsw)",
+          "idx_chunks_doc_meta (document_id, created_at DESC)"
+        ]
+      },
+      {
+        table: "agent_execution_traces",
+        pk: "trace_id (UUID)",
+        sharding: "Time-series partition",
+        columns: [
+          "trace_id UUID NOT NULL",
+          "session_id VARCHAR(64)",
+          "user_id VARCHAR(64)",
+          "model_name VARCHAR(64)",
+          "prompt_tokens INT",
+          "completion_tokens INT",
+          "total_latency_ms FLOAT",
+          "cost_usd DECIMAL(10, 6)",
+          "timestamp TIMESTAMPTZ"
+        ],
+        indexes: [
+          "idx_traces_user_time (user_id, timestamp DESC)",
+          "idx_traces_model (model_name)"
+        ]
+      }
+    ]
+  },
+
   code_stripe: {
     id: "code_stripe",
     title: "Stripe-Grade Payment Engine",
@@ -236,13 +335,13 @@ const DEMO_SANDBOXES = {
 
 export default function ArchitectureIntelligence({ onNavigate, isDark = true }) {
   const [activeMode, setActiveMode] = useState("doc_to_arch");
-  const [selectedPreset, setSelectedPreset] = useState("prd_uber");
+  const [selectedPreset, setSelectedPreset] = useState("ai_rag");
 
   return (
     <div style={{ minHeight: "100vh", padding: "40px 24px", color: isDark ? "#fff" : "#111" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0 }}>Architecture Intelligence Studio</h1>
-        <p style={{ color: "#9ca3af", marginTop: 8 }}>Automated HLD, LLD, and ERD system architecture engineering from PRDs and source code.</p>
+        <p style={{ color: "#9ca3af", marginTop: 8 }}>Autonomous AI, Vector RAG, and Distributed Systems Intelligence.</p>
       </div>
     </div>
   );

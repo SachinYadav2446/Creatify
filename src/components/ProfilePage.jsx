@@ -2191,7 +2191,7 @@ function ProfilePageInner({
 
   return (
     <div style={{
-      background: bg,
+      background: embedded ? "transparent" : bg,
       minHeight: "100vh",
       fontFamily: "Instrument Sans, sans-serif",
       position: "relative",

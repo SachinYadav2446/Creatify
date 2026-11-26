@@ -786,7 +786,178 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                 </div>
               </div>
 
-              
+              {/* Upload Drop Zone(s) */}
+              <div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+                  {activeMode === "dual_audit" ? "Dual Source Ingestion" : "Custom Source Ingestion"}
+                </div>
+
+                {/* Drop Zone 1: PRD / Document (shown in doc_to_arch and dual_audit) */}
+                {activeMode !== "code_to_arch" && (
+                  <div
+                    style={{
+                      border: `1px dashed ${docFile ? colors.accent : colors.border}`,
+                      borderRadius: 10,
+                      padding: "12px 10px",
+                      textAlign: "center",
+                      background: docFile ? (isDark ? "rgba(225, 73, 109, 0.08)" : "rgba(225, 73, 109, 0.04)") : (isDark ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.02)"),
+                      overflow: "hidden",
+                      maxWidth: "100%",
+                      boxSizing: "border-box",
+                      marginBottom: activeMode === "dual_audit" ? 10 : 0,
+                    }}
+                  >
+                    <Upload size={16} color={docFile ? colors.accent : colors.textMuted} style={{ margin: "0 auto 4px" }} />
+                    <div
+                      title={docFile?.name}
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: colors.text,
+                        maxWidth: "100%",
+                        wordBreak: "break-all",
+                        overflowWrap: "anywhere",
+                        lineHeight: 1.3,
+                        padding: "0 2px",
+                      }}
+                    >
+                      {docFile?.name || "1. PRD Document (.pdf, .md, .txt)"}
+                    </div>
+                    <div style={{ fontSize: 9.5, color: colors.textMuted, marginTop: 2 }}>
+                      {docFile ? `${(docFile.size / 1024).toFixed(1)} KB Attached` : "Specs, RFCs, Architecture Docs"}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 6 }}>
+                      <label
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: 600,
+                          color: colors.accent,
+                          cursor: "pointer",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        {docFile ? "Replace" : "Select PRD"}
+                        <input
+                          type="file"
+                          accept=".pdf,.md,.docx,.txt,.json"
+                          style={{ display: "none" }}
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setDocFile(file);
+                              setSelectedPreset(null);
+                              fetchSynthesis(activeMode, null, file, codeFile);
+                            }
+                          }}
+                        />
+                      </label>
+                      {docFile && (
+                        <button
+                          onClick={() => {
+                            setDocFile(null);
+                            if (!codeFile) setSelectedPreset("prd_uber");
+                            fetchSynthesis(activeMode, codeFile ? null : "prd_uber", null, codeFile);
+                          }}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            fontSize: 10.5,
+                            color: colors.textMuted,
+                            cursor: "pointer",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Drop Zone 2: Codebase (shown in code_to_arch and dual_audit) */}
+                {activeMode !== "doc_to_arch" && (
+                  <div
+                    style={{
+                      border: `1px dashed ${codeFile ? colors.accent : colors.border}`,
+                      borderRadius: 10,
+                      padding: "12px 10px",
+                      textAlign: "center",
+                      background: codeFile ? (isDark ? "rgba(225, 73, 109, 0.08)" : "rgba(225, 73, 109, 0.04)") : (isDark ? "rgba(0,0,0,0.2)" : "rgba(0,0,0,0.02)"),
+                      overflow: "hidden",
+                      maxWidth: "100%",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <FileCode size={16} color={codeFile ? colors.accent : colors.textMuted} style={{ margin: "0 auto 4px" }} />
+                    <div
+                      title={codeFile?.name}
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: colors.text,
+                        maxWidth: "100%",
+                        wordBreak: "break-all",
+                        overflowWrap: "anywhere",
+                        lineHeight: 1.3,
+                        padding: "0 2px",
+                      }}
+                    >
+                      {codeFile?.name || "2. Codebase Archive (.zip, .tar)"}
+                    </div>
+                    <div style={{ fontSize: 9.5, color: colors.textMuted, marginTop: 2 }}>
+                      {codeFile ? `${(codeFile.size / (1024 * 1024) > 1 ? (codeFile.size / (1024 * 1024)).toFixed(1) + " MB" : (codeFile.size / 1024).toFixed(1) + " KB")} Attached` : "Source Code, AST, Repos"}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 6 }}>
+                      <label
+                        style={{
+                          fontSize: 10.5,
+                          fontWeight: 600,
+                          color: colors.accent,
+                          cursor: "pointer",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        {codeFile ? "Replace" : "Select Code"}
+                        <input
+                          type="file"
+                          accept=".zip,.tar.gz,.gz,.tar,.go,.py,.js,.ts,.rs"
+                          style={{ display: "none" }}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setCodeFile(file);
+                              setSelectedPreset(null);
+                              fetchSynthesis(activeMode, null, docFile, file);
+                            }
+                          }}
+                        />
+                      </label>
+                      {codeFile && (
+                        <button
+                          onClick={() => {
+                            setCodeFile(null);
+                            if (!docFile) setSelectedPreset("code_stripe");
+                            fetchSynthesis(activeMode, docFile ? null : "code_stripe", docFile, null);
+                          }}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            fontSize: 10.5,
+                            color: colors.textMuted,
+                            cursor: "pointer",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             

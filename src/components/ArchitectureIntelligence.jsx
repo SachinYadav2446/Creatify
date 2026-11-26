@@ -332,16 +332,466 @@ const DEMO_SANDBOXES = {
   }
 };
 
-
 export default function ArchitectureIntelligence({ onNavigate, isDark = true }) {
   const [activeMode, setActiveMode] = useState("doc_to_arch");
-  const [selectedPreset, setSelectedPreset] = useState("ai_rag");
+  const [selectedPreset, setSelectedPreset] = useState("prd_uber");
+  const [docFile, setDocFile] = useState(null);
+  const [codeFile, setCodeFile] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [activeTab, setActiveTab] = useState("topology");
+  const [selectedNodeId, setSelectedNodeId] = useState("dispatch_svc");
+  const [apiConnected, setApiConnected] = useState(false);
+  const [liveData, setLiveData] = useState(null);
+  const [toastMsg, setToastMsg] = useState(null);
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 2500);
+  };
+
+  // Fetch synthesis from backend API
+  const fetchSynthesis = async (mode = activeMode, preset = selectedPreset, customDoc = null, customCode = null) => {
+    setIsAnalyzing(true);
+    try {
+      const apiUrl = window.API_URL || "http://localhost:3001";
+      const activeDoc = customDoc || docFile;
+      const activeCode = customCode || codeFile;
+      const activeFile = mode === "code_to_arch" ? activeCode : (activeDoc || activeCode);
+      const docName = activeFile?.name || (preset ? DEMO_SANDBOXES[preset]?.docName : "Custom Architecture Spec");
+
+      let docText = "";
+      if (activeDoc && (activeDoc.type?.startsWith("text/") || activeDoc.name?.match(/\\.(md|txt|json|yaml|yml|py|js|ts|go)$/i))) {
+        try {
+          docText = await activeDoc.text();
+        } catch (e) {
+          console.warn("Could not read text from file:", e);
+        }
+      }
+
+      const res = await fetch(`${apiUrl}/api/arch/synthesize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode,
+          presetId: (activeDoc || activeCode) ? null : preset,
+          docName: docName,
+          docText: docText || undefined,
+          codeSnippet: activeCode?.name || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setLiveData(data);
+        setApiConnected(true);
+        if (data.hld?.nodes?.[0]?.id) {
+          setSelectedNodeId(data.hld.nodes[0].id);
+        }
+      }
+    } catch (err) {
+      console.warn("Backend synthesis fallback to local data:", err.message);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Initial load
+  React.useEffect(() => {
+    fetchSynthesis(activeMode, selectedPreset);
+  }, []);
+
+  // Compute current active architecture data
+  const currentData = useMemo(() => {
+    if (liveData && liveData.hld) {
+      if (!selectedPreset) {
+        // Custom uploaded file active: use 100% dynamic liveData!
+        return {
+          id: "custom_synthesis",
+          title: liveData.systemTitle || docFile?.name || codeFile?.name || "Custom Architecture",
+          category: activeMode === "code_to_arch" ? "Code to Architecture" : activeMode === "dual_audit" ? "Dual Cross-Audit" : "PRD to Architecture",
+          type: activeMode === "code_to_arch" ? "CODE" : activeMode === "dual_audit" ? "AUDIT" : "PRD",
+          badge: "Synthesized",
+          tag: liveData.domain || "Custom Architecture Engine",
+          color: "#e1496d",
+          docName: docFile?.name || codeFile?.name || "Custom File",
+          ...liveData,
+        };
+      }
+      return {
+        ...DEMO_SANDBOXES[selectedPreset],
+        ...liveData,
+      };
+    }
+    return DEMO_SANDBOXES[selectedPreset] || DEMO_SANDBOXES.prd_uber;
+  }, [selectedPreset, liveData, docFile, codeFile, activeMode]);
+
+  // Selected node computation
+  const selectedNode = useMemo(() => {
+    if (!currentData?.hld?.nodes) return null;
+    return currentData.hld.nodes.find(n => n.id === selectedNodeId) || currentData.hld.nodes[0];
+  }, [currentData, selectedNodeId]);
+
+  const handleModeChange = (mode) => {
+    setActiveMode(mode);
+    setDocFile(null);
+    setCodeFile(null);
+    let nextPreset = "prd_uber";
+    if (mode === "doc_to_arch") {
+      nextPreset = "prd_uber";
+      setSelectedPreset("prd_uber");
+      setActiveTab("topology");
+    } else if (mode === "code_to_arch") {
+      nextPreset = "code_stripe";
+      setSelectedPreset("code_stripe");
+      setActiveTab("topology");
+    } else {
+      nextPreset = "audit_flashsale";
+      setSelectedPreset("audit_flashsale");
+      setActiveTab("audit");
+    }
+    fetchSynthesis(mode, nextPreset, null, null);
+  };
+
+  const handleSelectPreset = (presetKey) => {
+    setSelectedPreset(presetKey);
+    setDocFile(null);
+    setCodeFile(null);
+    const sb = DEMO_SANDBOXES[presetKey];
+    if (sb) {
+      if (sb.type === "PRD") setActiveMode("doc_to_arch");
+      else if (sb.type === "CODE") setActiveMode("code_to_arch");
+      else setActiveMode("dual_audit");
+    }
+    fetchSynthesis(activeMode, presetKey, null, null);
+  };
+
+  const handleRunAnalysis = () => {
+    fetchSynthesis(activeMode, selectedPreset, docFile, codeFile);
+  };
+
+  // 1. Open in Whiteboard / Canvas
+  const handleOpenInCanvas = () => {
+    if (!currentData?.hld?.nodes) {
+      if (onNavigate) onNavigate("whiteboard");
+      return;
+    }
+    const nodes = currentData.hld.nodes;
+    const conns = currentData.hld.connections || [];
+
+    const mappedNodes = nodes.map((node, i) => {
+      const roleLower = (node.role || "").toLowerCase();
+      let type = "service";
+      let color = "#a855f7";
+      if (roleLower.includes("database") || roleLower.includes("store") || roleLower.includes("db") || roleLower.includes("gis")) {
+        type = "database";
+        color = "#22c55e";
+      } else if (roleLower.includes("queue") || roleLower.includes("stream") || roleLower.includes("broker") || roleLower.includes("bus")) {
+        type = "queue";
+        color = "#e1496d";
+      } else if (roleLower.includes("gateway") || roleLower.includes("edge") || roleLower.includes("ingress") || roleLower.includes("proxy")) {
+        type = "gateway";
+        color = "#38bdf8";
+      }
+      return {
+        id: node.id || `node_${i}`,
+        type,
+        label: node.name,
+        subLabel: `${node.role} · ${node.tech}`,
+        x: 80 + (i % 3) * 260,
+        y: 120 + Math.floor(i / 3) * 200,
+        width: 220,
+        color,
+        metrics: `${node.latency || "< 10ms"} · ${node.status || "Active"}`
+      };
+    });
+
+    const mappedWires = conns.map((conn, idx) => {
+      const fromNode = nodes.find(n => n.name === conn.from) || nodes[idx % nodes.length];
+      const toNode = nodes.find(n => n.name === conn.to) || nodes[(idx + 1) % nodes.length];
+      return {
+        id: `wire_${idx}`,
+        from: fromNode?.id || `node_${idx}`,
+        to: toNode?.id || `node_${(idx + 1) % nodes.length}`,
+        label: `${conn.protocol}`
+      };
+    });
+
+    if (onNavigate) {
+      onNavigate("whiteboard_load", {
+        title: `${currentData.title || "Architecture"} Design`,
+        archNodes: mappedNodes,
+        archWires: mappedWires
+      });
+    }
+  };
+
+  // 2. Download Architecture RFC Markdown
+  const handleDownloadMarkdown = () => {
+    let md = `# ${currentData.title || "Architecture Specification"}\n\n`;
+    md += `**Domain:** ${currentData.domain || currentData.tag || "Distributed Systems"}\n`;
+    md += `**Target Throughput:** ${currentData.metrics?.targetQps || "N/A"}\n`;
+    md += `**p99 Latency SLA:** ${currentData.metrics?.p99Latency || "N/A"}\n`;
+    md += `**High Availability:** ${currentData.metrics?.haSla || "99.99%"}\n\n`;
+    md += `## 1. High-Level Design (HLD) Topology\n\n`;
+    md += `| Node Name | Architectural Role | Technology Stack | Latency SLA | Status |\n`;
+    md += `|---|---|---|---|---|\n`;
+    currentData.hld?.nodes?.forEach(n => {
+      md += `| ${n.name} | ${n.role} | ${n.tech} | ${n.latency} | ${n.status} |\n`;
+    });
+    md += `\n### Service Interconnect Contracts\n\n`;
+    md += `| Ingress Node | Target Node | Protocol | Throughput Profile |\n`;
+    md += `|---|---|---|---|\n`;
+    currentData.hld?.connections?.forEach(c => {
+      md += `| ${c.from} | ${c.to} | ${c.protocol} | ${c.throughput} |\n`;
+    });
+    if (currentData.lld) {
+      md += `\n## 2. Low-Level Design (LLD) Class Contracts\n\n`;
+      currentData.lld.forEach(cls => {
+        md += `### Class: ` + "`" + cls.name + "`" + ` (${cls.pattern})\n`;
+        md += `**Dependencies:**\n`;
+        cls.fields?.forEach(f => { md += `- ` + "`" + f + "`" + `\n`; });
+        md += `**Public Interface:**\n`;
+        cls.methods?.forEach(m => { md += `- ` + "`+ " + m + "`" + `\n`; });
+        md += `\n`;
+      });
+    }
+    if (currentData.erd) {
+      md += `\n## 3. Database Schema & Indexing (ERD)\n\n`;
+      currentData.erd.forEach(tbl => {
+        md += `### Table: ` + "`" + tbl.table + "`" + ` (PK: ` + "`" + tbl.pk + "`" + `, Shard: ` + "`" + tbl.sharding + "`" + `)\n`;
+        md += `**Columns:**\n`;
+        tbl.columns?.forEach(c => { md += `- ` + "`" + c + "`" + `\n`; });
+        md += `**Indexes:**\n`;
+        tbl.indexes?.forEach(idx => { md += `- ` + "`" + idx + "`" + `\n`; });
+        md += `\n`;
+      });
+    }
+    if (currentData.driftIssues) {
+      md += `\n## 4. Architectural Drift & Compliance Findings\n\n`;
+      currentData.driftIssues.forEach(d => {
+        md += `### [${d.severity}] ${d.title}\n`;
+        md += `- **PRD Promise:** ${d.prdQuote}\n`;
+        md += `- **Code Reality:** ${d.codeEvidence}\n`;
+        md += `- **Remediation:** ${d.remediation}\n\n`;
+      });
+    }
+
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(currentData.title || "architecture_spec").replace(/\s+/g, "_")}_RFC.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Downloaded Architecture RFC (.md)");
+  };
+
+  // 3. Copy Mermaid Diagram
+  const handleCopyMermaid = () => {
+    let mmd = "graph TD\n";
+    const nodes = currentData.hld?.nodes || [];
+    const conns = currentData.hld?.connections || [];
+    nodes.forEach((n, idx) => {
+      const safeId = (n.id || `node_${idx}`).replace(/[^a-zA-Z0-9_]/g, "_");
+      mmd += `  ${safeId}["${n.name} (${n.role})"]\n`;
+    });
+    conns.forEach(c => {
+      const fromNode = nodes.find(n => n.name === c.from);
+      const toNode = nodes.find(n => n.name === c.to);
+      const fromId = (fromNode?.id || "client").replace(/[^a-zA-Z0-9_]/g, "_");
+      const toId = (toNode?.id || "db").replace(/[^a-zA-Z0-9_]/g, "_");
+      mmd += `  ${fromId} -->|${c.protocol}| ${toId}\n`;
+    });
+    navigator.clipboard.writeText(mmd);
+    showToast("Copied Mermaid Diagram to clipboard!");
+  };
+
+  // 4. Download JSON
+  const handleDownloadJSON = () => {
+    const jsonStr = JSON.stringify(currentData, null, 2);
+    const blob = new Blob([jsonStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${(currentData.title || "architecture").replace(/\s+/g, "_")}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("Downloaded Architecture JSON");
+  };
+
+  // 5. Copy Class Interface
+  const handleCopyClassContract = (cls) => {
+    let code = `// Contract for ${cls.name} (${cls.pattern})\n`;
+    code += `export interface I${cls.name} {\n`;
+    cls.fields?.forEach(f => {
+      const parts = f.split(":");
+      code += `  ${parts[0]?.trim() || f}: ${parts[1]?.trim() || "any"};\n`;
+    });
+    cls.methods?.forEach(m => {
+      code += `  ${m};\n`;
+    });
+    code += "}\n";
+    navigator.clipboard.writeText(code);
+    showToast(`Copied I${cls.name} interface!`);
+  };
+
+  // 6. Copy ERD SQL DDL
+  const handleCopyDDL = (t) => {
+    let ddl = `CREATE TABLE ${t.table} (\n`;
+    const colDefs = (t.columns || []).map(c => `  ${c}`).join(",\n");
+    ddl += `${colDefs},\n  PRIMARY KEY (${t.pk})\n);\n\n`;
+    (t.indexes || []).forEach((idx, i) => {
+      ddl += `CREATE INDEX idx_${t.table}_${i} ON ${t.table} (${idx});\n`;
+    });
+    navigator.clipboard.writeText(ddl);
+    showToast(`Copied SQL DDL for ${t.table}!`);
+  };
+
+  // 7. Copy Remediation Patch
+  const handleCopyRemediation = (issue) => {
+    navigator.clipboard.writeText(issue.remediation);
+    showToast("Copied remediation fix to clipboard!");
+  };
+
+  const colors = {
+    bg: isDark ? "transparent" : "transparent",
+    surface: isDark ? "rgba(20, 7, 18, 0.75)" : "#ffffff",
+    surfaceElevated: isDark ? "rgba(28, 9, 24, 0.65)" : "#faf8fa",
+    border: isDark ? "rgba(225, 73, 109, 0.18)" : "rgba(148, 41, 69, 0.10)",
+    borderSubtle: isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(0, 0, 0, 0.05)",
+    text: isDark ? "#ffffff" : "#14040d",
+    textMuted: isDark ? "rgba(255, 255, 255, 0.60)" : "rgba(20, 4, 13, 0.55)",
+    accent: "#e1496d",
+    accentGlow: "rgba(225, 73, 109, 0.12)",
+  };
+
+  const fontSans = "'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+  const fontMono = "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace";
 
   return (
-    <div style={{ minHeight: "100vh", padding: "40px 24px", color: isDark ? "#fff" : "#111" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0 }}>Architecture Intelligence Studio</h1>
-        <p style={{ color: "#9ca3af", marginTop: 8 }}>Autonomous AI, Vector RAG, and Distributed Systems Intelligence.</p>
+    <div style={{ minHeight: "100vh", background: colors.bg, color: colors.text, padding: "20px 24px 80px" }}>
+      <div style={{ maxWidth: 1440, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* ── 1. MINIMALIST EDITORIAL HEADER ── */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: colors.accent, fontFamily: fontSans }}>
+                ArchForge Studio
+              </span>
+              <span style={{ width: 4, height: 4, borderRadius: "50%", background: colors.border }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: apiConnected ? "#22c55e" : "#eab308", boxShadow: apiConnected ? "0 0 6px #22c55e" : "none" }} />
+                <span style={{ fontSize: 11, color: colors.textMuted }}>
+                  {apiConnected ? "API Connected (Port 3001)" : "Synthesizer Ready"}
+                </span>
+              </div>
+            </div>
+            <h1 style={{ fontFamily: fontSans, fontSize: "clamp(22px, 2.6vw, 32px)", fontWeight: 700, letterSpacing: "-0.03em", margin: 0, lineHeight: 1.2 }}>
+              Software Architecture Intelligence
+            </h1>
+          </div>
+
+          {/* Mode Switcher Pills */}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: 3,
+              borderRadius: 10,
+              background: isDark ? "rgba(25, 8, 22, 0.7)" : "rgba(240, 235, 240, 0.8)",
+              border: `1px solid ${colors.border}`,
+              gap: 2,
+            }}
+          >
+            {[
+              { id: "doc_to_arch", label: "PRD to Architecture", icon: FileText },
+              { id: "code_to_arch", label: "Code to Architecture", icon: Code2 },
+              { id: "dual_audit", label: "Dual Cross-Audit", icon: ShieldCheck },
+            ].map((m) => {
+              const Icon = m.icon;
+              const isSelected = activeMode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => handleModeChange(m.id)}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "6px 13px",
+                    borderRadius: 8,
+                    background: isSelected ? colors.surface : "transparent",
+                    color: isSelected ? colors.accent : colors.textMuted,
+                    border: isSelected ? `1px solid ${colors.border}` : "1px solid transparent",
+                    cursor: "pointer",
+                    fontFamily: fontSans,
+                    fontSize: 12,
+                    fontWeight: isSelected ? 700 : 500,
+                    transition: "all 0.15s ease",
+                    boxShadow: isSelected ? "0 2px 6px rgba(0,0,0,0.04)" : "none",
+                  }}
+                >
+                  <Icon size={13} color={isSelected ? colors.accent : colors.textMuted} />
+                  <span>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        
+        <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
+          <div style={{ width: 280, flexShrink: 0, display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* Presets List */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 10.5, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+                  Reference Sandboxes
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  {Object.values(DEMO_SANDBOXES).map((sb) => {
+                    const isSelected = selectedPreset === sb.id;
+                    return (
+                      <button
+                        key={sb.id}
+                        onClick={() => handleSelectPreset(sb.id)}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "8px 10px",
+                          borderRadius: 8,
+                          background: isSelected ? (isDark ? "rgba(225, 73, 109, 0.14)" : "rgba(225, 73, 109, 0.08)") : "transparent",
+                          border: isSelected ? `1px solid ${colors.accent}40` : "1px solid transparent",
+                          color: isSelected ? colors.text : colors.textMuted,
+                          cursor: "pointer",
+                          textAlign: "left",
+                          transition: "all 0.12s ease",
+                          fontFamily: fontSans,
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: 12.5, fontWeight: isSelected ? 700 : 500 }}>
+                            {sb.title}
+                          </div>
+                          <div style={{ fontSize: 10.5, color: colors.textMuted, marginTop: 1 }}>
+                            {sb.category}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 9.5, fontWeight: 600, padding: "1px 5px", borderRadius: 4, background: `${sb.color}15`, color: sb.color }}>
+                          {sb.badge}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            
+          </div>
+        </div>
       </div>
     </div>
   );

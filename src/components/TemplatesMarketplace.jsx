@@ -517,7 +517,7 @@ export default function TemplatesMarketplace({ onBack, onNavigate, user, isEmbed
   return (
     <div style={{
       minHeight: "100vh",
-      background: theme.bg,
+      background: isEmbedded ? "transparent" : theme.bg,
       color: theme.textPrimary,
       fontFamily: "'Instrument Sans', sans-serif",
       display: "flex",

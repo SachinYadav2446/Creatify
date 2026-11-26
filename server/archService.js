@@ -583,6 +583,7 @@ async function synthesizeArchitecture({
   docName = '',
   codeSnippet = '',
   codeTree = null,
+  manifest = null,
   presetId = null,
   apiKey = null,
   provider = null,
@@ -615,7 +616,13 @@ async function synthesizeArchitecture({
   }
 
   // Fallback to high-fidelity deterministic domain synthesis
-  const result = synthesizeDeterministic({ mode, docText, docName, codeSnippet, presetId });
+  const result = synthesizeDeterministic({ mode, docText, docName, codeSnippet, presetId, manifest });
+  if (manifest) {
+    result.manifest = manifest;
+    if (manifest.detectedStack && manifest.detectedStack.length) {
+      result.tag = manifest.detectedStack.slice(0, 3).join(' · ');
+    }
+  }
   result.aiGenerated = false;
   result.provider = 'Deterministic Architecture Engine';
   return result;

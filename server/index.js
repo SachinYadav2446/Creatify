@@ -15,7 +15,8 @@ app.use(cors({
   origin: [process.env.FRONTEND_URL || 'http://localhost:5173', 'http://localhost:5174'],
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 function signToken(user) {
@@ -501,24 +502,56 @@ app.post('/api/contact', async (req, res) => {
 
 // ─── ArchForge Architecture Intelligence Routes ─────────────────────────────
 const { synthesizeArchitecture, verifyKey } = require('./archService');
+const { parseCodebaseZip } = require('./zipParser');
+
+// Parse ZIP Codebase archive endpoint
+app.post('/api/arch/parse-zip', async (req, res) => {
+  try {
+    const { zipBase64, archiveName } = req.body || {};
+    if (!zipBase64) {
+      return res.status(400).json({ error: 'zipBase64 string is required' });
+    }
+    const manifest = parseCodebaseZip(zipBase64, archiveName || 'repository.zip');
+    res.json({ success: true, manifest });
+  } catch (err) {
+    console.error('ZIP parsing error:', err.message);
+    res.status(500).json({ error: 'Failed to parse ZIP archive: ' + err.message });
+  }
+});
 
 app.post('/api/arch/synthesize', async (req, res) => {
   try {
-    const { mode, docText, docName, codeSnippet, codeTree, presetId, apiKey, provider, model, customBaseUrl } = req.body || {};
+    const { mode, docText, docName, codeSnippet, codeTree, zipBase64, archiveName, presetId, apiKey, provider, model, customBaseUrl } = req.body || {};
     const headerKey = req.headers['x-api-key'] || req.headers['x-gemini-key'] || req.headers['x-openai-key'];
     const activeKey = apiKey || headerKey;
+
+    let zipManifest = null;
+    if (zipBase64) {
+      try {
+        zipManifest = parseCodebaseZip(zipBase64, archiveName || codeSnippet || 'codebase.zip');
+      } catch (e) {
+        console.warn('Could not extract zip in synthesize handler:', e.message);
+      }
+    }
+
     const result = await synthesizeArchitecture({
       mode,
       docText,
-      docName,
-      codeSnippet,
-      codeTree,
+      docName: archiveName || docName,
+      codeSnippet: zipManifest ? zipManifest.representativeCodeText : codeSnippet,
+      codeTree: zipManifest ? zipManifest.fileTree : codeTree,
+      manifest: zipManifest,
       presetId,
       apiKey: activeKey,
       provider,
       model,
       customBaseUrl
     });
+
+    if (zipManifest) {
+      result.manifest = zipManifest;
+    }
+
     res.json(result);
   } catch (err) {
     console.error('ArchForge synthesis error:', err.message);

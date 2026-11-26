@@ -31,10 +31,8 @@ export default function ShowroomHero({ onNavigate, user, isDark, THEME }) {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        // Smooth rich cosmic mesh background
-        background: isDark
-          ? "radial-gradient(circle at 50% 30%, #3b0a1d 0%, #1a0814 45%, #080205 100%)"
-          : "radial-gradient(circle at 50% 30%, #fce7f3 0%, #f9d2e2 45%, #f1bbd2 100%)",
+        // Seamless unified background - inherits from root canvas
+        background: "transparent",
         overflow: "hidden",
         boxSizing: "border-box",
         padding: "100px 32px 180px",

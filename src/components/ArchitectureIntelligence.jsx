@@ -4,7 +4,7 @@ import {
   ArrowRight, Check, Copy, Download, Upload, RefreshCw, Layers,
   ExternalLink, CheckCircle2, AlertTriangle, Play, Zap, FileCode,
   Network, GitBranch, Terminal, HelpCircle, Eye, FileArchive, ShieldCheck,
-  ChevronRight, ArrowUpRight, Sparkles, Activity, Info, X
+  ChevronRight, ArrowUpRight, Sparkles, Activity, Settings, Key, EyeOff, AlertCircle, Cpu as ChipIcon, Info, X
 } from "lucide-react";
 
 // Preloaded Reference Sandboxes
@@ -344,6 +344,52 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
   const [liveData, setLiveData] = useState(null);
   const [toastMsg, setToastMsg] = useState(null);
 
+  // AI Integration State
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [aiProvider, setAiProvider] = useState(() => localStorage.getItem("arch_ai_provider") || "gemini");
+  const [aiKey, setAiKey] = useState(() => localStorage.getItem("arch_ai_key") || "");
+  const [aiModel, setAiModel] = useState(() => localStorage.getItem("arch_ai_model") || "gemini-1.5-flash");
+  const [aiBaseUrl, setAiBaseUrl] = useState(() => localStorage.getItem("arch_ai_base_url") || "");
+  const [showKeyText, setShowKeyText] = useState(false);
+  const [keyVerifyStatus, setKeyVerifyStatus] = useState(null);
+
+  const handleVerifyKey = async () => {
+    if (!aiKey && !aiBaseUrl) {
+      setKeyVerifyStatus({ checking: false, valid: false, message: "Please enter an API key or base URL first." });
+      return;
+    }
+    setKeyVerifyStatus({ checking: true });
+    try {
+      const apiUrl = window.API_URL || "http://localhost:3001";
+      const res = await fetch(`${apiUrl}/api/arch/verify-key`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: aiProvider,
+          apiKey: aiKey.trim(),
+          customBaseUrl: aiBaseUrl.trim() || undefined
+        })
+      });
+      const data = await res.json();
+      setKeyVerifyStatus({
+        checking: false,
+        valid: data.valid,
+        message: data.valid ? (data.message || "Key verified & operational!") : (data.error || "Verification failed.")
+      });
+    } catch (e) {
+      setKeyVerifyStatus({ checking: false, valid: false, message: e.message });
+    }
+  };
+
+  const handleSaveAiSettings = () => {
+    localStorage.setItem("arch_ai_provider", aiProvider);
+    localStorage.setItem("arch_ai_key", aiKey.trim());
+    localStorage.setItem("arch_ai_model", aiModel);
+    localStorage.setItem("arch_ai_base_url", aiBaseUrl.trim());
+    setShowAiModal(false);
+    showToast(aiKey ? `Configured ${aiProvider.toUpperCase()} AI credentials!` : "Using deterministic heuristic engine.");
+  };
+
   const showToast = (msg) => {
     setToastMsg(msg);
     setTimeout(() => setToastMsg(null), 2500);
@@ -370,13 +416,20 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
 
       const res = await fetch(`${apiUrl}/api/arch/synthesize`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(aiKey ? { "x-api-key": aiKey.trim() } : {})
+        },
         body: JSON.stringify({
           mode,
           presetId: (activeDoc || activeCode) ? null : preset,
           docName: docName,
           docText: docText || undefined,
           codeSnippet: activeCode?.name || undefined,
+          apiKey: aiKey ? aiKey.trim() : undefined,
+          provider: aiProvider,
+          model: aiModel,
+          customBaseUrl: aiBaseUrl.trim() || undefined,
         }),
       });
 
@@ -724,6 +777,30 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                   {apiConnected ? "API Connected (Port 3001)" : "Synthesizer Ready"}
                 </span>
               </div>
+              <span style={{ width: 4, height: 4, borderRadius: "50%", background: colors.border }} />
+              {/* AI Engine Model Settings Button */}
+              <button
+                onClick={() => setShowAiModal(true)}
+                title="Configure Live AI Provider (Gemini / OpenAI / Custom LLM)"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "2px 8px",
+                  borderRadius: 6,
+                  background: aiKey ? "rgba(225, 73, 109, 0.12)" : "rgba(100, 116, 139, 0.1)",
+                  border: `1px solid ${aiKey ? "rgba(225, 73, 109, 0.3)" : colors.borderSubtle}`,
+                  cursor: "pointer",
+                  fontSize: 10.5,
+                  fontWeight: 600,
+                  color: aiKey ? colors.accent : colors.textMuted,
+                  transition: "all 0.15s ease",
+                }}
+              >
+                <Sparkles size={11} color={aiKey ? colors.accent : colors.textMuted} />
+                <span>{aiKey ? (aiProvider === "openai" ? "OpenAI " + aiModel : "Gemini " + aiModel) : "AI Engine (Fallback)"}</span>
+                <Settings size={10} style={{ marginLeft: 2, opacity: 0.7 }} />
+              </button>
             </div>
             <h1 style={{ fontFamily: fontSans, fontSize: "clamp(22px, 2.6vw, 32px)", fontWeight: 700, letterSpacing: "-0.03em", margin: 0, lineHeight: 1.2 }}>
               Software Architecture Intelligence
@@ -1558,6 +1635,276 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
           </div>
         </div>
       </div>
+
+      {/* ── AI ENGINE CONFIGURATION MODAL ── */}
+      {showAiModal && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.65)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: 20,
+          }}
+          onClick={() => setShowAiModal(false)}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 480,
+              background: isDark ? "#1a0818" : "#ffffff",
+              borderRadius: 12,
+              border: `1px solid ${colors.border}`,
+              boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
+              padding: 24,
+              display: "flex",
+              flexDirection: "column",
+              gap: 16,
+              color: colors.text,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: `1px solid ${colors.borderSubtle}`, paddingBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 6, background: "rgba(225, 73, 109, 0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Sparkles size={16} color={colors.accent} />
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>AI Model Configuration</h3>
+                  <div style={{ fontSize: 11, color: colors.textMuted }}>Synthesize architectures with real LLMs</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAiModal(false)}
+                style={{ background: "transparent", border: "none", color: colors.textMuted, cursor: "pointer", padding: 4 }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Provider Selector */}
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", display: "block", marginBottom: 6 }}>
+                AI Provider
+              </label>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {[
+                  { id: "gemini", name: "Google Gemini", sub: "1.5 Flash / Pro" },
+                  { id: "openai", name: "OpenAI", sub: "GPT-4o / Mini" },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      setAiProvider(p.id);
+                      setAiModel(p.id === "gemini" ? "gemini-1.5-flash" : "gpt-4o-mini");
+                      setKeyVerifyStatus(null);
+                    }}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 8,
+                      background: aiProvider === p.id ? "rgba(225, 73, 109, 0.12)" : colors.surfaceElevated,
+                      border: `1px solid ${aiProvider === p.id ? colors.accent : colors.borderSubtle}`,
+                      cursor: "pointer",
+                      textAlign: "left",
+                    }}
+                  >
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: aiProvider === p.id ? colors.accent : colors.text }}>
+                      {p.name}
+                    </div>
+                    <div style={{ fontSize: 10, color: colors.textMuted }}>{p.sub}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* API Key Input */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase" }}>
+                  {aiProvider === "gemini" ? "Gemini API Key" : "OpenAI API Key"}
+                </label>
+                <a
+                  href={aiProvider === "gemini" ? "https://aistudio.google.com/app/apikey" : "https://platform.openai.com/api-keys"}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: 10.5, color: colors.accent, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 3 }}
+                >
+                  <span>Get API Key</span>
+                  <ExternalLink size={9} />
+                </a>
+              </div>
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showKeyText ? "text" : "password"}
+                  value={aiKey}
+                  onChange={(e) => {
+                    setAiKey(e.target.value);
+                    setKeyVerifyStatus(null);
+                  }}
+                  placeholder={aiProvider === "gemini" ? "AIzaSy..." : "sk-..."}
+                  style={{
+                    width: "100%",
+                    padding: "9px 36px 9px 12px",
+                    borderRadius: 7,
+                    background: colors.surfaceElevated,
+                    border: `1px solid ${colors.borderSubtle}`,
+                    color: colors.text,
+                    fontSize: 12,
+                    fontFamily: fontMono,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKeyText(!showKeyText)}
+                  style={{
+                    position: "absolute",
+                    right: 8,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "transparent",
+                    border: "none",
+                    color: colors.textMuted,
+                    cursor: "pointer",
+                    padding: 4,
+                  }}
+                >
+                  {showKeyText ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Model Selector Dropdown */}
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", display: "block", marginBottom: 6 }}>
+                Model Variant
+              </label>
+              <select
+                value={aiModel}
+                onChange={(e) => setAiModel(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  borderRadius: 7,
+                  background: colors.surfaceElevated,
+                  border: `1px solid ${colors.borderSubtle}`,
+                  color: colors.text,
+                  fontSize: 12,
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+              >
+                {aiProvider === "gemini" ? (
+                  <>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash (Fast, Recommended)</option>
+                    <option value="gemini-1.5-pro">Gemini 1.5 Pro (Deep Reasoning)</option>
+                    <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Experimental)</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="gpt-4o-mini">GPT-4o Mini (Fast &amp; Cost Effective)</option>
+                    <option value="gpt-4o">GPT-4o (High Performance)</option>
+                  </>
+                )}
+              </select>
+            </div>
+
+            {/* Custom Base URL (Optional) */}
+            {aiProvider === "openai" && (
+              <div>
+                <label style={{ fontSize: 11, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", display: "block", marginBottom: 6 }}>
+                  Custom Base URL (Optional / Ollama / vLLM)
+                </label>
+                <input
+                  type="text"
+                  value={aiBaseUrl}
+                  onChange={(e) => setAiBaseUrl(e.target.value)}
+                  placeholder="https://api.openai.com/v1 or http://localhost:11434/v1"
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    borderRadius: 7,
+                    background: colors.surfaceElevated,
+                    border: `1px solid ${colors.borderSubtle}`,
+                    color: colors.text,
+                    fontSize: 12,
+                    fontFamily: fontMono,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Key Verification Status Feedback */}
+            {keyVerifyStatus && (
+              <div
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 6,
+                  background: keyVerifyStatus.valid ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)",
+                  border: `1px solid ${keyVerifyStatus.valid ? "rgba(16, 185, 129, 0.3)" : "rgba(239, 68, 68, 0.3)"}`,
+                  color: keyVerifyStatus.valid ? "#10b981" : "#ef4444",
+                  fontSize: 11.5,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                {keyVerifyStatus.valid ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
+                <span>{keyVerifyStatus.message}</span>
+              </div>
+            )}
+
+            <div style={{ fontSize: 10.5, color: colors.textMuted, lineHeight: 1.4 }}>
+              🔒 Keys are stored only in your local browser storage. When no key is entered, ArchForge uses the built-in deterministic architecture synthesis engine.
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 10, borderTop: `1px solid ${colors.borderSubtle}`, paddingTop: 14 }}>
+              <button
+                type="button"
+                onClick={handleVerifyKey}
+                disabled={keyVerifyStatus?.checking}
+                style={{
+                  padding: "7px 12px",
+                  borderRadius: 6,
+                  background: colors.surfaceElevated,
+                  border: `1px solid ${colors.borderSubtle}`,
+                  color: colors.text,
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                {keyVerifyStatus?.checking ? "Verifying..." : "Test Connection"}
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveAiSettings}
+                style={{
+                  padding: "7px 16px",
+                  borderRadius: 6,
+                  background: colors.accent,
+                  border: "none",
+                  color: "#ffffff",
+                  fontSize: 11.5,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                Save &amp; Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

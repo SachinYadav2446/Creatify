@@ -957,10 +957,172 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
               </div>
             </div>
 
-            
+            {/* Run Button */}
+            <button
+              onClick={handleRunAnalysis}
+              disabled={isAnalyzing}
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                borderRadius: 8,
+                background: "linear-gradient(135deg, #e1496d, #be123c)",
+                border: "none",
+                color: "#ffffff",
+                fontFamily: fontSans,
+                fontSize: 12.5,
+                fontWeight: 600,
+                cursor: isAnalyzing ? "wait" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                boxShadow: "0 2px 10px rgba(225, 73, 109, 0.25)",
+              }}
+            >
+              {isAnalyzing ? (
+                <>
+                  <RefreshCw size={13} className="spin-icon" />
+                  <span>Synthesizing...</span>
+                </>
+              ) : (
+                <>
+                  <Play size={13} />
+                  <span>Re-synthesize Graph</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            
+            {/* Top Workspace Bar */}
+            <div
+              style={{
+                padding: "12px 20px",
+                borderBottom: `1px solid ${colors.border}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                background: isDark ? "rgba(16, 5, 14, 0.3)" : "rgba(250, 248, 250, 0.4)",
+                flexWrap: "wrap",
+                gap: 12,
+              }}
+            >
+              {/* Clean Minimalist Text Tabs */}
+              <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                {[
+                  { id: "topology", label: "Topology (HLD)", icon: Network },
+                  { id: "components", label: "Components (LLD)", icon: Layers },
+                  { id: "schema", label: "Data Schema (ERD)", icon: Database },
+                  ...(currentData.driftIssues ? [{ id: "audit", label: "Audit Scorecard", icon: ShieldAlert }] : [])
+                ].map((t) => {
+                  const Icon = t.icon;
+                  const isSelected = activeTab === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      onClick={() => setActiveTab(t.id)}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "6px 0",
+                        background: "transparent",
+                        border: "none",
+                        borderBottom: isSelected ? `2px solid ${colors.accent}` : "2px solid transparent",
+                        color: isSelected ? colors.text : colors.textMuted,
+                        cursor: "pointer",
+                        fontSize: 12.5,
+                        fontWeight: isSelected ? 700 : 500,
+                        fontFamily: fontSans,
+                        transition: "all 0.15s ease",
+                      }}
+                    >
+                      <Icon size={14} color={isSelected ? colors.accent : colors.textMuted} />
+                      <span>{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Action Toolbar */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {/* Export Markdown RFC */}
+                <button
+                  onClick={handleDownloadMarkdown}
+                  title="Download Architecture RFC Specification"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "5px 9px",
+                    borderRadius: 6,
+                    background: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
+                    border: `1px solid ${colors.borderSubtle}`,
+                    color: colors.text,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontFamily: fontSans,
+                  }}
+                >
+                  <Download size={11} />
+                  <span>Export RFC (.md)</span>
+                </button>
+
+                {/* Copy Mermaid */}
+                <button
+                  onClick={handleCopyMermaid}
+                  title="Copy Mermaid DAG Diagram code"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "5px 9px",
+                    borderRadius: 6,
+                    background: isDark ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.04)",
+                    border: `1px solid ${colors.borderSubtle}`,
+                    color: colors.text,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontFamily: fontSans,
+                  }}
+                >
+                  <Copy size={11} />
+                  <span>Mermaid</span>
+                </button>
+
+                {/* Open in Canvas */}
+                <button
+                  onClick={handleOpenInCanvas}
+                  title="Open live interactive DAG inside Creatify Whiteboard Canvas"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 5,
+                    padding: "5px 10px",
+                    borderRadius: 6,
+                    background: isDark ? "rgba(225, 73, 109, 0.12)" : "rgba(225, 73, 109, 0.06)",
+                    border: `1px solid ${colors.accent}35`,
+                    color: colors.accent,
+                    fontSize: 11.5,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontFamily: fontSans,
+                  }}
+                >
+                  <ExternalLink size={12} />
+                  <span>Open in Canvas</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Content Body */}
+            <div style={{ padding: "20px 22px 28px", flex: 1 }}>
+              
+              
           </div>
         </div>
       </div>

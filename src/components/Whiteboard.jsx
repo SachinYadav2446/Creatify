@@ -173,23 +173,35 @@ export default function Whiteboard({ onBack, user, initialProject }) {
   const [stickyNotes, setStickyNotes] = useState([]);
   
   // Developer Architecture Nodes & DAG Connections
-  const [archNodes, setArchNodes] = useState([
-    { id: "node_gw", type: "gateway", label: "API Gateway", subLabel: ":8080 TLS Proxy", x: 80, y: 150, width: 180, color: "#38bdf8", metrics: "12.4k req/s" },
-    { id: "node_kafka", type: "queue", label: "Kafka Event Broker", subLabel: "topics: telemetry, events", x: 320, y: 150, width: 190, color: "#e1496d", metrics: "0.4ms latency" },
-    { id: "node_worker", type: "service", label: "WASM Worker Cluster", subLabel: "Rust / Rayon (8 Nodes)", x: 570, y: 150, width: 190, color: "#a855f7", metrics: "CPU 24%" },
-    { id: "node_db", type: "database", label: "PostgreSQL Primary", subLabel: "Sharded + pgvector", x: 820, y: 150, width: 200, color: "#22c55e", schema: ["id: uuid (PK)", "data: jsonb", "embedding: vector(1536)"] },
-  ]);
+  const [archNodes, setArchNodes] = useState(() => {
+    if (initialProject?.archNodes?.length) return initialProject.archNodes;
+    if (initialProject?.data?.archNodes?.length) return initialProject.data.archNodes;
+    return [
+      { id: "node_gw", type: "gateway", label: "API Gateway", subLabel: ":8080 TLS Proxy", x: 80, y: 150, width: 180, color: "#38bdf8", metrics: "12.4k req/s" },
+      { id: "node_kafka", type: "queue", label: "Kafka Event Broker", subLabel: "topics: telemetry, events", x: 320, y: 150, width: 190, color: "#e1496d", metrics: "0.4ms latency" },
+      { id: "node_worker", type: "service", label: "WASM Worker Cluster", subLabel: "Rust / Rayon (8 Nodes)", x: 570, y: 150, width: 190, color: "#a855f7", metrics: "CPU 24%" },
+      { id: "node_db", type: "database", label: "PostgreSQL Primary", subLabel: "Sharded + pgvector", x: 820, y: 150, width: 200, color: "#22c55e", schema: ["id: uuid (PK)", "data: jsonb", "embedding: vector(1536)"] },
+    ];
+  });
 
-  const [archWires, setArchWires] = useState([
-    { id: "w1", from: "node_gw", to: "node_kafka", label: "mTLS" },
-    { id: "w2", from: "node_kafka", to: "node_worker", label: "stream" },
-    { id: "w3", from: "node_worker", to: "node_db", label: "pgpool" },
-  ]);
+  const [archWires, setArchWires] = useState(() => {
+    if (initialProject?.archWires?.length) return initialProject.archWires;
+    if (initialProject?.data?.archWires?.length) return initialProject.data.archWires;
+    return [
+      { id: "w1", from: "node_gw", to: "node_kafka", label: "mTLS" },
+      { id: "w2", from: "node_kafka", to: "node_worker", label: "stream" },
+      { id: "w3", from: "node_worker", to: "node_db", label: "pgpool" },
+    ];
+  });
 
-  const [mermaidCode, setMermaidCode] = useState(`graph TD
+  const [mermaidCode, setMermaidCode] = useState(() => {
+    if (initialProject?.mermaidCode) return initialProject.mermaidCode;
+    if (initialProject?.data?.mermaidCode) return initialProject.data.mermaidCode;
+    return `graph TD
   Gateway[API Gateway :8080] --> Kafka[Kafka Event Bus]
   Kafka --> Workers[Rust Worker Cluster]
-  Workers --> Database[(PostgreSQL + pgvector)]`);
+  Workers --> Database[(PostgreSQL + pgvector)]`;
+  });
 
   // Background
   const [bgColor, setBgColor] = useState("#ffffff");

@@ -367,6 +367,101 @@ function synthesizeArchitecture({ mode, docText, docName, codeSnippet, presetId 
     };
   }
 
+  // ─── DOMAIN 3: PAYMENT & ACID LEDGER ────────────────────────────────────────
+  if (isPayment) {
+    return {
+      success: true,
+      domain: 'Double-Entry Financial Ledger',
+      title: systemTitle || 'Payment Core Engine',
+      systemTitle: systemTitle || 'Payment Core Engine',
+      mode,
+      metrics: {
+        targetQps: '8,500 tx/sec',
+        p99Latency: '< 45ms',
+        haSla: '99.999% Strict ACID',
+        servicesCount: 6,
+      },
+      hld: {
+        nodes: [
+          { id: 'api_client', name: 'Checkout & API Clients', role: 'Consumer', tech: 'HTTPS / TLS 1.3', latency: '< 50ms', status: 'Active' },
+          { id: 'idemp_layer', name: 'Idempotency Guard', role: 'Middleware', tech: 'Redis Distributed Lock', latency: '1.2ms', status: 'Active' },
+          { id: 'payment_svc', name: 'Payments Core Engine', role: 'Core Domain', tech: 'Go 1.22 + Chi Router', latency: '14ms', status: 'Active' },
+          { id: 'ledger_db', name: 'Double-Entry Ledger DB', role: 'ACID Store', tech: 'PostgreSQL 16 (Serializable)', latency: '12ms', status: 'Active' },
+          { id: 'banking_gw', name: 'Banking / Card Network', role: 'External Provider', tech: 'mTLS ISO-8583 / REST', latency: '280ms', status: 'Active' },
+          { id: 'webhook_bus', name: 'Webhook Dispatch Queue', role: 'Event Queue', tech: "Kafka 'charge.events'", latency: '2ms', status: 'Active' }
+        ],
+        connections: [
+          { from: 'Checkout & API Clients', to: 'Idempotency Guard', protocol: 'HTTP POST /v1/charges', throughput: 'Idempotent' },
+          { from: 'Idempotency Guard', to: 'Payments Core Engine', protocol: 'Context-bound Handler', throughput: 'Lock Acquired' },
+          { from: 'Payments Core Engine', to: 'Double-Entry Ledger DB', protocol: 'pgxpool / ACID Tx', throughput: 'Two-Phase Commit' },
+          { from: 'Payments Core Engine', to: 'Banking / Card Network', protocol: 'Outbound mTLS (3s Timeout)', throughput: 'Direct Settle' },
+          { from: 'Payments Core Engine', to: 'Webhook Dispatch Queue', protocol: 'Transactional Outbox', throughput: 'Guaranteed Delivery' }
+        ]
+      },
+      lld: [
+        {
+          name: 'PaymentProcessor',
+          pattern: 'Transactional Outbox',
+          methods: [
+            'ProcessCharge(req: ChargeCommand): ChargeResult',
+            'HandleAcquirerWebhook(payload: byte[]): void'
+          ],
+          fields: [
+            'idempotencyService: IIdempotencyStore',
+            'ledger: ILedgerRepository',
+            'circuitBreaker: gobreaker.TwoStepCircuitBreaker'
+          ]
+        },
+        {
+          name: 'IdempotencyGuard',
+          pattern: 'Distributed Key Lock',
+          methods: [
+            'LockOrGetCached(key: string, timeout: Duration): LockStatus',
+            'CommitResult(key: string, result: byte[]): void'
+          ],
+          fields: [
+            'redisClient: *redis.ClusterClient',
+            'ttl: 24 * time.Hour'
+          ]
+        }
+      ],
+      erd: [
+        {
+          table: 'charges',
+          pk: 'charge_id (UUID)',
+          sharding: 'account_id (Tenant Key)',
+          columns: [
+            'account_id UUID NOT NULL',
+            'amount_cents BIGINT NOT NULL',
+            'currency VARCHAR(3)',
+            'idempotency_key VARCHAR(64) UNIQUE',
+            'status VARCHAR(20)'
+          ],
+          indexes: [
+            'idx_charges_idemp (idempotency_key)',
+            'idx_charges_account_status (account_id, status)'
+          ]
+        },
+        {
+          table: 'ledger_entries',
+          pk: 'entry_id (BIGSERIAL)',
+          sharding: 'account_id (Tenant Key)',
+          columns: [
+            'charge_id UUID REFERENCES charges',
+            'debit_account VARCHAR(64)',
+            'credit_account VARCHAR(64)',
+            'amount_cents BIGINT',
+            'created_at TIMESTAMPTZ'
+          ],
+          indexes: [
+            'idx_ledger_charge (charge_id)',
+            'idx_ledger_created (created_at DESC)'
+          ]
+        }
+      ]
+    };
+  }
+
   
   return {
     success: true,

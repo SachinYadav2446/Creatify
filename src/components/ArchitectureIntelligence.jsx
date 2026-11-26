@@ -669,8 +669,47 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
   const fontMono = "'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace";
 
   return (
-    <div style={{ minHeight: "100vh", background: colors.bg, color: colors.text, padding: "20px 24px 80px" }}>
-      <div style={{ maxWidth: 1440, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100%",
+        boxSizing: "border-box",
+        color: colors.text,
+        fontFamily: fontSans,
+        padding: "24px 24px 80px",
+        overflowX: "hidden",
+        position: "relative",
+      }}
+    >
+      {/* Toast Notification Pill */}
+      {toastMsg && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 28,
+            right: 28,
+            padding: "9px 18px",
+            borderRadius: 99,
+            background: isDark ? "rgba(28, 9, 24, 0.95)" : "rgba(20, 4, 13, 0.92)",
+            color: "#ffffff",
+            fontSize: 12,
+            fontWeight: 600,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
+            border: "1px solid rgba(225, 73, 109, 0.3)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            animation: "fadeIn 0.2s ease-in-out",
+          }}
+        >
+          <CheckCircle2 size={14} color="#10b981" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
+      <div style={{ maxWidth: 1240, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+        
         {/* ── 1. MINIMALIST EDITORIAL HEADER ── */}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
           <div>
@@ -739,10 +778,34 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
           </div>
         </div>
 
-        
-        <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
-          <div style={{ width: 280, flexShrink: 0, display: "flex", flexDirection: "column", gap: 14 }}>
-            {/* Presets List */}
+        {/* ── 2. UNIFIED WORKBENCH ── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "280px 1fr",
+            gap: 0,
+            background: colors.surface,
+            border: `1px solid ${colors.border}`,
+            borderRadius: 18,
+            overflow: "hidden",
+            boxShadow: "0 12px 36px rgba(0,0,0,0.04)",
+            minHeight: 620,
+          }}
+        >
+          {/* ── LEFT EXPLORER RAIL (280px) ── */}
+          <div
+            style={{
+              padding: "20px 18px",
+              borderRight: `1px solid ${colors.border}`,
+              background: isDark ? "rgba(16, 5, 14, 0.4)" : "rgba(252, 250, 252, 0.6)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              gap: 20,
+            }}
+          >
+            <div>
+              {/* Presets List */}
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontSize: 10.5, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
                   Reference Sandboxes
@@ -993,9 +1056,9 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
             </button>
           </div>
 
-          
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          {/* ── RIGHT INTERACTIVE WORKSPACE ── */}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            
             {/* Top Workspace Bar */}
             <div
               style={{
@@ -1425,11 +1488,73 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                 </div>
               )}
 
-              
-            </div>
-          </div>
-        </div>
+              {/* ── TAB 4: AUDIT SCORECARD (MODE C) ── */}
+              {activeTab === "audit" && currentData.driftIssues && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 8, background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.2)" }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.text }}>
+                      Alignment Score: {currentData.complianceScore || 78}% · {currentData.driftIssues.length} Architectural Discrepancies Found
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#ef4444" }}>
+                      ACTION REQUIRED
+                    </span>
+                  </div>
 
+                  {currentData.driftIssues.map((issue) => (
+                    <div
+                      key={issue.id}
+                      style={{
+                        borderRadius: 8,
+                        background: colors.surfaceElevated,
+                        border: `1px solid ${issue.severity === "CRITICAL" ? "rgba(239, 68, 68, 0.3)" : colors.borderSubtle}`,
+                        padding: 12,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: colors.text }}>
+                          {issue.title}
+                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: issue.severity === "CRITICAL" ? "rgba(239, 68, 68, 0.15)" : "rgba(245, 158, 11, 0.15)", color: issue.severity === "CRITICAL" ? "#ef4444" : "#f59e0b" }}>
+                            {issue.severity}
+                          </span>
+                          <button
+                            onClick={() => handleCopyRemediation(issue)}
+                            title="Copy remediation patch code"
+                            style={{
+                              background: "transparent",
+                              border: `1px solid ${colors.borderSubtle}`,
+                              borderRadius: 4,
+                              padding: "2px 6px",
+                              cursor: "pointer",
+                              color: "#10b981",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 3,
+                              fontSize: 10,
+                              fontWeight: 600,
+                            }}
+                          >
+                            <Copy size={10} />
+                            <span>Copy Fix</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 11, color: colors.textMuted, lineHeight: 1.4, margin: "4px 0" }}>
+                        <strong>Promise:</strong> {issue.prdQuote}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#f59e0b", fontFamily: fontMono, margin: "2px 0" }}>
+                        <strong>Reality:</strong> {issue.codeEvidence}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#10b981", marginTop: 4 }}>
+                        <strong>Fix:</strong> {issue.remediation}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
           </div>
         </div>
       </div>

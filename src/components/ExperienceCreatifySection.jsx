@@ -130,7 +130,7 @@ export default function ExperienceCreatifySection({ onNavigate, user, isDark, TH
           padding: "30px 24px 60px",
           background: isDark
             ? "linear-gradient(180deg, #280a1c 0%, #220818 35%, #1d0614 70%, #170511 100%)"
-            : "linear-gradient(180deg, #60122e 0%, #7d193d 30%, #a2294e 65%, #fce7f3 100%)",
+            : "linear-gradient(180deg, #60122e 0%, #7d193d 30%, #a2294e 65%, #fdf8fa 100%)",
           boxSizing: "border-box",
         }}
       >

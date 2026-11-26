@@ -1189,7 +1189,105 @@ export default function ArchitectureIntelligence({ onNavigate, isDark = true }) 
                     </div>
                   </div>
 
-                  
+                  {/* ── INTERACTIVE NODE INSPECTOR PANEL ── */}
+                  {selectedNode && (
+                    <div
+                      style={{
+                        borderRadius: 10,
+                        border: `1px solid ${colors.accent}40`,
+                        background: isDark ? "rgba(25, 8, 22, 0.6)" : "rgba(254, 245, 248, 0.7)",
+                        padding: "14px 16px",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 6px #22c55e" }} />
+                          <span style={{ fontSize: 13, fontWeight: 700, color: colors.text }}>
+                            {selectedNode.name}
+                          </span>
+                          <span style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 6px", borderRadius: 4, background: "rgba(225, 73, 109, 0.15)", color: colors.accent }}>
+                            {selectedNode.role}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ fontSize: 10.5, fontFamily: fontMono, color: colors.textMuted }}>
+                            Tech: <strong style={{ color: colors.text }}>{selectedNode.tech}</strong>
+                          </span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(JSON.stringify(selectedNode, null, 2));
+                              showToast(`Copied ${selectedNode.name} spec!`);
+                            }}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 4,
+                              background: "transparent",
+                              border: `1px solid ${colors.borderSubtle}`,
+                              borderRadius: 4,
+                              padding: "2px 7px",
+                              fontSize: 10.5,
+                              color: colors.textMuted,
+                              cursor: "pointer",
+                            }}
+                          >
+                            <Copy size={10} />
+                            <span>Copy Spec</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Node Connections Insight */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 8 }}>
+                        <div style={{ fontSize: 11, color: colors.textMuted }}>
+                          <span style={{ fontWeight: 600, color: colors.text }}>Ingress Flow: </span>
+                          {currentData.hld.connections?.filter(c => c.to === selectedNode.name).map(c => `${c.from} (${c.protocol})`).join(", ") || "Edge Entry Point / API Ingress"}
+                        </div>
+                        <div style={{ fontSize: 11, color: colors.textMuted }}>
+                          <span style={{ fontWeight: 600, color: colors.text }}>Egress Pipeline: </span>
+                          {currentData.hld.connections?.filter(c => c.from === selectedNode.name).map(c => `${c.to} (${c.protocol})`).join(", ") || "Terminal Data Store"}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Interconnect Pipeline Table */}
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+                      Service Interconnect Contracts
+                    </div>
+                    <div style={{ borderRadius: 8, border: `1px solid ${colors.borderSubtle}`, overflow: "hidden" }}>
+                      {currentData.hld.connections.map((conn, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            padding: "8px 12px",
+                            background: idx % 2 === 0 ? colors.surfaceElevated : "transparent",
+                            fontSize: 11.5,
+                          }}
+                        >
+                          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span style={{ fontWeight: 600, color: colors.text }}>{conn.from}</span>
+                            <ArrowRight size={11} color={colors.accent} />
+                            <span style={{ fontWeight: 600, color: colors.text }}>{conn.to}</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <span style={{ fontSize: 10.5, color: colors.textMuted }}>{conn.throughput}</span>
+                            <span style={{ fontFamily: fontMono, fontSize: 10.5, fontWeight: 600, color: colors.accent }}>
+                              {conn.protocol}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              
             </div>
           </div>
         </div>
